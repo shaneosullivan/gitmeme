@@ -1,0 +1,14 @@
+{
+  "name": "GitMeme",
+  "version": "1.0",
+  "description": "Easy memes and macros Github",
+  "manifest_version": 2,
+  "permissions": ["activeTab"],
+  "content_scripts": [
+    {
+      "matches": ["https://*.github.com/*", "https://github.com/*"],
+      "css": ["src/style.css"],
+      "js": ["build/contentScript.js"]
+    }
+  ]
+}
