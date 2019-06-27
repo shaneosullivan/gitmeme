@@ -4,8 +4,10 @@
   "description": "A Meme tool for Github",
   "main": "build/contentScript.js",
   "scripts": {
-    "build": "tsc --outDir ./build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "webpack --config webpack/webpack.dev.js --watch",
+    "build": "webpack --config webpack/webpack.prod.js",
+    "clean": "rimraf build"
   },
   "repository": {
     "type": "git",
@@ -16,5 +18,19 @@
   "bugs": {
     "url": "https://github.com/shaneosullivan/gitmeme/issues"
   },
-  "homepage": "https://github.com/shaneosullivan/gitmeme#readme"
+  "homepage": "https://github.com/shaneosullivan/gitmeme#readme",
+  "dependencies": {
+    "textarea-caret": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "~0.0.83",
+    "@types/jquery": "~3.3.29",
+    "copy-webpack-plugin": "^5.0.3",
+    "rimraf": "^2.6.3",
+    "ts-loader": "~5.4.3",
+    "typescript": "^3.5.2",
+    "webpack": "~4.17.2",
+    "webpack-cli": "~3.1.0",
+    "webpack-merge": "~4.1.4"
+  }
 }
