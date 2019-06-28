@@ -12,6 +12,7 @@ export interface TokenTag {
   token: Token;
   remove: Function;
   imageUrl: string | null;
+  imageUrls: Array<string>;
   disabled: boolean;
 }
 
@@ -64,23 +65,27 @@ export default function createTokenTag(
 
   function updateTagUi() {
     let title = "";
-    if (record.imageUrl) {
-      tagUi.classList.add("imageFound");
-      tagUi.classList.remove("imageNotFound");
+
+    tagUi.classList.toggle("imageFound", !!record.imageUrl);
+    tagUi.classList.toggle("imageNotFound", !!record.imageUrl);
+    if (!!record.imageUrl) {
       title = `GitMeme for "${token.value}"`;
     } else {
-      tagUi.classList.remove("imageFound");
-      tagUi.classList.add("imageNotFound");
       title = `GitMeme for "${token.value}"`;
     }
+
+    tagUi.classList.toggle("disabled", record.disabled);
+    imageUi && imageUi.classList.toggle("disabled", record.disabled);
     if (record.disabled) {
-      tagUi.classList.add("disabled");
-      imageUi && imageUi.classList.add("disabled");
       title = `GitMeme image disabled`;
-    } else {
-      tagUi.classList.remove("disabled");
-      imageUi && imageUi.classList.remove("disabled");
     }
+
+    imageUi &&
+      imageUi.classList.toggle(
+        "hasMultipleImages",
+        record.imageUrls.length > 1
+      );
+
     tagUi.title = title;
   }
 
@@ -115,6 +120,11 @@ export default function createTokenTag(
           "click",
           record.disabled ? enableImage : disableImage
         );
+
+        const showAllImagesNode = document.createElement("button");
+        showAllImagesNode.className = "__showAllImages";
+        showAllImagesNode.textContent = `+${record.imageUrls.length - 1}`;
+        imageUi.appendChild(showAllImagesNode);
 
         updateTagUi();
 
@@ -154,12 +164,16 @@ export default function createTokenTag(
     token,
     isValid: false,
     imageUrl: null,
+    imageUrls: [],
     disabled: false
   };
 
-  searcher(token.value).then((url: string | null) => {
-    record.imageUrl = url;
+  console.log("searching for ", token.value);
+  searcher(token.value).then((urls: Array<string>) => {
+    const url = urls.length > 0 ? urls[0] : null;
 
+    record.imageUrl = url;
+    record.imageUrls = urls;
     record.isValid = !!url;
 
     updateTagUi();

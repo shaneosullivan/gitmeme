@@ -63,3 +63,22 @@
 .__tokenTagThumbnail.disabled button {
   border-top-style: dotted;
 }
+
+.__tokenTagThumbnail .__showAllImages {
+  background-color: black;
+  border: 2px solid white;
+  border-radius: 100%;
+  border-top-right-radius: 0;
+  color: white;
+  display: none;
+  height: 24px;
+  padding: 0;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+}
+
+.__tokenTagThumbnail.hasMultipleImages .__showAllImages {
+  display: block;
+}

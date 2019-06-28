@@ -43,7 +43,7 @@ function listenToInput(
       }
       return stillExists;
     });
-  }, 200);
+  }, 500);
 
   let formNode = getParentByTagName(input, "form");
 
