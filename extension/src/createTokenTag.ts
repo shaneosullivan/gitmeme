@@ -66,9 +66,11 @@ export default function createTokenTag(
     let title = "";
     if (record.imageUrl) {
       tagUi.classList.add("imageFound");
+      tagUi.classList.remove("imageNotFound");
       title = `GitMeme for "${token.value}"`;
     } else {
-      tagUi.classList.remove("imageNotFound");
+      tagUi.classList.remove("imageFound");
+      tagUi.classList.add("imageNotFound");
       title = `GitMeme for "${token.value}"`;
     }
     if (record.disabled) {
