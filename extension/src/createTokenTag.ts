@@ -75,9 +75,11 @@ export default function createTokenTag(
     }
     if (record.disabled) {
       tagUi.classList.add("disabled");
+      imageUi && imageUi.classList.add("disabled");
       title = `GitMeme image disabled`;
     } else {
       tagUi.classList.remove("disabled");
+      imageUi && imageUi.classList.remove("disabled");
     }
     tagUi.title = title;
   }
@@ -113,6 +115,8 @@ export default function createTokenTag(
           "click",
           record.disabled ? enableImage : disableImage
         );
+
+        updateTagUi();
 
         tagContainer.appendChild(imageUi);
         removeOpenImage = removeImage;

@@ -47,7 +47,19 @@
   display: block;
 }
 
+.__tokenTagThumbnail.disabled {
+  border-style: dotted;
+}
+
+.__tokenTagThumbnail.disabled img {
+  opacity: 0.3;
+}
+
 .__tokenTagThumbnail button {
   border-top: 2px solid green;
   width: 100%;
+}
+
+.__tokenTagThumbnail.disabled button {
+  border-top-style: dotted;
 }
