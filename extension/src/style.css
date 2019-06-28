@@ -24,11 +24,30 @@
   border-bottom-style: solid;
 }
 
+.__tokenTag.disabled {
+  display: block;
+  opacity: 0.3;
+  border-bottom-style: dotted;
+}
+
 .__tokenTagThumbnail {
+  animation: showImage 0.3s ease-in-out;
+  border: 2px solid green;
+  margin-top: -2px;
+  max-width: 150px;
+  overflow: hidden;
+  position: absolute;
+  text-align: center;
+  transform-origin: top left;
+}
+
+.__tokenTagThumbnail img {
   max-width: 150px;
   max-height: 150px;
-  position: absolute;
   display: block;
-  animation: showImage 0.3s ease-in-out;
-  transform-origin: top left;
+}
+
+.__tokenTagThumbnail button {
+  border-top: 2px solid green;
+  width: 100%;
 }

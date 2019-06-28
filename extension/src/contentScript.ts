@@ -61,7 +61,6 @@ function listenToInput(
 
   // Replace all the tokens with image tags
   function processPreSubmit(evt: Event) {
-    console.log("processPreSubmit");
     // Process the tokens from the last to the first, so that
     // we can modify the text contents without changing the
     // index positions of tokens before we process them
@@ -75,10 +74,12 @@ function listenToInput(
     });
     let value = input.value;
     knownTokens.forEach(knownToken => {
-      if (knownToken.isValid) {
+      if (knownToken.isValid && !knownToken.disabled) {
         value =
           value.substring(0, knownToken.token.index) +
-          `<img src="${knownToken.imageUrl}"/>` +
+          `<img src="${knownToken.imageUrl}" title="Created by gitme.me with /${
+            knownToken.token.value
+          }"/>` +
           value.substring(
             knownToken.token.index + knownToken.token.value.length + 1
           );
