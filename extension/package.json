@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/shaneosullivan/gitmeme#readme",
   "dependencies": {
+    "@types/lodash": "^4.14.135",
     "textarea-caret": "^3.1.0"
   },
   "devDependencies": {

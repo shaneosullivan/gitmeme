@@ -1,0 +1,34 @@
+@keyframes showImage {
+  from {
+    transform: scale(0);
+    opacity: 0;
+    background: #5470b0;
+  }
+}
+
+.__tokenTag {
+  width: 30px;
+  border-bottom: green 2px solid;
+  position: absolute;
+  cursor: pointer;
+  display: none;
+}
+
+.__tokenTag.imageNotFound {
+  display: block;
+  border-bottom-style: dashed;
+}
+
+.__tokenTag.imageFound {
+  display: block;
+  border-bottom-style: solid;
+}
+
+.__tokenTagThumbnail {
+  max-width: 150px;
+  max-height: 150px;
+  position: absolute;
+  display: block;
+  animation: showImage 0.3s ease-in-out;
+  transform-origin: top left;
+}
