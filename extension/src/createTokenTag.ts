@@ -41,7 +41,9 @@ export default function createTokenTag(
   tagContainer.appendChild(tagUi);
 
   function removeImage() {
-    tagContainer.removeChild(imageUi);
+    if (imageUi && imageUi.parentNode) {
+      imageUi.parentNode.removeChild(imageUi);
+    }
     imageUi = null;
     if (removeOpenImage === removeImage) {
       removeOpenImage = null;
@@ -92,9 +94,7 @@ export default function createTokenTag(
     console.log("remove for ", token.value, tagUi);
     tagUi.parentNode.removeChild(tagUi);
 
-    if (imageUi) {
-      imageUi.parentNode.removeChild(imageUi);
-    }
+    removeImage();
   }
 
   reposition();
