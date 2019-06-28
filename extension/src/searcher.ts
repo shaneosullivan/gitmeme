@@ -34,14 +34,23 @@ const giphySearches = {};
 async function searchGiphy(tokenValue) {
   if (!giphySearches[tokenValue]) {
     giphySearches[tokenValue] = new Promise(async (resolve, _reject) => {
-      const result = await fetch(
-        `https://api.giphy.com/v1/gifs/search?q=${encodeURIComponent(
-          tokenValue
-        )}&api_key=${GIPHY_API_KEY}&limit=8`
-      );
+      let limit = 8;
 
-      const data = await result.json();
-      resolve(data);
+      while (limit > 2) {
+        try {
+          const result = await fetch(
+            `https://api.giphy.com/v1/gifs/search?q=${encodeURIComponent(
+              tokenValue
+            )}&api_key=${GIPHY_API_KEY}&limit=${limit}`
+          );
+          const data = await result.json();
+          resolve(data);
+          break;
+        } catch (err) {
+          console.error(err);
+          limit--;
+        }
+      }
     });
   }
   return giphySearches[tokenValue];

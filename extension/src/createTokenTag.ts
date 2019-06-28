@@ -39,6 +39,7 @@ export default function createTokenTag(
 
   let imageUi = null;
   tagUi.className = "__tokenTag";
+  tagUi.setAttribute("data-token", token.value);
 
   tagContainer.appendChild(tagUi);
 
@@ -67,7 +68,7 @@ export default function createTokenTag(
     let title = "";
 
     tagUi.classList.toggle("imageFound", !!record.imageUrl);
-    tagUi.classList.toggle("imageNotFound", !!record.imageUrl);
+    tagUi.classList.toggle("imageNotFound", !record.imageUrl);
     if (!!record.imageUrl) {
       title = `GitMeme for "${token.value}"`;
     } else {
@@ -80,13 +81,49 @@ export default function createTokenTag(
       title = `GitMeme image disabled`;
     }
 
-    imageUi &&
+    if (imageUi) {
       imageUi.classList.toggle(
         "hasMultipleImages",
         record.imageUrls.length > 1
       );
 
+      const imageNode = imageUi.querySelector("img");
+      if (imageNode.src !== record.imageUrl) {
+        imageNode.src = record.imageUrl;
+      }
+    }
+
     tagUi.title = title;
+  }
+
+  function selectImage() {
+    const wrapper = document.createElement("div");
+    wrapper.className = "__imageSelector";
+
+    wrapper.innerHTML = `
+      <div class="__imageSelectorTitle">Choose One Image</div>
+        ${record.imageUrls
+          .filter((_, idx) => idx < 4)
+          .map((url, idx) => {
+            return `<a href="#" data-index="${idx}"><img src="${url}" /></a>`;
+          })
+          .join("\n")}
+    `;
+    tagContainer.appendChild(wrapper);
+    wrapper.addEventListener("click", evt => {
+      let target = evt.target as HTMLElement;
+      let targetName = target.tagName.toLowerCase();
+      if (targetName === "img") {
+        target = target.parentElement;
+        targetName = target.tagName.toLowerCase();
+      }
+      if (targetName === "a") {
+        record.imageUrl = record.imageUrls[target.getAttribute("data-index")];
+        updateTagUi();
+      }
+
+      tagContainer.removeChild(wrapper);
+    });
   }
 
   tagUi.addEventListener("click", evt => {
@@ -124,11 +161,15 @@ export default function createTokenTag(
         const showAllImagesNode = document.createElement("button");
         showAllImagesNode.className = "__showAllImages";
         showAllImagesNode.textContent = `+${record.imageUrls.length - 1}`;
+        showAllImagesNode.addEventListener("click", selectImage);
         imageUi.appendChild(showAllImagesNode);
 
         updateTagUi();
 
         tagContainer.appendChild(imageUi);
+
+        // Store the global reference to ensure that only one image is
+        // open at a time
         removeOpenImage = removeImage;
 
         reposition();
