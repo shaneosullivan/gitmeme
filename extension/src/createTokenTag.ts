@@ -12,6 +12,8 @@ export interface TokenTag {
   token: Token;
   remove: Function;
   imageUrl: string | null;
+  imageUrls: Array<string>;
+  disabled: boolean;
 }
 
 let removeOpenImage = null;
@@ -34,18 +36,94 @@ export default function createTokenTag(
   }
 
   const tagUi = document.createElement("div");
-  let imageUrl = null;
+
   let imageUi = null;
   tagUi.className = "__tokenTag";
+  tagUi.setAttribute("data-token", token.value);
 
   tagContainer.appendChild(tagUi);
 
   function removeImage() {
-    tagContainer.removeChild(imageUi);
+    if (imageUi && imageUi.parentNode) {
+      imageUi.parentNode.removeChild(imageUi);
+    }
     imageUi = null;
     if (removeOpenImage === removeImage) {
       removeOpenImage = null;
     }
+    updateTagUi();
+  }
+
+  function disableImage() {
+    record.disabled = true;
+    removeImage();
+  }
+
+  function enableImage() {
+    record.disabled = false;
+    removeImage();
+  }
+
+  function updateTagUi() {
+    let title = "";
+
+    tagUi.classList.toggle("imageFound", !!record.imageUrl);
+    tagUi.classList.toggle("imageNotFound", !record.imageUrl);
+    if (!!record.imageUrl) {
+      title = `GitMeme for "${token.value}"`;
+    } else {
+      title = `GitMeme for "${token.value}"`;
+    }
+
+    tagUi.classList.toggle("disabled", record.disabled);
+    imageUi && imageUi.classList.toggle("disabled", record.disabled);
+    if (record.disabled) {
+      title = `GitMeme image disabled`;
+    }
+
+    if (imageUi) {
+      imageUi.classList.toggle(
+        "hasMultipleImages",
+        record.imageUrls.length > 1
+      );
+
+      const imageNode = imageUi.querySelector("img");
+      if (imageNode.src !== record.imageUrl) {
+        imageNode.src = record.imageUrl;
+      }
+    }
+
+    tagUi.title = title;
+  }
+
+  function selectImage() {
+    const wrapper = document.createElement("div");
+    wrapper.className = "__imageSelector";
+
+    wrapper.innerHTML = `
+      <div class="__imageSelectorTitle">Choose One Image</div>
+        ${record.imageUrls
+          .filter((_, idx) => idx < 4)
+          .map((url, idx) => {
+            return `<a href="#" data-index="${idx}"><img src="${url}" /></a>`;
+          })
+          .join("\n")}
+    `;
+    tagContainer.appendChild(wrapper);
+    wrapper.addEventListener("click", evt => {
+      let target = evt.target as HTMLElement;
+      let targetName = target.tagName.toLowerCase();
+      if (targetName === "img") {
+        target = target.parentElement;
+        targetName = target.tagName.toLowerCase();
+      }
+      if (targetName === "a") {
+        record.imageUrl = record.imageUrls[target.getAttribute("data-index")];
+        updateTagUi();
+      }
+
+      tagContainer.removeChild(wrapper);
+    });
   }
 
   tagUi.addEventListener("click", evt => {
@@ -53,20 +131,45 @@ export default function createTokenTag(
     // If the url does not exist, open a typeahead to find the
     // image you want (laterz...)
 
-    if (imageUrl) {
+    if (record.imageUrl) {
       if (imageUi) {
         removeImage();
       } else {
         if (removeOpenImage) {
           removeOpenImage();
         }
-        imageUi = document.createElement("img");
+        imageUi = document.createElement("div");
         imageUi.className = "__tokenTagThumbnail";
-        imageUi.src = imageUrl;
 
-        imageUi.addEventListener("click", removeImage);
+        const imageNode = document.createElement("img");
+        imageNode.src = record.imageUrl;
+
+        const removeButtonNode = document.createElement("button");
+        removeButtonNode.textContent = record.disabled
+          ? "Enable Tag"
+          : "Disable Tag";
+
+        imageUi.appendChild(imageNode);
+        imageUi.appendChild(removeButtonNode);
+
+        imageNode.addEventListener("click", removeImage);
+        removeButtonNode.addEventListener(
+          "click",
+          record.disabled ? enableImage : disableImage
+        );
+
+        const showAllImagesNode = document.createElement("button");
+        showAllImagesNode.className = "__showAllImages";
+        showAllImagesNode.textContent = `+${record.imageUrls.length - 1}`;
+        showAllImagesNode.addEventListener("click", selectImage);
+        imageUi.appendChild(showAllImagesNode);
+
+        updateTagUi();
 
         tagContainer.appendChild(imageUi);
+
+        // Store the global reference to ensure that only one image is
+        // open at a time
         removeOpenImage = removeImage;
 
         reposition();
@@ -89,12 +192,8 @@ export default function createTokenTag(
   }
 
   function remove() {
-    console.log("remove for ", token.value, tagUi);
     tagUi.parentNode.removeChild(tagUi);
-
-    if (imageUi) {
-      imageUi.parentNode.removeChild(imageUi);
-    }
+    removeImage();
   }
 
   reposition();
@@ -105,21 +204,20 @@ export default function createTokenTag(
     reposition,
     token,
     isValid: false,
-    imageUrl: null
+    imageUrl: null,
+    imageUrls: [],
+    disabled: false
   };
 
-  searcher(token.value).then((url: string | null) => {
-    record.imageUrl = imageUrl = url;
+  console.log("searching for ", token.value);
+  searcher(token.value).then((urls: Array<string>) => {
+    const url = urls.length > 0 ? urls[0] : null;
 
+    record.imageUrl = url;
+    record.imageUrls = urls;
     record.isValid = !!url;
 
-    if (url) {
-      tagUi.className += " imageFound";
-      tagUi.title = `GitMeme for "${token.value}"`;
-    } else {
-      tagUi.className += " imageNotFound";
-      tagUi.title = `GitMeme: No image found for "${token.value}"`;
-    }
+    updateTagUi();
   });
 
   return record;

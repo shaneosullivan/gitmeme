@@ -24,11 +24,85 @@
   border-bottom-style: solid;
 }
 
+.__tokenTag.disabled {
+  display: block;
+  opacity: 0.3;
+  border-bottom-style: dotted;
+}
+
 .__tokenTagThumbnail {
+  animation: showImage 0.3s ease-in-out;
+  border: 2px solid green;
+  margin-top: -2px;
+  max-width: 150px;
+  overflow: hidden;
+  position: absolute;
+  text-align: center;
+  transform-origin: top left;
+}
+
+.__tokenTagThumbnail img {
   max-width: 150px;
   max-height: 150px;
-  position: absolute;
   display: block;
-  animation: showImage 0.3s ease-in-out;
-  transform-origin: top left;
+}
+
+.__tokenTagThumbnail.disabled {
+  border-style: dotted;
+}
+
+.__tokenTagThumbnail.disabled img {
+  opacity: 0.3;
+}
+
+.__tokenTagThumbnail button {
+  border-top: 2px solid green;
+  width: 100%;
+}
+
+.__tokenTagThumbnail.disabled button {
+  border-top-style: dotted;
+}
+
+.__tokenTagThumbnail .__showAllImages {
+  background-color: black;
+  border: 2px solid white;
+  border-radius: 100%;
+  border-top-right-radius: 0;
+  color: white;
+  display: none;
+  height: 24px;
+  padding: 0;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+}
+
+.__tokenTagThumbnail.hasMultipleImages .__showAllImages {
+  display: block;
+}
+
+.__imageSelector {
+  background: rgba(0, 0, 0, 0.3);
+  height: 100%;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+
+.__imageSelector a {
+  background-color: white;
+  border: 2px solid green;
+  display: inline-block;
+  margin: 24px;
+  padding: 15px;
+  text-align: center;
+  width: 280px;
+}
+
+.__imageSelector a img {
+  max-width: 250px;
+  max-height: 250px;
 }
