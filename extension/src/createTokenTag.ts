@@ -103,7 +103,6 @@ export default function createTokenTag(
     wrapper.innerHTML = `
       <div class="__imageSelectorTitle">Choose One Image</div>
         ${record.imageUrls
-          .filter((_, idx) => idx < 4)
           .map((url, idx) => {
             return `<a href="#" data-index="${idx}"><img src="${url}" /></a>`;
           })

@@ -7,42 +7,64 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
     return null;
   }
 
-  const gitmemeResult = await fetch(
-    `https://us-central1-git-meme-prod.cloudfunctions.net/api/search?t=${encodeURIComponent(
+  return new Promise(async (resolve, _reject) => {
+    let results = [];
+    let gitmemeComplete = false;
+    let giphyResult = null;
+
+    const gitmemeUrl = `https://us-central1-git-meme-prod.cloudfunctions.net/api/search?t=${encodeURIComponent(
       tokenValue
-    )}`
-  ).then(res => {
-    return res.json();
-  });
+    )}`;
 
-  return gitmemeResult.url;
-
-  console.log("got gitmemeResult ", gitmemeResult);
-
-  switch (tokenValue) {
-    case "foo":
-      return ["https://joinpromise.com/assets/media/Measure_Efficacy.svg"];
-
-    case "bar":
-      return ["https://payticket.io/static/images/logos/epa_logo.jpg"];
-
-    case "shipit":
-      return ["https://media.giphy.com/media/79qf1N4RJtc8o/giphy.gif"];
-
-    default:
-      try {
-        const giphyResult = await searchGiphy(tokenValue);
-
-        if (giphyResult.data && giphyResult.data.length > 0) {
-          return giphyResult.data.map(
-            imageData => imageData.images.downsized_still.url
-          );
+    fetch(gitmemeUrl)
+      .then(function(response) {
+        if (!response.ok) {
+          throw Error(response.statusText);
         }
-      } catch (err) {
-        console.error(err);
+        // Read the response as json.
+        return response.json();
+      })
+      .then(function(data) {
+        // Do stuff with the JSON
+        console.log("gitmeme value for ", tokenValue, data);
+        gitmemeComplete = true;
+        if (data && data.url) {
+          // The first party images are put in the first position
+          results.unshift(data.url);
+          resolve(results);
+        } else if (giphyResult) {
+          resolve(results);
+        }
+      })
+      .catch(function(error) {
+        console.log("Looks like there was a problem: \n", error);
+      });
+
+    try {
+      giphyResult = await searchGiphy(tokenValue);
+
+      if (giphyResult.data && giphyResult.data.length > 0) {
+        console.log("giphyResult for ", tokenValue, giphyResult.data[0]);
+        giphyResult.data
+          .map(imageData => imageData.images.downsized_medium.url)
+          .forEach(url => {
+            results.push(url);
+          });
+
+        // If the Gitmeme request has completed but didn't find anything,
+        // then resolve the Promise.
+        // If the Gitmeme request has not completed, wait for it
+        // If the Gitmeme request has completed and found something,
+        //   then it will have alread resolved
+        if (gitmemeComplete && results.length === giphyResult.data.length) {
+          resolve(results);
+        }
       }
-      return [];
-  }
+    } catch (err) {
+      console.error(err);
+    }
+    return [];
+  });
 }
 
 const giphySearches = {};
@@ -59,6 +81,7 @@ async function searchGiphy(tokenValue) {
               tokenValue
             )}&api_key=${GIPHY_API_KEY}&limit=${limit}`
           );
+          console.log("giphy result", result);
           const data = await result.json();
           resolve(data);
           break;

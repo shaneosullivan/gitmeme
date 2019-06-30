@@ -5,7 +5,8 @@
   "manifest_version": 2,
   "permissions": [
     "activeTab",
-    "https://us-central1-git-meme-prod.cloudfunctions.net/"
+    "https://us-central1-git-meme-prod.cloudfunctions.net/",
+    "https://api.giphy.com/"
   ],
   "content_scripts": [
     {

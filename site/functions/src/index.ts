@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as express from "express";
-// import * as cors from "cors";
+import * as cors from "cors";
 
 admin.initializeApp();
 // const firebaseApp = admin.initializeApp();
@@ -15,13 +15,17 @@ const app = express();
 //   }
 // };
 // const corseWithOpt = cors(corsOptions);
-// app.use(corseWithOpt);
+app.options("*", cors());
+app.use(cors());
 
 app.get("/", (_req: express.Request, resp: express.Response) => {
-  resp.json({ foo: "bar" });
+  resp.json({
+    url: "https://joinpromise.com/assets/media/Measure_Efficacy.svg"
+  });
 });
 
-app.get("/search", (req: express.Request, resp: express.Response) => {
+app.get("/search", (req: express.Request, res: express.Response) => {
+  console.log("Search called with ", req.query);
   const searchTerm = req.query["t"];
 
   let url = null;
@@ -40,10 +44,7 @@ app.get("/search", (req: express.Request, resp: express.Response) => {
     default:
   }
 
-  resp.json({ url });
+  res.json({ url });
 });
-
-// Start writing Firebase Functions
-// https://firebase.google.com/docs/functions/typescript
 
 export const api = functions.https.onRequest(app);
