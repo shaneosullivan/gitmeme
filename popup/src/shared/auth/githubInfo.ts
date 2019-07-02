@@ -1,3 +1,5 @@
+import getLoggedInUser from "./getLoggedInUser";
+
 declare const chrome: any;
 
 export interface GithubInfo {
@@ -11,11 +13,20 @@ export async function getGithubInfo(): Promise<GithubInfo> {
     chrome.storage.sync.get(
       ["github_token", "github_id", "github_avatar"],
       function(results: any) {
-        resolve({
-          token: results.github_token || null,
-          id: results.github_id || null,
-          avatar: results.github_avatar || null
-        });
+        if (results.github_token) {
+          resolve({
+            token: results.github_token || null,
+            id: results.github_id || null,
+            avatar: results.github_avatar || null
+          });
+        } else {
+          const loggedInUser = getLoggedInUser();
+          resolve({
+            token: null,
+            id: loggedInUser.id,
+            avatar: loggedInUser.avatar
+          });
+        }
       }
     );
   });

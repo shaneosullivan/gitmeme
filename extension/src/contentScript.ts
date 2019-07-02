@@ -6,8 +6,12 @@ import findTextInputs from "./util/findTextInputs";
 import { getGithubInfo } from "./shared/auth/githubInfo";
 import { API_ROOT_URL } from "./shared/consts";
 import createAuthHeader from "./shared/auth/createAuthHeader";
+import getLoggedInUser from "./shared/auth/getLoggedInUser";
 
 let userInfo;
+
+// Get the logged in user from the DOM
+const loggedInUser = getLoggedInUser();
 
 function listenToInput(
   input: HTMLInputElement
@@ -89,7 +93,13 @@ function listenToInput(
             knownToken.token.index + knownToken.token.value.length + 1
           );
 
-        if (userInfo && userInfo.id) {
+        if (
+          userInfo &&
+          userInfo.id &&
+          userInfo.token &&
+          loggedInUser &&
+          loggedInUser.id === userInfo
+        ) {
           fetch(`${API_ROOT_URL}/add_token_by_url`, {
             method: "POST",
             headers: {
@@ -99,6 +109,16 @@ function listenToInput(
               image_url: knownToken.imageUrl,
               token: knownToken.token.value
             })
+          });
+        }
+        if (loggedInUser) {
+          // Also store the used tokens locally, so they work even when
+          // not authorized with the extension.
+          const tokenStorageKey = `image:${loggedInUser.id}_${
+            knownToken.token.value
+          }`;
+          chrome.storage.local.set({
+            [tokenStorageKey]: knownToken.imageUrl
           });
         }
       }

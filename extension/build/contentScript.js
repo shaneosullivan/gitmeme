@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -129,15 +129,26 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const getLoggedInUser_1 = __webpack_require__(3);
 function getGithubInfo() {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise(resolve => {
             chrome.storage.sync.get(["github_token", "github_id", "github_avatar"], function (results) {
-                resolve({
-                    token: results.github_token || null,
-                    id: results.github_id || null,
-                    avatar: results.github_avatar || null
-                });
+                if (results.github_token) {
+                    resolve({
+                        token: results.github_token || null,
+                        id: results.github_id || null,
+                        avatar: results.github_avatar || null
+                    });
+                }
+                else {
+                    const loggedInUser = getLoggedInUser_1.default();
+                    resolve({
+                        token: null,
+                        id: loggedInUser.id,
+                        avatar: loggedInUser.avatar
+                    });
+                }
             });
         });
     });
@@ -173,15 +184,40 @@ exports.setGithubUserId = setGithubUserId;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const parseTokens_1 = __webpack_require__(4);
-const createTokenTag_1 = __webpack_require__(5);
-const throttle_1 = __webpack_require__(9);
-const getParentByTagName_1 = __webpack_require__(10);
-const findTextInputs_1 = __webpack_require__(11);
+function getLoggedInUser() {
+    const avatarNode = document.querySelector("summary img.avatar");
+    if (avatarNode) {
+        const userName = (avatarNode.getAttribute("alt") || "").substring(1);
+        const avatar = avatarNode.getAttribute("src");
+        return {
+            id: userName,
+            avatar
+        };
+    }
+    return null;
+}
+exports.default = getLoggedInUser;
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const parseTokens_1 = __webpack_require__(5);
+const createTokenTag_1 = __webpack_require__(6);
+const throttle_1 = __webpack_require__(10);
+const getParentByTagName_1 = __webpack_require__(11);
+const findTextInputs_1 = __webpack_require__(12);
 const githubInfo_1 = __webpack_require__(2);
 const consts_1 = __webpack_require__(0);
 const createAuthHeader_1 = __webpack_require__(1);
+const getLoggedInUser_1 = __webpack_require__(3);
 let userInfo;
+// Get the logged in user from the DOM
+const loggedInUser = getLoggedInUser_1.default();
 function listenToInput(input) {
     let knownTokens = [];
     const updateTokensForInput = throttle_1.default(() => {
@@ -243,7 +279,11 @@ function listenToInput(input) {
                     value.substring(0, knownToken.token.index) +
                         `<img src="${knownToken.imageUrl}" title="Created by gitme.me with /${knownToken.token.value}"/>` +
                         value.substring(knownToken.token.index + knownToken.token.value.length + 1);
-                if (userInfo && userInfo.id) {
+                if (userInfo &&
+                    userInfo.id &&
+                    userInfo.token &&
+                    loggedInUser &&
+                    loggedInUser.id === userInfo) {
                     fetch(`${consts_1.API_ROOT_URL}/add_token_by_url`, {
                         method: "POST",
                         headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token)),
@@ -251,6 +291,14 @@ function listenToInput(input) {
                             image_url: knownToken.imageUrl,
                             token: knownToken.token.value
                         })
+                    });
+                }
+                if (loggedInUser) {
+                    // Also store the used tokens locally, so they work even when
+                    // not authorized with the extension.
+                    const tokenStorageKey = `${loggedInUser.id}_${knownToken.token.value}`;
+                    chrome.storage.local.set({
+                        [tokenStorageKey]: knownToken.imageUrl
                     });
                 }
             }
@@ -290,7 +338,7 @@ githubInfo_1.getGithubInfo().then((localUserInfo) => {
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -355,14 +403,14 @@ exports.default = parseTokens;
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const getCaretCoordinates = __webpack_require__(6);
-const searcher_1 = __webpack_require__(7);
+const getCaretCoordinates = __webpack_require__(7);
+const searcher_1 = __webpack_require__(8);
 const TAG_CONTAINER_ID = "__tagContainer";
 const TEXT_HEIGHT = 18;
 let removeOpenImage = null;
@@ -532,7 +580,7 @@ exports.default = createTokenTag;
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* jshint browser: true */
@@ -676,7 +724,7 @@ if ( true && typeof module.exports != 'undefined') {
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -690,7 +738,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fetch = __webpack_require__(8);
+const fetch = __webpack_require__(9);
 const consts_1 = __webpack_require__(0);
 const createAuthHeader_1 = __webpack_require__(1);
 const githubInfo_1 = __webpack_require__(2);
@@ -713,9 +761,27 @@ function searcher(tokenValue) {
         return new Promise((resolve, _reject) => __awaiter(this, void 0, void 0, function* () {
             let results = [];
             let gitmemeComplete = false;
+            let localComplete = false;
             let giphyResult = null;
+            let isResolved = false;
+            function doResolve() {
+                if (isResolved) {
+                    return;
+                }
+                isResolved = true;
+                resolve(filterToRemoveIdenticalImages(results));
+            }
             const gitmemeUrl = `${consts_1.API_ROOT_URL}/search?t=${encodeURIComponent(tokenValue)}`;
             const userInfo = yield githubInfo_1.getGithubInfo();
+            const tokenStorageKey = `${userInfo.id}_${tokenValue}`;
+            chrome.storage.local.get([tokenStorageKey], (localResults) => {
+                localComplete = true;
+                if (localResults[tokenStorageKey]) {
+                    console.log("local results for ", tokenValue, " is ", localResults[tokenStorageKey]);
+                    results.unshift(localResults[tokenStorageKey]);
+                    doResolve();
+                }
+            });
             fetch(gitmemeUrl, {
                 headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token))
             })
@@ -733,10 +799,10 @@ function searcher(tokenValue) {
                 if (data && data.url) {
                     // The first party images are put in the first position
                     results.unshift(data.url);
-                    resolve(filterToRemoveIdenticalImages(results));
+                    doResolve();
                 }
                 else if (giphyResult) {
-                    resolve(results);
+                    doResolve();
                 }
             })
                 .catch(function (error) {
@@ -755,9 +821,11 @@ function searcher(tokenValue) {
                     // then resolve the Promise.
                     // If the Gitmeme request has not completed, wait for it
                     // If the Gitmeme request has completed and found something,
-                    //   then it will have alread resolved
-                    if (gitmemeComplete && results.length === giphyResult.data.length) {
-                        resolve(filterToRemoveIdenticalImages(results));
+                    //   then it will have already resolved
+                    if (gitmemeComplete &&
+                        localComplete &&
+                        results.length === giphyResult.data.length) {
+                        doResolve();
                     }
                 }
             }
@@ -796,7 +864,7 @@ function searchGiphy(tokenValue) {
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -825,7 +893,7 @@ exports.Request = global.Request;
 exports.Response = global.Response;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -871,7 +939,7 @@ exports.default = throttle;
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -888,7 +956,7 @@ exports.default = getParentByTagName;
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

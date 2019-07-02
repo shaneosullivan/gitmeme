@@ -24,47 +24,73 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
   return new Promise(async (resolve, _reject) => {
     let results = [];
     let gitmemeComplete = false;
+    let localComplete = false;
     let giphyResult = null;
 
-    const gitmemeUrl = `${API_ROOT_URL}/search?t=${encodeURIComponent(
-      tokenValue
-    )}`;
+    let isResolved = false;
+    function doResolve() {
+      if (isResolved) {
+        return;
+      }
+      isResolved = true;
+      resolve(filterToRemoveIdenticalImages(results));
+    }
 
     const userInfo = await getGithubInfo();
 
-    fetch(gitmemeUrl, {
-      headers: {
-        ...createAuthHeader(userInfo.id, userInfo.token)
-      }
-    })
-      .then(function(response) {
-        if (!response.ok) {
-          throw Error(response.statusText);
+    if (userInfo && userInfo.id) {
+      const tokenStorageKey = `image:${userInfo.id}_${tokenValue}`;
+      chrome.storage.local.get([tokenStorageKey], (localResults: any) => {
+        localComplete = true;
+        if (localResults[tokenStorageKey]) {
+          results.unshift(localResults[tokenStorageKey]);
+          doResolve();
         }
-        // Read the response as json.
-        return response.json();
-      })
-      .then(function(data) {
-        // Do stuff with the JSON
-        console.log("gitmeme value for ", tokenValue, data);
-        gitmemeComplete = true;
-        if (data && data.url) {
-          // The first party images are put in the first position
-          results.unshift(data.url);
-          resolve(filterToRemoveIdenticalImages(results));
-        } else if (giphyResult) {
-          resolve(results);
-        }
-      })
-      .catch(function(error) {
-        console.log("Looks like there was a problem: \n", error);
       });
+    } else {
+      localComplete = true;
+    }
+
+    // Only search our API if the user has logged in with us
+    if (userInfo && userInfo.id && userInfo.token) {
+      const gitmemeUrl = `${API_ROOT_URL}/search?t=${encodeURIComponent(
+        tokenValue
+      )}`;
+
+      fetch(gitmemeUrl, {
+        headers: {
+          ...createAuthHeader(userInfo.id, userInfo.token)
+        }
+      })
+        .then(function(response) {
+          if (!response.ok) {
+            throw Error(response.statusText);
+          }
+          // Read the response as json.
+          return response.json();
+        })
+        .then(function(data) {
+          // Do stuff with the JSON
+          gitmemeComplete = true;
+          if (data && data.url) {
+            // The first party images are put in the first position
+            results.unshift(data.url);
+            doResolve();
+          } else if (giphyResult) {
+            doResolve();
+          }
+        })
+        .catch(function(error) {
+          console.log("Looks like there was a problem: \n", error);
+        });
+    } else {
+      gitmemeComplete = true;
+    }
 
     try {
       giphyResult = await searchGiphy(tokenValue);
 
       if (giphyResult.data && giphyResult.data.length > 0) {
-        console.log("giphyResult for ", tokenValue, giphyResult.data[0]);
         giphyResult.data
           .map(imageData => imageData.images.downsized_medium.url)
           .forEach(url => {
@@ -75,9 +101,13 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
         // then resolve the Promise.
         // If the Gitmeme request has not completed, wait for it
         // If the Gitmeme request has completed and found something,
-        //   then it will have alread resolved
-        if (gitmemeComplete && results.length === giphyResult.data.length) {
-          resolve(filterToRemoveIdenticalImages(results));
+        //   then it will have already resolved
+        if (
+          gitmemeComplete &&
+          localComplete &&
+          results.length === giphyResult.data.length
+        ) {
+          doResolve();
         }
       }
     } catch (err) {
@@ -101,7 +131,6 @@ async function searchGiphy(tokenValue) {
               tokenValue
             )}&api_key=${GIPHY_API_KEY}&limit=${limit}`
           );
-          console.log("giphy result", result);
           const data = await result.json();
           resolve(data);
           break;
