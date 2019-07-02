@@ -18,6 +18,8 @@ export interface TokenTag {
 
 let removeOpenImage = null;
 
+const preferredTagUrls = {};
+
 export default function createTokenTag(
   textInput: Element,
   token: Token
@@ -118,6 +120,7 @@ export default function createTokenTag(
       }
       if (targetName === "a") {
         record.imageUrl = record.imageUrls[target.getAttribute("data-index")];
+        preferredTagUrls[record.token.value] = record.imageUrl;
         updateTagUi();
       }
 
@@ -197,25 +200,29 @@ export default function createTokenTag(
 
   reposition();
 
+  const existingPreferredImageUrl = preferredTagUrls[token.value] || null;
+
   const record = {
     input: textInput,
     remove,
     reposition,
     token,
-    isValid: false,
-    imageUrl: null,
+    isValid: existingPreferredImageUrl ? true : false,
+    imageUrl: existingPreferredImageUrl,
     imageUrls: [],
     disabled: false
   };
 
   console.log("searching for ", token.value);
   searcher(token.value).then((urls: Array<string>) => {
+    console.log("search got ", urls);
     const url = urls.length > 0 ? urls[0] : null;
 
-    record.imageUrl = url;
+    record.imageUrl = record.imageUrl || url;
     record.imageUrls = urls;
     record.isValid = !!url;
 
+    console.log("calling updateTagUi");
     updateTagUi();
   });
 

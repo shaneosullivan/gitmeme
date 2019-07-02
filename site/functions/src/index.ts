@@ -33,7 +33,7 @@ app.use(bodyParser.json());
 app.use(async (req: AppRequest, res: express.Response, next: Function) => {
   // Validate the user
   const authHeader = req.headers["authorization"];
-  console.log("authHeader", authHeader);
+  console.log("authorizing for route", req.originalUrl);
 
   if (!authHeader) {
     res.status(403).json({ error: "No credentials sent!" });
@@ -49,7 +49,7 @@ app.use(async (req: AppRequest, res: express.Response, next: Function) => {
     const parts = authHeaderContents.split("___");
 
     const userId = parts[0].trim();
-    const token = parts[1].trim();
+    const authToken = parts[1].trim();
 
     console.log(
       "Got authHeaderContents",
@@ -57,26 +57,19 @@ app.use(async (req: AppRequest, res: express.Response, next: Function) => {
       " userId ",
       userId,
       " token ",
-      token
+      authToken
     );
 
-    if (userId && token) {
+    if (userId && authToken) {
       const userDoc = await firestore
         .collection("users")
         .doc(userId)
         .get();
 
-      const allUsers = await firestore.collection("users").get();
-      console.log(
-        `allUsers.length = "${
-          allUsers.docs[0].id
-        }" !== "${userId}" is ${allUsers.docs[0].id === userId}`
-      );
-
       if (userDoc.exists) {
         const data = userDoc.data();
 
-        if (data && data.token === token) {
+        if (data && data.auth_token === authToken) {
           (req as any)["_user"] = data;
           console.log("User successfully authenticated");
 
@@ -84,7 +77,7 @@ app.use(async (req: AppRequest, res: express.Response, next: Function) => {
           return;
         } else {
           console.log(
-            `tokens do not match, ${data ? data.token : null} !== ${token}`
+            `tokens do not match, ${data ? data.token : null} !== ${authToken}`
           );
         }
       } else {
@@ -102,42 +95,49 @@ app.get("/", (_req: express.Request, resp: express.Response) => {
   });
 });
 
-app.get("/search", (req: AppRequest, res: express.Response) => {
+app.get("/search", async (req: AppRequest, res: express.Response) => {
   console.log("Search called with ", req.query);
-  const searchTerm = req.query["t"];
+  const token = req.query["t"];
+
+  const userId = req._user ? req._user.uid : "";
+  const docId = `${userId}_${token}`;
+
+  const userTokenDoc = await firestore
+    .collection("user_tokens")
+    .doc(docId)
+    .get();
 
   let url = null;
-  switch (searchTerm) {
-    case "foo":
-      url = "https://joinpromise.com/assets/media/Measure_Efficacy.svg";
-      break;
-
-    case "bar":
-      url = "https://payticket.io/static/images/logos/epa_logo.jpg";
-      break;
-
-    case "shipit":
-      url = "https://media.giphy.com/media/79qf1N4RJtc8o/giphy.gif";
-      break;
-    default:
+  if (userTokenDoc.exists) {
+    url = (userTokenDoc.data() || {}).image_url;
   }
 
   res.json({ url });
 });
 
-app.post("add_token_by_url", (req: AppRequest, res: express.Response) => {
-  const imageUrl = req.body.image_url;
-  const token = req.body.token;
+app.post(
+  "/add_token_by_url",
+  async (req: AppRequest, res: express.Response) => {
+    const imageUrl = req.body.image_url;
+    const token = req.body.token;
 
-  console.log(
-    "got add_token_by_url post with body",
-    req.body,
-    "imageUrl",
-    imageUrl,
-    "token",
-    token
-  );
-});
+    const userId = req._user ? req._user.uid : "";
+    const docId = `${userId}_${token}`;
+
+    await firestore
+      .collection("user_tokens")
+      .doc(docId)
+      .set({
+        user: firestore.collection("users").doc(userId),
+        group: null,
+        token,
+        image_url: imageUrl,
+        created_at: new Date()
+      });
+
+    res.json({ status: "success" });
+  }
+);
 
 export const api = functions.https.onRequest(app);
 

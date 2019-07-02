@@ -1,1 +1,939 @@
-!function(e){var t={};function n(o){if(t[o])return t[o].exports;var i=t[o]={i:o,l:!1,exports:{}};return e[o].call(i.exports,i,i.exports,n),i.l=!0,i.exports}n.m=e,n.c=t,n.d=function(e,t,o){n.o(e,t)||Object.defineProperty(e,t,{enumerable:!0,get:o})},n.r=function(e){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(e,"__esModule",{value:!0})},n.t=function(e,t){if(1&t&&(e=n(e)),8&t)return e;if(4&t&&"object"==typeof e&&e&&e.__esModule)return e;var o=Object.create(null);if(n.r(o),Object.defineProperty(o,"default",{enumerable:!0,value:e}),2&t&&"string"!=typeof e)for(var i in e)n.d(o,i,function(t){return e[t]}.bind(null,i));return o},n.n=function(e){var t=e&&e.__esModule?function(){return e.default}:function(){return e};return n.d(t,"a",t),t},n.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},n.p="",n(n.s=3)}([function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0}),t.GITHUB_CLIENT_ID="9b9e17e168e82438cfb6",t.API_ROOT_URL="http://localhost:5000/git-meme-prod/us-central1/api"},function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0}),t.default=function(e,t){return{Authorization:`Bearer ${e}___${t}`,"Content-Type":"application/json"}}},function(e,t,n){"use strict";var o=this&&this.__awaiter||function(e,t,n,o){return new(n||(n=Promise))(function(i,r){function l(e){try{u(o.next(e))}catch(e){r(e)}}function a(e){try{u(o.throw(e))}catch(e){r(e)}}function u(e){e.done?i(e.value):new n(function(t){t(e.value)}).then(l,a)}u((o=o.apply(e,t||[])).next())})};Object.defineProperty(t,"__esModule",{value:!0}),t.getGithubInfo=function(){return o(this,void 0,void 0,function*(){return new Promise(e=>{chrome.storage.sync.get(["github_token","github_id","github_avatar"],function(t){e({token:t.github_token||null,id:t.github_id||null,avatar:t.github_avatar||null})})})})},t.setGithubToken=function(e){return o(this,void 0,void 0,function*(){return new Promise(t=>{chrome.storage.sync.set({github_token:e},function(){t()})})})},t.setGithubUserId=function(e,t){return o(this,void 0,void 0,function*(){return new Promise(n=>{console.log("setGithubUserId ",e,t),chrome.storage.sync.set({github_id:e,github_avatar:t},function(){n()})})})}},function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0});const o=n(4),i=n(5),r=n(9),l=n(10),a=n(11),u=n(2),s=n(0),d=n(1);let c;function f(e){let t=[];const n=r.default(()=>{let n=o.default(e.value);if(n.length>0){n.filter(e=>!t.some(t=>t.token.index===e.index&&t.token.value===e.value)).forEach(n=>{const o=i.default(e,n);t.push(o)})}t=t.filter(e=>{const t=n.some(t=>e.token.index===t.index&&e.token.value===t.value);return t||e.remove(),t})},500);let a=l.default(e,"form");function u(){t.forEach(e=>{e.remove()}),t=[],e.removeEventListener("keyup",n),e.removeEventListener("change",n),e.removeEventListener("focus",n),a.removeEventListener("submit",f,!0)}function f(n){t.sort((e,t)=>e.token.index>t.token.index?-1:t.token.index>e.token.index?1:0);let o=e.value;t.forEach(e=>{e.isValid&&!e.disabled&&(o=o.substring(0,e.token.index)+`<img src="${e.imageUrl}" title="Created by gitme.me with /${e.token.value}"/>`+o.substring(e.token.index+e.token.value.length+1),c&&c.id&&fetch(`${s.API_ROOT_URL}/add_token_by_url`,{method:"POST",headers:Object.assign({},d.default(c.id,c.token)),body:JSON.stringify({image_url:e.imageUrl,token:e.token.value})}))}),e.value=o,u()}return e.addEventListener("keyup",n),e.addEventListener("change",n),e.addEventListener("focus",n),a.addEventListener("submit",f,!0),new MutationObserver(function(t){console.log("mutation event",t),console.log("input.offsetHeight",e.offsetHeight),t[0].removedNodes&&Array.from(t[0].removedNodes).indexOf(e)>-1?u():0===e.offsetHeight&&u()}).observe(a,{childList:!0}),n(),{input:e,remove:u}}u.getGithubInfo().then(e=>{c=e,console.log("Got local user info",e),a.default(f)})},function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0});const o=/(?<!\w)\/\w+/g,i={"\n":!0,"\t":!0," ":!0};t.default=function(e){const t=[];let n;do{if(n=o.exec(e)){const o=n.index;let r=o+n[0].length===e.length;if(!r){const t=e.charAt(o+n[0].length);console.log("letterAfter is ",t," for ",n[0]),r=!!i[t]}console.log("got endIsValid ",r," for ",n[0]);let l=0===o;if(!l){const t=e.charAt(o-1);l=!!i[t]}console.log("got startIsValid ",l," for ",n[0]),l&&r&&t.push({index:n.index,value:n[0].substring(1).trim()})}}while(n);return console.log("parseTokens",t),t}},function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0});const o=n(6),i=n(7),r="__tagContainer",l=18;let a=null;t.default=function(e,t){const n=o(e,t.index),u=o(e,t.index+t.value.length+1);let s=document.getElementById(r);s||((s=document.createElement("div")).id=r,document.body.appendChild(s));const d=document.createElement("div");let c=null;function f(){c&&c.parentNode&&c.parentNode.removeChild(c),c=null,a===f&&(a=null),m()}function g(){b.disabled=!0,f()}function h(){b.disabled=!1,f()}function m(){let e="";if(d.classList.toggle("imageFound",!!b.imageUrl),d.classList.toggle("imageNotFound",!b.imageUrl),b.imageUrl,e=`GitMeme for "${t.value}"`,d.classList.toggle("disabled",b.disabled),c&&c.classList.toggle("disabled",b.disabled),b.disabled&&(e="GitMeme image disabled"),c){c.classList.toggle("hasMultipleImages",b.imageUrls.length>1);const e=c.querySelector("img");e.src!==b.imageUrl&&(e.src=b.imageUrl)}d.title=e}function p(){const e=document.createElement("div");e.className="__imageSelector",e.innerHTML=`\n      <div class="__imageSelectorTitle">Choose One Image</div>\n        ${b.imageUrls.map((e,t)=>`<a href="#" data-index="${t}"><img src="${e}" /></a>`).join("\n")}\n    `,s.appendChild(e),e.addEventListener("click",t=>{let n=t.target,o=n.tagName.toLowerCase();"img"===o&&(o=(n=n.parentElement).tagName.toLowerCase()),"a"===o&&(b.imageUrl=b.imageUrls[n.getAttribute("data-index")],m()),s.removeChild(e)})}function v(){const t=e.getBoundingClientRect(),o=l+window.scrollY+t.top+n.top,i=window.scrollX+t.left+n.left;d.style.top=o+"px",d.style.left=i+"px",d.style.width=u.left-n.left+"px",c&&(c.style.top=o+2+"px",c.style.left=i+"px")}d.className="__tokenTag",d.setAttribute("data-token",t.value),s.appendChild(d),d.addEventListener("click",e=>{if(b.imageUrl)if(c)f();else{a&&a(),(c=document.createElement("div")).className="__tokenTagThumbnail";const e=document.createElement("img");e.src=b.imageUrl;const t=document.createElement("button");t.textContent=b.disabled?"Enable Tag":"Disable Tag",c.appendChild(e),c.appendChild(t),e.addEventListener("click",f),t.addEventListener("click",b.disabled?h:g);const n=document.createElement("button");n.className="__showAllImages",n.textContent=`+${b.imageUrls.length-1}`,n.addEventListener("click",p),c.appendChild(n),m(),s.appendChild(c),a=f,v()}}),v();const b={input:e,remove:function(){d.parentNode.removeChild(d),f()},reposition:v,token:t,isValid:!1,imageUrl:null,imageUrls:[],disabled:!1};return console.log("searching for ",t.value),i.default(t.value).then(e=>{const t=e.length>0?e[0]:null;b.imageUrl=t,b.imageUrls=e,b.isValid=!!t,m()}),b}},function(e,t,n){!function(){var t=["direction","boxSizing","width","height","overflowX","overflowY","borderTopWidth","borderRightWidth","borderBottomWidth","borderLeftWidth","borderStyle","paddingTop","paddingRight","paddingBottom","paddingLeft","fontStyle","fontVariant","fontWeight","fontStretch","fontSize","fontSizeAdjust","lineHeight","fontFamily","textAlign","textTransform","textIndent","textDecoration","letterSpacing","wordSpacing","tabSize","MozTabSize"],n="undefined"!=typeof window,o=n&&null!=window.mozInnerScreenX;function i(e,i,r){if(!n)throw new Error("textarea-caret-position#getCaretCoordinates should only be called in a browser");var l=r&&r.debug||!1;if(l){var a=document.querySelector("#input-textarea-caret-position-mirror-div");a&&a.parentNode.removeChild(a)}var u=document.createElement("div");u.id="input-textarea-caret-position-mirror-div",document.body.appendChild(u);var s=u.style,d=window.getComputedStyle?window.getComputedStyle(e):e.currentStyle,c="INPUT"===e.nodeName;s.whiteSpace="pre-wrap",c||(s.wordWrap="break-word"),s.position="absolute",l||(s.visibility="hidden"),t.forEach(function(e){c&&"lineHeight"===e?s.lineHeight=d.height:s[e]=d[e]}),o?e.scrollHeight>parseInt(d.height)&&(s.overflowY="scroll"):s.overflow="hidden",u.textContent=e.value.substring(0,i),c&&(u.textContent=u.textContent.replace(/\s/g," "));var f=document.createElement("span");f.textContent=e.value.substring(i)||".",u.appendChild(f);var g={top:f.offsetTop+parseInt(d.borderTopWidth),left:f.offsetLeft+parseInt(d.borderLeftWidth),height:parseInt(d.lineHeight)};return l?f.style.backgroundColor="#aaa":document.body.removeChild(u),g}void 0!==e.exports?e.exports=i:n&&(window.getCaretCoordinates=i)}()},function(e,t,n){"use strict";var o=this&&this.__awaiter||function(e,t,n,o){return new(n||(n=Promise))(function(i,r){function l(e){try{u(o.next(e))}catch(e){r(e)}}function a(e){try{u(o.throw(e))}catch(e){r(e)}}function u(e){e.done?i(e.value):new n(function(t){t(e.value)}).then(l,a)}u((o=o.apply(e,t||[])).next())})};Object.defineProperty(t,"__esModule",{value:!0});const i=n(8),r=n(0),l=n(1),a=n(2),u="I5ysXzZG4OIoiMD99Tz7v6AGN9uzGWpr";t.default=function(e){return o(this,void 0,void 0,function*(){return e?new Promise((t,n)=>o(this,void 0,void 0,function*(){let n=[],d=!1,c=null;const f=`${r.API_ROOT_URL}/search?t=${encodeURIComponent(e)}`,g=yield a.getGithubInfo();i(f,{headers:Object.assign({},l.default(g.id,g.token))}).then(function(e){if(!e.ok)throw Error(e.statusText);return e.json()}).then(function(o){console.log("gitmeme value for ",e,o),d=!0,o&&o.url?(n.unshift(o.url),t(n)):c&&t(n)}).catch(function(e){console.log("Looks like there was a problem: \n",e)});try{(c=yield function(e){return o(this,void 0,void 0,function*(){return s[e]||(s[e]=new Promise((t,n)=>o(this,void 0,void 0,function*(){let n=8;for(;n>2;)try{const o=yield i(`https://api.giphy.com/v1/gifs/search?q=${encodeURIComponent(e)}&api_key=${u}&limit=${n}`);console.log("giphy result",o);const r=yield o.json();t(r);break}catch(e){console.error(e),n--}}))),s[e]})}(e)).data&&c.data.length>0&&(console.log("giphyResult for ",e,c.data[0]),c.data.map(e=>e.images.downsized_medium.url).forEach(e=>{n.push(e)}),d&&n.length===c.data.length&&t(n))}catch(e){console.error(e)}return[]})):null})};const s={}},function(e,t,n){"use strict";var o=function(){if("undefined"!=typeof self)return self;if("undefined"!=typeof window)return window;if(void 0!==o)return o;throw new Error("unable to locate global object")}();e.exports=t=o.fetch,t.default=o.fetch.bind(o),t.Headers=o.Headers,t.Request=o.Request,t.Response=o.Response},function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0}),t.default=function(e,t,n){var o,i,r,l=null,a=0;n||(n={});var u=function(){a=!1===n.leading?0:Date.now(),l=null,r=e.apply(o,i),l||(o=i=null)};return function(){var s=Date.now();a||!1!==n.leading||(a=s);var d=t-(s-a);return o=this,i=arguments,d<=0||d>t?(l&&(clearTimeout(l),l=null),a=s,r=e.apply(o,i),l||(o=i=null)):l||!1===n.trailing||(l=setTimeout(u,d)),r}}},function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0}),t.default=function(e,t){let n=e.parentElement;for(;n&&n.tagName.toLowerCase()!==t;)n=n.parentElement;return n||null}},function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0}),t.default=function(e){const t=Array.from(document.querySelectorAll(["new_comment_field","issue_body"].map(e=>`#${e}`).join(",")));console.log("inputsById",t);let n=t.map(e);document.body.addEventListener("focusin",t=>{const o=t.target,i=o.tagName;i&&"textarea"===i.toLowerCase()&&!n.some(e=>e.input===o)&&n.push(e(o))}),setInterval(()=>{const e=function(e){return e.filter(e=>!!e.input.offsetParent||(console.log("Cleaning up",e.input),e.remove(),!1))}(n);e.length!==n.length&&(n=e)},200)}}]);
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.GITHUB_CLIENT_ID = "9b9e17e168e82438cfb6";
+exports.API_ROOT_URL = "https://us-central1-git-meme-prod.cloudfunctions.net/api";
+// DO NOT CHECK IN
+// export const API_ROOT_URL =
+//   "http://localhost:5000/git-meme-prod/us-central1/api";
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function createAuthHeader(userId, token) {
+    return {
+        Authorization: `Bearer ${userId}___${token}`,
+        "Content-Type": "application/json"
+    };
+}
+exports.default = createAuthHeader;
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+function getGithubInfo() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise(resolve => {
+            chrome.storage.sync.get(["github_token", "github_id", "github_avatar"], function (results) {
+                resolve({
+                    token: results.github_token || null,
+                    id: results.github_id || null,
+                    avatar: results.github_avatar || null
+                });
+            });
+        });
+    });
+}
+exports.getGithubInfo = getGithubInfo;
+function setGithubToken(token) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise(resolve => {
+            chrome.storage.sync.set({ github_token: token }, function () {
+                resolve();
+            });
+        });
+    });
+}
+exports.setGithubToken = setGithubToken;
+function setGithubUserId(userId, avatarUrl) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise(resolve => {
+            console.log("setGithubUserId ", userId, avatarUrl);
+            chrome.storage.sync.set({ github_id: userId, github_avatar: avatarUrl }, function () {
+                resolve();
+            });
+        });
+    });
+}
+exports.setGithubUserId = setGithubUserId;
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const parseTokens_1 = __webpack_require__(4);
+const createTokenTag_1 = __webpack_require__(5);
+const throttle_1 = __webpack_require__(9);
+const getParentByTagName_1 = __webpack_require__(10);
+const findTextInputs_1 = __webpack_require__(11);
+const githubInfo_1 = __webpack_require__(2);
+const consts_1 = __webpack_require__(0);
+const createAuthHeader_1 = __webpack_require__(1);
+let userInfo;
+function listenToInput(input) {
+    let knownTokens = [];
+    const updateTokensForInput = throttle_1.default(() => {
+        let tokens = parseTokens_1.default(input.value);
+        if (tokens.length > 0) {
+            // Filter the tokens that we already know about
+            const unknownTokens = tokens.filter(token => {
+                return !knownTokens.some(knownToken => {
+                    return (knownToken.token.index === token.index &&
+                        knownToken.token.value === token.value);
+                });
+            });
+            unknownTokens.forEach(token => {
+                const tokenTag = createTokenTag_1.default(input, token);
+                knownTokens.push(tokenTag);
+            });
+        }
+        // Remove any tokens that are no longer valid
+        knownTokens = knownTokens.filter(knownToken => {
+            const stillExists = tokens.some(newToken => {
+                return (knownToken.token.index === newToken.index &&
+                    knownToken.token.value === newToken.value);
+            });
+            if (!stillExists) {
+                knownToken.remove();
+            }
+            return stillExists;
+        });
+    }, 500);
+    let formNode = getParentByTagName_1.default(input, "form");
+    function cleanUp() {
+        knownTokens.forEach(knownToken => {
+            knownToken.remove();
+        });
+        knownTokens = [];
+        input.removeEventListener("keyup", updateTokensForInput);
+        input.removeEventListener("change", updateTokensForInput);
+        input.removeEventListener("focus", updateTokensForInput);
+        formNode.removeEventListener("submit", processPreSubmit, true);
+    }
+    // Replace all the tokens with image tags
+    function processPreSubmit(evt) {
+        // Process the tokens from the last to the first, so that
+        // we can modify the text contents without changing the
+        // index positions of tokens before we process them
+        knownTokens.sort((a, b) => {
+            if (a.token.index > b.token.index) {
+                return -1;
+            }
+            else if (b.token.index > a.token.index) {
+                return 1;
+            }
+            return 0;
+        });
+        let value = input.value;
+        knownTokens.forEach(knownToken => {
+            if (knownToken.isValid && !knownToken.disabled) {
+                value =
+                    value.substring(0, knownToken.token.index) +
+                        `<img src="${knownToken.imageUrl}" title="Created by gitme.me with /${knownToken.token.value}"/>` +
+                        value.substring(knownToken.token.index + knownToken.token.value.length + 1);
+                if (userInfo && userInfo.id) {
+                    fetch(`${consts_1.API_ROOT_URL}/add_token_by_url`, {
+                        method: "POST",
+                        headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token)),
+                        body: JSON.stringify({
+                            image_url: knownToken.imageUrl,
+                            token: knownToken.token.value
+                        })
+                    });
+                }
+            }
+        });
+        input.value = value;
+        cleanUp();
+    }
+    input.addEventListener("keyup", updateTokensForInput);
+    input.addEventListener("change", updateTokensForInput);
+    input.addEventListener("focus", updateTokensForInput);
+    formNode.addEventListener("submit", processPreSubmit, true);
+    // In case the input is simply removed from the DOM without
+    // being submitted, clean up too
+    var mutationObserver = new MutationObserver(function (evt) {
+        console.log("mutation event", evt);
+        console.log("input.offsetHeight", input.offsetHeight);
+        if (evt[0].removedNodes &&
+            Array.from(evt[0].removedNodes).indexOf(input) > -1) {
+            cleanUp();
+        }
+        else if (input.offsetHeight === 0) {
+            cleanUp();
+        }
+    });
+    mutationObserver.observe(formNode, { childList: true });
+    updateTokensForInput();
+    return {
+        input,
+        remove: cleanUp
+    };
+}
+githubInfo_1.getGithubInfo().then((localUserInfo) => {
+    userInfo = localUserInfo;
+    console.log("Got local user info", localUserInfo);
+    findTextInputs_1.default(listenToInput);
+});
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+// Find all words beginning with "/"
+const regex = /(?<!\w)\/\w+/g;
+const charPrefixes = {
+    "\n": true,
+    "\t": true,
+    " ": true
+};
+function parseTokens(str) {
+    const ret = [];
+    let match;
+    do {
+        match = regex.exec(str);
+        if (match) {
+            // This is probably doable in regex, but screw it...
+            // Filter it out so that only tokens that are
+            // - at the start of a line
+            // -   or after a space or a tab
+            // - are at the end of a line
+            // -   or are followed by a space or a tab
+            // - are not inside an <img> tag
+            // are valid
+            const index = match.index;
+            let startIsValid = index === 0;
+            if (!startIsValid) {
+                const letterBefore = str.charAt(index - 1);
+                startIsValid = !!charPrefixes[letterBefore];
+            }
+            let endIsValid = index + match[0].length === str.length;
+            if (!endIsValid) {
+                // If not at the end of the string, check the characters after it
+                const letterAfter = str.charAt(index + match[0].length);
+                endIsValid = !!charPrefixes[letterAfter];
+            }
+            let outsideImageValid = true;
+            let imgIdx = str.indexOf("<img", 0);
+            while (outsideImageValid && imgIdx > -1) {
+                const closingBracket = str.indexOf(">", imgIdx);
+                if (closingBracket > -1) {
+                    if (index > imgIdx && index < closingBracket) {
+                        outsideImageValid = false;
+                    }
+                }
+                imgIdx = str.indexOf("<img", imgIdx + 1);
+            }
+            if (startIsValid && endIsValid && outsideImageValid) {
+                ret.push({
+                    index: match.index,
+                    value: match[0].substring(1).trim()
+                });
+            }
+        }
+    } while (match);
+    console.log("parseTokens", ret);
+    return ret;
+}
+exports.default = parseTokens;
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const getCaretCoordinates = __webpack_require__(6);
+const searcher_1 = __webpack_require__(7);
+const TAG_CONTAINER_ID = "__tagContainer";
+const TEXT_HEIGHT = 18;
+let removeOpenImage = null;
+const preferredTagUrls = {};
+function createTokenTag(textInput, token) {
+    const startCoords = getCaretCoordinates(textInput, token.index);
+    const endCoords = getCaretCoordinates(textInput, token.index + token.value.length + 1);
+    let tagContainer = document.getElementById(TAG_CONTAINER_ID);
+    if (!tagContainer) {
+        tagContainer = document.createElement("div");
+        tagContainer.id = TAG_CONTAINER_ID;
+        document.body.appendChild(tagContainer);
+    }
+    const tagUi = document.createElement("div");
+    let imageUi = null;
+    tagUi.className = "__tokenTag";
+    tagUi.setAttribute("data-token", token.value);
+    tagContainer.appendChild(tagUi);
+    function removeImage() {
+        if (imageUi && imageUi.parentNode) {
+            imageUi.parentNode.removeChild(imageUi);
+        }
+        imageUi = null;
+        if (removeOpenImage === removeImage) {
+            removeOpenImage = null;
+        }
+        updateTagUi();
+    }
+    function disableImage() {
+        record.disabled = true;
+        removeImage();
+    }
+    function enableImage() {
+        record.disabled = false;
+        removeImage();
+    }
+    function updateTagUi() {
+        let title = "";
+        tagUi.classList.toggle("imageFound", !!record.imageUrl);
+        tagUi.classList.toggle("imageNotFound", !record.imageUrl);
+        if (!!record.imageUrl) {
+            title = `GitMeme for "${token.value}"`;
+        }
+        else {
+            title = `GitMeme for "${token.value}"`;
+        }
+        tagUi.classList.toggle("disabled", record.disabled);
+        imageUi && imageUi.classList.toggle("disabled", record.disabled);
+        if (record.disabled) {
+            title = `GitMeme image disabled`;
+        }
+        if (imageUi) {
+            imageUi.classList.toggle("hasMultipleImages", record.imageUrls.length > 1);
+            const imageNode = imageUi.querySelector("img");
+            if (imageNode.src !== record.imageUrl) {
+                imageNode.src = record.imageUrl;
+            }
+        }
+        tagUi.title = title;
+    }
+    function selectImage() {
+        const wrapper = document.createElement("div");
+        wrapper.className = "__imageSelector";
+        wrapper.innerHTML = `
+      <div class="__imageSelectorTitle">Choose One Image</div>
+        ${record.imageUrls
+            .map((url, idx) => {
+            return `<a href="#" data-index="${idx}"><img src="${url}" /></a>`;
+        })
+            .join("\n")}
+    `;
+        tagContainer.appendChild(wrapper);
+        wrapper.addEventListener("click", evt => {
+            let target = evt.target;
+            let targetName = target.tagName.toLowerCase();
+            if (targetName === "img") {
+                target = target.parentElement;
+                targetName = target.tagName.toLowerCase();
+            }
+            if (targetName === "a") {
+                record.imageUrl = record.imageUrls[target.getAttribute("data-index")];
+                preferredTagUrls[record.token.value] = record.imageUrl;
+                updateTagUi();
+            }
+            tagContainer.removeChild(wrapper);
+        });
+    }
+    tagUi.addEventListener("click", evt => {
+        // If a url exists, then show the image in thumnail form.
+        // If the url does not exist, open a typeahead to find the
+        // image you want (laterz...)
+        if (record.imageUrl) {
+            if (imageUi) {
+                removeImage();
+            }
+            else {
+                if (removeOpenImage) {
+                    removeOpenImage();
+                }
+                imageUi = document.createElement("div");
+                imageUi.className = "__tokenTagThumbnail";
+                const imageNode = document.createElement("img");
+                imageNode.src = record.imageUrl;
+                const removeButtonNode = document.createElement("button");
+                removeButtonNode.textContent = record.disabled
+                    ? "Enable Tag"
+                    : "Disable Tag";
+                imageUi.appendChild(imageNode);
+                imageUi.appendChild(removeButtonNode);
+                imageNode.addEventListener("click", removeImage);
+                removeButtonNode.addEventListener("click", record.disabled ? enableImage : disableImage);
+                const showAllImagesNode = document.createElement("button");
+                showAllImagesNode.className = "__showAllImages";
+                showAllImagesNode.textContent = `+${record.imageUrls.length - 1}`;
+                showAllImagesNode.addEventListener("click", selectImage);
+                imageUi.appendChild(showAllImagesNode);
+                updateTagUi();
+                tagContainer.appendChild(imageUi);
+                // Store the global reference to ensure that only one image is
+                // open at a time
+                removeOpenImage = removeImage;
+                reposition();
+            }
+        }
+    });
+    function reposition() {
+        const rect = textInput.getBoundingClientRect();
+        const top = TEXT_HEIGHT + window.scrollY + rect.top + startCoords.top;
+        const left = window.scrollX + rect.left + startCoords.left;
+        tagUi.style.top = top + "px";
+        tagUi.style.left = left + "px";
+        tagUi.style.width = endCoords.left - startCoords.left + "px";
+        if (imageUi) {
+            imageUi.style.top = top + 2 + "px";
+            imageUi.style.left = left + "px";
+        }
+    }
+    function remove() {
+        tagUi.parentNode.removeChild(tagUi);
+        removeImage();
+    }
+    reposition();
+    const existingPreferredImageUrl = preferredTagUrls[token.value] || null;
+    const record = {
+        input: textInput,
+        remove,
+        reposition,
+        token,
+        isValid: existingPreferredImageUrl ? true : false,
+        imageUrl: existingPreferredImageUrl,
+        imageUrls: [],
+        disabled: false
+    };
+    console.log("searching for ", token.value);
+    searcher_1.default(token.value).then((urls) => {
+        console.log("search got ", urls);
+        const url = urls.length > 0 ? urls[0] : null;
+        record.imageUrl = record.imageUrl || url;
+        record.imageUrls = urls;
+        record.isValid = !!url;
+        console.log("calling updateTagUi");
+        updateTagUi();
+    });
+    return record;
+}
+exports.default = createTokenTag;
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* jshint browser: true */
+
+(function () {
+
+// We'll copy the properties below into the mirror div.
+// Note that some browsers, such as Firefox, do not concatenate properties
+// into their shorthand (e.g. padding-top, padding-bottom etc. -> padding),
+// so we have to list every single property explicitly.
+var properties = [
+  'direction',  // RTL support
+  'boxSizing',
+  'width',  // on Chrome and IE, exclude the scrollbar, so the mirror div wraps exactly as the textarea does
+  'height',
+  'overflowX',
+  'overflowY',  // copy the scrollbar for IE
+
+  'borderTopWidth',
+  'borderRightWidth',
+  'borderBottomWidth',
+  'borderLeftWidth',
+  'borderStyle',
+
+  'paddingTop',
+  'paddingRight',
+  'paddingBottom',
+  'paddingLeft',
+
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/font
+  'fontStyle',
+  'fontVariant',
+  'fontWeight',
+  'fontStretch',
+  'fontSize',
+  'fontSizeAdjust',
+  'lineHeight',
+  'fontFamily',
+
+  'textAlign',
+  'textTransform',
+  'textIndent',
+  'textDecoration',  // might not make a difference, but better be safe
+
+  'letterSpacing',
+  'wordSpacing',
+
+  'tabSize',
+  'MozTabSize'
+
+];
+
+var isBrowser = (typeof window !== 'undefined');
+var isFirefox = (isBrowser && window.mozInnerScreenX != null);
+
+function getCaretCoordinates(element, position, options) {
+  if (!isBrowser) {
+    throw new Error('textarea-caret-position#getCaretCoordinates should only be called in a browser');
+  }
+
+  var debug = options && options.debug || false;
+  if (debug) {
+    var el = document.querySelector('#input-textarea-caret-position-mirror-div');
+    if (el) el.parentNode.removeChild(el);
+  }
+
+  // The mirror div will replicate the textarea's style
+  var div = document.createElement('div');
+  div.id = 'input-textarea-caret-position-mirror-div';
+  document.body.appendChild(div);
+
+  var style = div.style;
+  var computed = window.getComputedStyle ? window.getComputedStyle(element) : element.currentStyle;  // currentStyle for IE < 9
+  var isInput = element.nodeName === 'INPUT';
+
+  // Default textarea styles
+  style.whiteSpace = 'pre-wrap';
+  if (!isInput)
+    style.wordWrap = 'break-word';  // only for textarea-s
+
+  // Position off-screen
+  style.position = 'absolute';  // required to return coordinates properly
+  if (!debug)
+    style.visibility = 'hidden';  // not 'display: none' because we want rendering
+
+  // Transfer the element's properties to the div
+  properties.forEach(function (prop) {
+    if (isInput && prop === 'lineHeight') {
+      // Special case for <input>s because text is rendered centered and line height may be != height
+      style.lineHeight = computed.height;
+    } else {
+      style[prop] = computed[prop];
+    }
+  });
+
+  if (isFirefox) {
+    // Firefox lies about the overflow property for textareas: https://bugzilla.mozilla.org/show_bug.cgi?id=984275
+    if (element.scrollHeight > parseInt(computed.height))
+      style.overflowY = 'scroll';
+  } else {
+    style.overflow = 'hidden';  // for Chrome to not render a scrollbar; IE keeps overflowY = 'scroll'
+  }
+
+  div.textContent = element.value.substring(0, position);
+  // The second special handling for input type="text" vs textarea:
+  // spaces need to be replaced with non-breaking spaces - http://stackoverflow.com/a/13402035/1269037
+  if (isInput)
+    div.textContent = div.textContent.replace(/\s/g, '\u00a0');
+
+  var span = document.createElement('span');
+  // Wrapping must be replicated *exactly*, including when a long word gets
+  // onto the next line, with whitespace at the end of the line before (#7).
+  // The  *only* reliable way to do that is to copy the *entire* rest of the
+  // textarea's content into the <span> created at the caret position.
+  // For inputs, just '.' would be enough, but no need to bother.
+  span.textContent = element.value.substring(position) || '.';  // || because a completely empty faux span doesn't render at all
+  div.appendChild(span);
+
+  var coordinates = {
+    top: span.offsetTop + parseInt(computed['borderTopWidth']),
+    left: span.offsetLeft + parseInt(computed['borderLeftWidth']),
+    height: parseInt(computed['lineHeight'])
+  };
+
+  if (debug) {
+    span.style.backgroundColor = '#aaa';
+  } else {
+    document.body.removeChild(div);
+  }
+
+  return coordinates;
+}
+
+if ( true && typeof module.exports != 'undefined') {
+  module.exports = getCaretCoordinates;
+} else if(isBrowser) {
+  window.getCaretCoordinates = getCaretCoordinates;
+}
+
+}());
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const fetch = __webpack_require__(8);
+const consts_1 = __webpack_require__(0);
+const createAuthHeader_1 = __webpack_require__(1);
+const githubInfo_1 = __webpack_require__(2);
+const GIPHY_API_KEY = "I5ysXzZG4OIoiMD99Tz7v6AGN9uzGWpr";
+function searcher(tokenValue) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!tokenValue) {
+            return null;
+        }
+        function filterToRemoveIdenticalImages(arr) {
+            const seen = {};
+            return arr.filter(url => {
+                if (seen[url]) {
+                    return false;
+                }
+                seen[url] = true;
+                return true;
+            });
+        }
+        return new Promise((resolve, _reject) => __awaiter(this, void 0, void 0, function* () {
+            let results = [];
+            let gitmemeComplete = false;
+            let giphyResult = null;
+            const gitmemeUrl = `${consts_1.API_ROOT_URL}/search?t=${encodeURIComponent(tokenValue)}`;
+            const userInfo = yield githubInfo_1.getGithubInfo();
+            fetch(gitmemeUrl, {
+                headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token))
+            })
+                .then(function (response) {
+                if (!response.ok) {
+                    throw Error(response.statusText);
+                }
+                // Read the response as json.
+                return response.json();
+            })
+                .then(function (data) {
+                // Do stuff with the JSON
+                console.log("gitmeme value for ", tokenValue, data);
+                gitmemeComplete = true;
+                if (data && data.url) {
+                    // The first party images are put in the first position
+                    results.unshift(data.url);
+                    resolve(filterToRemoveIdenticalImages(results));
+                }
+                else if (giphyResult) {
+                    resolve(results);
+                }
+            })
+                .catch(function (error) {
+                console.log("Looks like there was a problem: \n", error);
+            });
+            try {
+                giphyResult = yield searchGiphy(tokenValue);
+                if (giphyResult.data && giphyResult.data.length > 0) {
+                    console.log("giphyResult for ", tokenValue, giphyResult.data[0]);
+                    giphyResult.data
+                        .map(imageData => imageData.images.downsized_medium.url)
+                        .forEach(url => {
+                        results.push(url);
+                    });
+                    // If the Gitmeme request has completed but didn't find anything,
+                    // then resolve the Promise.
+                    // If the Gitmeme request has not completed, wait for it
+                    // If the Gitmeme request has completed and found something,
+                    //   then it will have alread resolved
+                    if (gitmemeComplete && results.length === giphyResult.data.length) {
+                        resolve(filterToRemoveIdenticalImages(results));
+                    }
+                }
+            }
+            catch (err) {
+                console.error(err);
+            }
+            return [];
+        }));
+    });
+}
+exports.default = searcher;
+const giphySearches = {};
+function searchGiphy(tokenValue) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!giphySearches[tokenValue]) {
+            giphySearches[tokenValue] = new Promise((resolve, _reject) => __awaiter(this, void 0, void 0, function* () {
+                let limit = 8;
+                while (limit > 2) {
+                    try {
+                        const result = yield fetch(`https://api.giphy.com/v1/gifs/search?q=${encodeURIComponent(tokenValue)}&api_key=${GIPHY_API_KEY}&limit=${limit}`);
+                        console.log("giphy result", result);
+                        const data = yield result.json();
+                        resolve(data);
+                        break;
+                    }
+                    catch (err) {
+                        console.error(err);
+                        limit--;
+                    }
+                }
+            }));
+        }
+        return giphySearches[tokenValue];
+    });
+}
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+// ref: https://github.com/tc39/proposal-global
+var getGlobal = function () {
+	// the only reliable means to get the global object is
+	// `Function('return this')()`
+	// However, this causes CSP violations in Chrome apps.
+	if (typeof self !== 'undefined') { return self; }
+	if (typeof window !== 'undefined') { return window; }
+	if (typeof global !== 'undefined') { return global; }
+	throw new Error('unable to locate global object');
+}
+
+var global = getGlobal();
+
+module.exports = exports = global.fetch;
+
+// Needed for TypeScript and Webpack.
+exports.default = global.fetch.bind(global);
+
+exports.Headers = global.Headers;
+exports.Request = global.Request;
+exports.Response = global.Response;
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function throttle(func, wait, options) {
+    var context, args, result;
+    var timeout = null;
+    var previous = 0;
+    if (!options)
+        options = {};
+    var later = function () {
+        previous = options.leading === false ? 0 : Date.now();
+        timeout = null;
+        result = func.apply(context, args);
+        if (!timeout)
+            context = args = null;
+    };
+    return function () {
+        var now = Date.now();
+        if (!previous && options.leading === false)
+            previous = now;
+        var remaining = wait - (now - previous);
+        context = this;
+        args = arguments;
+        if (remaining <= 0 || remaining > wait) {
+            if (timeout) {
+                clearTimeout(timeout);
+                timeout = null;
+            }
+            previous = now;
+            result = func.apply(context, args);
+            if (!timeout)
+                context = args = null;
+        }
+        else if (!timeout && options.trailing !== false) {
+            timeout = setTimeout(later, remaining);
+        }
+        return result;
+    };
+}
+exports.default = throttle;
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function getParentByTagName(node, tagName) {
+    let foundNode = node.parentElement;
+    while (foundNode && foundNode.tagName.toLowerCase() !== tagName) {
+        foundNode = foundNode.parentElement;
+    }
+    return foundNode || null;
+}
+exports.default = getParentByTagName;
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function findTextInputs(listenToInput) {
+    const ids = ["new_comment_field", "issue_body"];
+    const inputsById = Array.from(document.querySelectorAll(ids.map(id => `#${id}`).join(",")));
+    console.log("inputsById", inputsById);
+    const allInputs = inputsById;
+    let listeners = allInputs.map(listenToInput);
+    // Listen to any lazily created text areas too
+    document.body.addEventListener("focusin", (evt) => {
+        const node = evt.target;
+        const tagName = node.tagName;
+        if (tagName &&
+            tagName.toLowerCase() === "textarea" &&
+            !listeners.some(listener => {
+                return listener.input === node;
+            })) {
+            listeners.push(listenToInput(node));
+        }
+    });
+    setInterval(() => {
+        const newListeners = validateListeners(listeners);
+        if (newListeners.length !== listeners.length) {
+            listeners = newListeners;
+        }
+    }, 200);
+}
+exports.default = findTextInputs;
+function validateListeners(listeners) {
+    const newListeners = listeners.filter(listener => {
+        // A Node's offsetParent is null if it or any of its
+        // parent nodes are hidden.  Handy!
+        if (!listener.input.offsetParent) {
+            console.log("Cleaning up", listener.input);
+            listener.remove();
+            return false;
+        }
+        return true;
+    });
+    return newListeners;
+}
+
+
+/***/ })
+/******/ ]);

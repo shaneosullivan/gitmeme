@@ -10,6 +10,17 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
     return null;
   }
 
+  function filterToRemoveIdenticalImages(arr) {
+    const seen = {};
+    return arr.filter(url => {
+      if (seen[url]) {
+        return false;
+      }
+      seen[url] = true;
+      return true;
+    });
+  }
+
   return new Promise(async (resolve, _reject) => {
     let results = [];
     let gitmemeComplete = false;
@@ -40,7 +51,7 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
         if (data && data.url) {
           // The first party images are put in the first position
           results.unshift(data.url);
-          resolve(results);
+          resolve(filterToRemoveIdenticalImages(results));
         } else if (giphyResult) {
           resolve(results);
         }
@@ -66,7 +77,7 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
         // If the Gitmeme request has completed and found something,
         //   then it will have alread resolved
         if (gitmemeComplete && results.length === giphyResult.data.length) {
-          resolve(results);
+          resolve(filterToRemoveIdenticalImages(results));
         }
       }
     } catch (err) {

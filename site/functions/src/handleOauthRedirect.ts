@@ -57,15 +57,13 @@ async function createOrUpdateUser(
     return resp.json();
   });
 
-  console.log("got Github user result", result);
-
   const userId = result.login;
   const avatar = result.avatar_url || "";
 
   const data = {
     uid: userId,
     avatar,
-    token
+    auth_token: token
   };
 
   console.log("creating a user with ", data);
