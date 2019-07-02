@@ -1,5 +1,5 @@
 import { GITHUB_CLIENT_ID } from "../consts";
-import { getGithubInfo, setGithubUserId } from "./githubInfo";
+import { getGithubInfo, setGithubUserId, setGithubToken } from "./githubInfo";
 
 declare const chrome: any;
 
@@ -81,6 +81,7 @@ export default function getToken(interactive: boolean, callback: Function) {
       avatar
     );
 
+    await setGithubToken(token);
     await setGithubUserId(userId, avatar);
     callback(null, { token, id: userId, avatar });
   }

@@ -4,8 +4,15 @@ import * as express from "express";
 import * as cors from "cors";
 import * as bodyParser from "body-parser";
 import handleOauthRedirect from "./handleOauthRedirect";
+import serviceAccount from "./auth/service_account";
 
-const firebaseApp = admin.initializeApp();
+const firebaseApp = admin.initializeApp({
+  credential: admin.credential.cert({
+    projectId: serviceAccount.project_id,
+    clientEmail: serviceAccount.client_email,
+    privateKey: serviceAccount.private_key
+  })
+});
 const firestore = firebaseApp.firestore();
 
 const app = express();
@@ -41,8 +48,8 @@ app.use(async (req: AppRequest, res: express.Response, next: Function) => {
 
     const parts = authHeaderContents.split("___");
 
-    const userId = parts[0];
-    const token = parts[1];
+    const userId = parts[0].trim();
+    const token = parts[1].trim();
 
     console.log(
       "Got authHeaderContents",
@@ -59,6 +66,13 @@ app.use(async (req: AppRequest, res: express.Response, next: Function) => {
         .doc(userId)
         .get();
 
+      const allUsers = await firestore.collection("users").get();
+      console.log(
+        `allUsers.length = "${
+          allUsers.docs[0].id
+        }" !== "${userId}" is ${allUsers.docs[0].id === userId}`
+      );
+
       if (userDoc.exists) {
         const data = userDoc.data();
 
@@ -68,7 +82,13 @@ app.use(async (req: AppRequest, res: express.Response, next: Function) => {
 
           next();
           return;
+        } else {
+          console.log(
+            `tokens do not match, ${data ? data.token : null} !== ${token}`
+          );
         }
+      } else {
+        console.log("userDoc does not exist");
       }
     }
   }

@@ -13,6 +13,7 @@ const App = () => {
   useEffect(() => {
     // Run on mount
     getGithubInfo().then(authInfo => {
+      console.log("Popup got Github Info", authInfo);
       setAuth(authInfo);
     });
   }, []);
