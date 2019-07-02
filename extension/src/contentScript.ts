@@ -3,6 +3,11 @@ import createTokenTag, { TokenTag } from "./createTokenTag";
 import throttle from "./util/throttle";
 import getParentByTagName from "./getParentByTagName";
 import findTextInputs from "./util/findTextInputs";
+import { getGithubInfo } from "./shared/auth/githubInfo";
+import { API_ROOT_URL } from "./shared/consts";
+import createAuthHeader from "./shared/auth/createAuthHeader";
+
+let userInfo;
 
 function listenToInput(
   input: HTMLInputElement
@@ -83,13 +88,25 @@ function listenToInput(
           value.substring(
             knownToken.token.index + knownToken.token.value.length + 1
           );
+
+        if (userInfo && userInfo.id) {
+          fetch(`${API_ROOT_URL}/add_token_by_url`, {
+            method: "POST",
+            headers: {
+              ...createAuthHeader(userInfo.id, userInfo.token)
+            },
+            body: JSON.stringify({
+              image_url: knownToken.imageUrl,
+              token: knownToken.token.value
+            })
+          });
+        }
       }
     });
 
     input.value = value;
 
     cleanUp();
-    evt.preventDefault();
   }
 
   input.addEventListener("keyup", updateTokensForInput);
@@ -122,4 +139,14 @@ function listenToInput(
   };
 }
 
-findTextInputs(listenToInput);
+getGithubInfo().then(
+  (localUserInfo: {
+    token: string | null;
+    id: string | null;
+    avatar: string | null;
+  }) => {
+    userInfo = localUserInfo;
+    console.log("Got local user info", localUserInfo);
+    findTextInputs(listenToInput);
+  }
+);

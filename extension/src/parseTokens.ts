@@ -26,13 +26,26 @@ export default function parseTokens(str: string): Array<Token> {
       // are valid
 
       const index = match.index;
-      let isValid = index === 0;
-      if (!isValid) {
-        const letterBefore = str.charAt(index - 1);
-        isValid = !!charPrefixes[letterBefore];
+
+      let endIsValid = index + match[0].length === str.length;
+      if (!endIsValid) {
+        // If not at the end of the string, check the characters after it
+        const letterAfter = str.charAt(index + match[0].length);
+        console.log("letterAfter is ", letterAfter, " for ", match[0]);
+        endIsValid = !!charPrefixes[letterAfter];
       }
 
-      if (isValid) {
+      console.log("got endIsValid ", endIsValid, " for ", match[0]);
+
+      let startIsValid = index === 0;
+      if (!startIsValid) {
+        const letterBefore = str.charAt(index - 1);
+        startIsValid = !!charPrefixes[letterBefore];
+      }
+
+      console.log("got startIsValid ", startIsValid, " for ", match[0]);
+
+      if (startIsValid && endIsValid) {
         ret.push({
           index: match.index,
           value: match[0].substring(1).trim()
@@ -40,6 +53,8 @@ export default function parseTokens(str: string): Array<Token> {
       }
     }
   } while (match);
+
+  console.log("parseTokens", ret);
 
   return ret;
 }

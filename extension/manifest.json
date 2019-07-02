@@ -5,8 +5,11 @@
   "manifest_version": 2,
   "permissions": [
     "activeTab",
+    "identity",
+    "storage",
     "https://us-central1-git-meme-prod.cloudfunctions.net/",
-    "https://api.giphy.com/"
+    "https://api.giphy.com/",
+    "http://localhost:5000/"
   ],
   "content_scripts": [
     {
@@ -14,5 +17,8 @@
       "css": ["src/style.css"],
       "js": ["build/contentScript.js"]
     }
-  ]
+  ],
+  "browser_action": {
+    "default_popup": "popup/index.html"
+  }
 }

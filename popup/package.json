@@ -1,0 +1,37 @@
+{
+  "name": "popup",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@types/jest": "^24.0.15",
+    "@types/node": "^12.0.10",
+    "@types/react": "^16.8.22",
+    "@types/react-dom": "^16.8.4",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-scripts": "3.0.1",
+    "typescript": "^3.5.2"
+  },
+  "scripts": {
+    "start": "../scripts/copy_shared_files.sh && react-scripts start",
+    "build": "INLINE_RUNTIME_CHUNK=false ../scripts/copy_shared_files.sh && react-scripts build && rm -rf ../extension/popup && mv build ../extension/popup",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "homepage": "/popup/"
+}

@@ -1,4 +1,7 @@
 import * as fetch from "node-fetch";
+import { API_ROOT_URL } from "./shared/consts";
+import createAuthHeader from "./shared/auth/createAuthHeader";
+import { getGithubInfo } from "./shared/auth/githubInfo";
 
 const GIPHY_API_KEY = "I5ysXzZG4OIoiMD99Tz7v6AGN9uzGWpr";
 
@@ -12,11 +15,17 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
     let gitmemeComplete = false;
     let giphyResult = null;
 
-    const gitmemeUrl = `https://us-central1-git-meme-prod.cloudfunctions.net/api/search?t=${encodeURIComponent(
+    const gitmemeUrl = `${API_ROOT_URL}/search?t=${encodeURIComponent(
       tokenValue
     )}`;
 
-    fetch(gitmemeUrl)
+    const userInfo = await getGithubInfo();
+
+    fetch(gitmemeUrl, {
+      headers: {
+        ...createAuthHeader(userInfo.id, userInfo.token)
+      }
+    })
       .then(function(response) {
         if (!response.ok) {
           throw Error(response.statusText);
