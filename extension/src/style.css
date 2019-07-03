@@ -7,27 +7,45 @@
 }
 
 .__tokenTag {
-  width: 30px;
-  border-bottom: green 2px solid;
-  position: absolute;
+  border-top: green 2px solid;
   cursor: pointer;
   display: none;
+  position: absolute;
+  text-align: center;
+  width: 30px;
 }
 
 .__tokenTag.imageNotFound {
   display: block;
-  border-bottom-style: dashed;
+  border-top-style: dashed;
 }
 
 .__tokenTag.imageFound {
   display: block;
-  border-bottom-style: solid;
+  border-top-style: solid;
 }
 
 .__tokenTag.disabled {
   display: block;
   opacity: 0.3;
-  border-bottom-style: dotted;
+  border-top-style: dotted;
+}
+
+.__tokenTagArrow {
+  border-left: 0px solid transparent;
+  border-right: 0px solid transparent;
+  border-top: 0px solid green;
+  height: 0;
+  margin-left: auto;
+  margin-right: auto;
+  transition: border-left 0.3s, border-right 0.3s, border-top 0.3s;
+  width: 0;
+}
+
+.__tokenTag.__selected .__tokenTagArrow {
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid green;
 }
 
 .__tokenTagThumbnail {

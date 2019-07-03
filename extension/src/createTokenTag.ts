@@ -21,7 +21,7 @@ let removeOpenImage = null;
 const preferredTagUrls = {};
 
 export default function createTokenTag(
-  textInput: Element,
+  textInput: HTMLInputElement,
   token: Token
 ): TokenTag {
   const startCoords = getCaretCoordinates(textInput, token.index);
@@ -29,6 +29,7 @@ export default function createTokenTag(
     textInput,
     token.index + token.value.length + 1
   );
+  let caretIsAtToken = false;
 
   let tagContainer = document.getElementById(TAG_CONTAINER_ID);
   if (!tagContainer) {
@@ -38,6 +39,10 @@ export default function createTokenTag(
   }
 
   const tagUi = document.createElement("div");
+  const tagUiArrow = document.createElement("div");
+  tagUiArrow.className = "__tokenTagArrow";
+
+  tagUi.appendChild(tagUiArrow);
 
   let imageUi = null;
   tagUi.className = "__tokenTag";
@@ -45,15 +50,33 @@ export default function createTokenTag(
 
   tagContainer.appendChild(tagUi);
 
+  function checkCaretPosition() {
+    const caretPosition = textInput.selectionStart;
+    caretIsAtToken =
+      caretPosition >= token.index &&
+      caretPosition <= token.index + token.value.length + 1;
+
+    console.log(
+      "caretIsAtToken ",
+      caretIsAtToken,
+      " for position ",
+      caretPosition
+    );
+    tagUi.classList.toggle("__selected", caretIsAtToken);
+  }
+
   function removeImage() {
-    if (imageUi && imageUi.parentNode) {
-      imageUi.parentNode.removeChild(imageUi);
-    }
-    imageUi = null;
+    const hasOpenImage = imageUi && imageUi.parentNode;
     if (removeOpenImage === removeImage) {
       removeOpenImage = null;
     }
-    updateTagUi();
+    if (hasOpenImage) {
+      imageUi.parentNode.removeChild(imageUi);
+      imageUi = null;
+      updateTagUi();
+    }
+    imageUi = null;
+    return hasOpenImage;
   }
 
   function disableImage() {
@@ -128,7 +151,7 @@ export default function createTokenTag(
     });
   }
 
-  tagUi.addEventListener("click", evt => {
+  function openImageUI() {
     // If a url exists, then show the image in thumnail form.
     // If the url does not exist, open a typeahead to find the
     // image you want (laterz...)
@@ -177,7 +200,9 @@ export default function createTokenTag(
         reposition();
       }
     }
-  });
+  }
+
+  tagUi.addEventListener("click", openImageUI);
 
   function reposition() {
     const rect = textInput.getBoundingClientRect();
@@ -195,10 +220,36 @@ export default function createTokenTag(
 
   function remove() {
     tagUi.parentNode.removeChild(tagUi);
+    textInput.removeEventListener("keyup", checkCaretPosition);
+    textInput.removeEventListener("keydown", handleInputKey, true);
+    textInput.removeEventListener("click", handleInputClick);
     removeImage();
   }
 
+  function handleInputKey(evt) {
+    if (evt.keyCode === 40 && caretIsAtToken) {
+      if (caretIsAtToken) {
+        // Down arrow
+        evt.preventDefault();
+        evt.stopPropagation();
+        openImageUI();
+        return false;
+      }
+    } else {
+      removeImage();
+    }
+  }
+
+  function handleInputClick(evt) {
+    removeImage();
+    checkCaretPosition();
+  }
+
   reposition();
+  checkCaretPosition();
+  textInput.addEventListener("keyup", checkCaretPosition);
+  textInput.addEventListener("keydown", handleInputKey, true);
+  textInput.addEventListener("click", handleInputClick);
 
   const existingPreferredImageUrl = preferredTagUrls[token.value] || null;
 
@@ -213,16 +264,13 @@ export default function createTokenTag(
     disabled: false
   };
 
-  console.log("searching for ", token.value);
   searcher(token.value).then((urls: Array<string>) => {
-    console.log("search got ", urls);
     const url = urls.length > 0 ? urls[0] : null;
 
     record.imageUrl = record.imageUrl || url;
     record.imageUrls = urls;
     record.isValid = !!url;
 
-    console.log("calling updateTagUi");
     updateTagUi();
   });
 

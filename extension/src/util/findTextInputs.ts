@@ -11,7 +11,6 @@ export default function findTextInputs(
   const inputsById = Array.from(
     document.querySelectorAll(ids.map(id => `#${id}`).join(","))
   );
-  console.log("inputsById", inputsById);
 
   const allInputs = inputsById;
   let listeners = allInputs.map(listenToInput as any) as Array<Listener>;

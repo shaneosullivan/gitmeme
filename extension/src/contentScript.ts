@@ -137,8 +137,6 @@ function listenToInput(
   // In case the input is simply removed from the DOM without
   // being submitted, clean up too
   var mutationObserver = new MutationObserver(function(evt) {
-    console.log("mutation event", evt);
-    console.log("input.offsetHeight", input.offsetHeight);
     if (
       evt[0].removedNodes &&
       Array.from(evt[0].removedNodes).indexOf(input) > -1
@@ -166,7 +164,6 @@ getGithubInfo().then(
     avatar: string | null;
   }) => {
     userInfo = localUserInfo;
-    console.log("Got local user info", localUserInfo);
     findTextInputs(listenToInput);
   }
 );

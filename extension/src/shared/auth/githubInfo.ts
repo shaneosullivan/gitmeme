@@ -42,7 +42,6 @@ export async function setGithubToken(token: string) {
 
 export async function setGithubUserId(userId: string, avatarUrl: string) {
   return new Promise(resolve => {
-    console.log("setGithubUserId ", userId, avatarUrl);
     chrome.storage.sync.set(
       { github_id: userId, github_avatar: avatarUrl },
       function() {

@@ -4,8 +4,6 @@ import { getGithubInfo, setGithubUserId, setGithubToken } from "./githubInfo";
 declare const chrome: any;
 
 export default function getToken(interactive: boolean, callback: Function) {
-  console.log("getToken called");
-
   getGithubInfo().then(async info => {
     if (true || !info.token || !info.id || !info.avatar) {
       chrome.identity.launchWebAuthFlow(options, function(
@@ -47,7 +45,6 @@ export default function getToken(interactive: boolean, callback: Function) {
   };
 
   function parseRedirectFragment(fragment: string) {
-    console.log("parseRedirectFragment called with", fragment);
     const pairs = fragment.split(/&/);
     const values: { [key: string]: string } = {};
 
@@ -60,7 +57,6 @@ export default function getToken(interactive: boolean, callback: Function) {
   }
 
   async function handleProviderResponse(values: { [key: string]: string }) {
-    console.log("handleProviderResponse", values);
     if (values.hasOwnProperty("access_token")) {
       await setAccessToken(values.access_token, values.user_id, values.avatar);
       // If response does not have an access_token, it might have the code,
@@ -72,14 +68,6 @@ export default function getToken(interactive: boolean, callback: Function) {
 
   async function setAccessToken(token: string, userId: string, avatar: string) {
     // access_token = token;
-    console.log(
-      "Setting access_token: ",
-      token,
-      "user id",
-      userId,
-      "avatar",
-      avatar
-    );
 
     await setGithubToken(token);
     await setGithubUserId(userId, avatar);

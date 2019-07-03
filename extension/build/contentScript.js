@@ -167,7 +167,6 @@ exports.setGithubToken = setGithubToken;
 function setGithubUserId(userId, avatarUrl) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise(resolve => {
-            console.log("setGithubUserId ", userId, avatarUrl);
             chrome.storage.sync.set({ github_id: userId, github_avatar: avatarUrl }, function () {
                 resolve();
             });
@@ -296,7 +295,7 @@ function listenToInput(input) {
                 if (loggedInUser) {
                     // Also store the used tokens locally, so they work even when
                     // not authorized with the extension.
-                    const tokenStorageKey = `${loggedInUser.id}_${knownToken.token.value}`;
+                    const tokenStorageKey = `image:${loggedInUser.id}_${knownToken.token.value}`;
                     chrome.storage.local.set({
                         [tokenStorageKey]: knownToken.imageUrl
                     });
@@ -313,8 +312,6 @@ function listenToInput(input) {
     // In case the input is simply removed from the DOM without
     // being submitted, clean up too
     var mutationObserver = new MutationObserver(function (evt) {
-        console.log("mutation event", evt);
-        console.log("input.offsetHeight", input.offsetHeight);
         if (evt[0].removedNodes &&
             Array.from(evt[0].removedNodes).indexOf(input) > -1) {
             cleanUp();
@@ -332,7 +329,6 @@ function listenToInput(input) {
 }
 githubInfo_1.getGithubInfo().then((localUserInfo) => {
     userInfo = localUserInfo;
-    console.log("Got local user info", localUserInfo);
     findTextInputs_1.default(listenToInput);
 });
 
@@ -396,7 +392,6 @@ function parseTokens(str) {
             }
         }
     } while (match);
-    console.log("parseTokens", ret);
     return ret;
 }
 exports.default = parseTokens;
@@ -418,6 +413,7 @@ const preferredTagUrls = {};
 function createTokenTag(textInput, token) {
     const startCoords = getCaretCoordinates(textInput, token.index);
     const endCoords = getCaretCoordinates(textInput, token.index + token.value.length + 1);
+    let caretIsAtToken = false;
     let tagContainer = document.getElementById(TAG_CONTAINER_ID);
     if (!tagContainer) {
         tagContainer = document.createElement("div");
@@ -425,19 +421,33 @@ function createTokenTag(textInput, token) {
         document.body.appendChild(tagContainer);
     }
     const tagUi = document.createElement("div");
+    const tagUiArrow = document.createElement("div");
+    tagUiArrow.className = "__tokenTagArrow";
+    tagUi.appendChild(tagUiArrow);
     let imageUi = null;
     tagUi.className = "__tokenTag";
     tagUi.setAttribute("data-token", token.value);
     tagContainer.appendChild(tagUi);
+    function checkCaretPosition() {
+        const caretPosition = textInput.selectionStart;
+        caretIsAtToken =
+            caretPosition >= token.index &&
+                caretPosition <= token.index + token.value.length + 1;
+        console.log("caretIsAtToken ", caretIsAtToken, " for position ", caretPosition);
+        tagUi.classList.toggle("__selected", caretIsAtToken);
+    }
     function removeImage() {
-        if (imageUi && imageUi.parentNode) {
-            imageUi.parentNode.removeChild(imageUi);
-        }
-        imageUi = null;
+        const hasOpenImage = imageUi && imageUi.parentNode;
         if (removeOpenImage === removeImage) {
             removeOpenImage = null;
         }
-        updateTagUi();
+        if (hasOpenImage) {
+            imageUi.parentNode.removeChild(imageUi);
+            imageUi = null;
+            updateTagUi();
+        }
+        imageUi = null;
+        return hasOpenImage;
     }
     function disableImage() {
         record.disabled = true;
@@ -498,7 +508,7 @@ function createTokenTag(textInput, token) {
             tagContainer.removeChild(wrapper);
         });
     }
-    tagUi.addEventListener("click", evt => {
+    function openImageUI() {
         // If a url exists, then show the image in thumnail form.
         // If the url does not exist, open a typeahead to find the
         // image you want (laterz...)
@@ -535,7 +545,8 @@ function createTokenTag(textInput, token) {
                 reposition();
             }
         }
-    });
+    }
+    tagUi.addEventListener("click", openImageUI);
     function reposition() {
         const rect = textInput.getBoundingClientRect();
         const top = TEXT_HEIGHT + window.scrollY + rect.top + startCoords.top;
@@ -550,9 +561,34 @@ function createTokenTag(textInput, token) {
     }
     function remove() {
         tagUi.parentNode.removeChild(tagUi);
+        textInput.removeEventListener("keyup", checkCaretPosition);
+        textInput.removeEventListener("keydown", handleInputKey, true);
+        textInput.removeEventListener("click", handleInputClick);
         removeImage();
     }
+    function handleInputKey(evt) {
+        if (evt.keyCode === 40 && caretIsAtToken) {
+            if (caretIsAtToken) {
+                // Down arrow
+                evt.preventDefault();
+                evt.stopPropagation();
+                openImageUI();
+                return false;
+            }
+        }
+        else {
+            removeImage();
+        }
+    }
+    function handleInputClick(evt) {
+        removeImage();
+        checkCaretPosition();
+    }
     reposition();
+    checkCaretPosition();
+    textInput.addEventListener("keyup", checkCaretPosition);
+    textInput.addEventListener("keydown", handleInputKey, true);
+    textInput.addEventListener("click", handleInputClick);
     const existingPreferredImageUrl = preferredTagUrls[token.value] || null;
     const record = {
         input: textInput,
@@ -564,14 +600,11 @@ function createTokenTag(textInput, token) {
         imageUrls: [],
         disabled: false
     };
-    console.log("searching for ", token.value);
     searcher_1.default(token.value).then((urls) => {
-        console.log("search got ", urls);
         const url = urls.length > 0 ? urls[0] : null;
         record.imageUrl = record.imageUrl || url;
         record.imageUrls = urls;
         record.isValid = !!url;
-        console.log("calling updateTagUi");
         updateTagUi();
     });
     return record;
@@ -581,7 +614,7 @@ exports.default = createTokenTag;
 
 /***/ }),
 /* 7 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
 /* jshint browser: true */
 
@@ -714,7 +747,7 @@ function getCaretCoordinates(element, position, options) {
   return coordinates;
 }
 
-if ( true && typeof module.exports != 'undefined') {
+if (typeof module != 'undefined' && typeof module.exports != 'undefined') {
   module.exports = getCaretCoordinates;
 } else if(isBrowser) {
   window.getCaretCoordinates = getCaretCoordinates;
@@ -771,47 +804,55 @@ function searcher(tokenValue) {
                 isResolved = true;
                 resolve(filterToRemoveIdenticalImages(results));
             }
-            const gitmemeUrl = `${consts_1.API_ROOT_URL}/search?t=${encodeURIComponent(tokenValue)}`;
             const userInfo = yield githubInfo_1.getGithubInfo();
-            const tokenStorageKey = `${userInfo.id}_${tokenValue}`;
-            chrome.storage.local.get([tokenStorageKey], (localResults) => {
+            if (userInfo && userInfo.id) {
+                const tokenStorageKey = `image:${userInfo.id}_${tokenValue}`;
+                chrome.storage.local.get([tokenStorageKey], (localResults) => {
+                    localComplete = true;
+                    if (localResults[tokenStorageKey]) {
+                        results.unshift(localResults[tokenStorageKey]);
+                        doResolve();
+                    }
+                });
+            }
+            else {
                 localComplete = true;
-                if (localResults[tokenStorageKey]) {
-                    console.log("local results for ", tokenValue, " is ", localResults[tokenStorageKey]);
-                    results.unshift(localResults[tokenStorageKey]);
-                    doResolve();
-                }
-            });
-            fetch(gitmemeUrl, {
-                headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token))
-            })
-                .then(function (response) {
-                if (!response.ok) {
-                    throw Error(response.statusText);
-                }
-                // Read the response as json.
-                return response.json();
-            })
-                .then(function (data) {
-                // Do stuff with the JSON
-                console.log("gitmeme value for ", tokenValue, data);
+            }
+            // Only search our API if the user has logged in with us
+            if (userInfo && userInfo.id && userInfo.token) {
+                const gitmemeUrl = `${consts_1.API_ROOT_URL}/search?t=${encodeURIComponent(tokenValue)}`;
+                fetch(gitmemeUrl, {
+                    headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token))
+                })
+                    .then(function (response) {
+                    if (!response.ok) {
+                        throw Error(response.statusText);
+                    }
+                    // Read the response as json.
+                    return response.json();
+                })
+                    .then(function (data) {
+                    // Do stuff with the JSON
+                    gitmemeComplete = true;
+                    if (data && data.url) {
+                        // The first party images are put in the first position
+                        results.unshift(data.url);
+                        doResolve();
+                    }
+                    else if (giphyResult) {
+                        doResolve();
+                    }
+                })
+                    .catch(function (error) {
+                    console.log("Looks like there was a problem: \n", error);
+                });
+            }
+            else {
                 gitmemeComplete = true;
-                if (data && data.url) {
-                    // The first party images are put in the first position
-                    results.unshift(data.url);
-                    doResolve();
-                }
-                else if (giphyResult) {
-                    doResolve();
-                }
-            })
-                .catch(function (error) {
-                console.log("Looks like there was a problem: \n", error);
-            });
+            }
             try {
                 giphyResult = yield searchGiphy(tokenValue);
                 if (giphyResult.data && giphyResult.data.length > 0) {
-                    console.log("giphyResult for ", tokenValue, giphyResult.data[0]);
                     giphyResult.data
                         .map(imageData => imageData.images.downsized_medium.url)
                         .forEach(url => {
@@ -846,7 +887,6 @@ function searchGiphy(tokenValue) {
                 while (limit > 2) {
                     try {
                         const result = yield fetch(`https://api.giphy.com/v1/gifs/search?q=${encodeURIComponent(tokenValue)}&api_key=${GIPHY_API_KEY}&limit=${limit}`);
-                        console.log("giphy result", result);
                         const data = yield result.json();
                         resolve(data);
                         break;
@@ -965,7 +1005,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 function findTextInputs(listenToInput) {
     const ids = ["new_comment_field", "issue_body"];
     const inputsById = Array.from(document.querySelectorAll(ids.map(id => `#${id}`).join(",")));
-    console.log("inputsById", inputsById);
     const allInputs = inputsById;
     let listeners = allInputs.map(listenToInput);
     // Listen to any lazily created text areas too

@@ -64,7 +64,5 @@ export default function parseTokens(str: string): Array<Token> {
     }
   } while (match);
 
-  console.log("parseTokens", ret);
-
   return ret;
 }
