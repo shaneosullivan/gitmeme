@@ -24,6 +24,12 @@ interface AppRequest extends express.Request {
   };
 }
 
+interface TopTokenItem {
+  count: number;
+  image_url: string;
+  token: string;
+}
+
 // Allow cross origin requests
 app.options("*", cors());
 app.use(cors());
@@ -226,6 +232,56 @@ app.post(
     res.json({ status: "success" });
   }
 );
+
+app.get("/top_tokens", async (req: AppRequest, res: express.Response) => {
+  const authError = await checkUserIsUnauthorized(req);
+
+  const results = {
+    user: [] as Array<TopTokenItem>,
+    global: [] as Array<TopTokenItem>
+  };
+  const promises = [];
+
+  function serialize(doc: FirebaseFirestore.DocumentSnapshot): TopTokenItem {
+    const data = doc.data() || {};
+    return {
+      token: data.token,
+      image_url: data.image_url,
+      count: data.count
+    };
+  }
+
+  if (!authError) {
+    async function getUserTopTokens() {
+      const userId = req._user ? req._user.uid : "";
+      const userDocRef = firestore.collection("users").doc(userId);
+
+      const userTokenDocs = await firestore
+        .collection("user_tokens")
+        .where("user", "==", userDocRef)
+        .limit(5)
+        .orderBy("count", "desc")
+        .get();
+      results.user = userTokenDocs.docs.map(serialize);
+    }
+    promises.push(getUserTopTokens());
+  }
+
+  async function getGlobalTopTokens() {
+    const globalTokenDocs = await firestore
+      .collection("all_tokens")
+      .limit(5)
+      .orderBy("count", "desc")
+      .get();
+    results.global = globalTokenDocs.docs.map(serialize);
+  }
+
+  promises.push(getGlobalTopTokens());
+
+  await Promise.all(promises);
+
+  res.json(results);
+});
 
 export const api = functions.https.onRequest(app);
 

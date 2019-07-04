@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import { getGithubInfo, GithubInfo } from "./shared/auth/githubInfo";
-import Login from "./components/Login";
+import TopTokensList from "./components/TopTokensList";
+// import Login from "./components/Login";
 
 const App = () => {
   const [auth, setAuth] = useState({
@@ -18,10 +19,14 @@ const App = () => {
     });
   }, []);
 
-  if (!auth.token) {
-    return <Login onAuth={(authInfo: GithubInfo) => setAuth(authInfo)} />;
-  }
-  return <span>{"Hello " + auth.id}</span>;
+  // if (!auth.token) {
+  //   return <Login onAuth={(authInfo: GithubInfo) => setAuth(authInfo)} />;
+  // }
+  return (
+    <span>
+      <TopTokensList />
+    </span>
+  );
 };
 
 export default App;

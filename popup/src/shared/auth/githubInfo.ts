@@ -23,8 +23,8 @@ export async function getGithubInfo(): Promise<GithubInfo> {
           const loggedInUser = getLoggedInUser();
           resolve({
             token: null,
-            id: loggedInUser.id,
-            avatar: loggedInUser.avatar
+            id: loggedInUser ? loggedInUser.id : null,
+            avatar: loggedInUser ? loggedInUser.avatar : null
           });
         }
       }

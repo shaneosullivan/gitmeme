@@ -145,8 +145,8 @@ function getGithubInfo() {
                     const loggedInUser = getLoggedInUser_1.default();
                     resolve({
                         token: null,
-                        id: loggedInUser.id,
-                        avatar: loggedInUser.avatar
+                        id: loggedInUser ? loggedInUser.id : null,
+                        avatar: loggedInUser ? loggedInUser.avatar : null
                     });
                 }
             });
