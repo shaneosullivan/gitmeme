@@ -280,20 +280,20 @@ function listenToInput(input) {
                     value.substring(0, knownToken.token.index) +
                         `<img src="${knownToken.imageUrl}" title="Created by gitme.me with /${knownToken.token.value}"/>` +
                         value.substring(knownToken.token.index + knownToken.token.value.length + 1);
-                if (userInfo &&
+                const isLoggedIn = userInfo &&
                     userInfo.id &&
                     userInfo.token &&
                     loggedInUser &&
-                    loggedInUser.id === userInfo) {
-                    fetch(`${consts_1.API_ROOT_URL}/add_token_by_url`, {
-                        method: "POST",
-                        headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token)),
-                        body: JSON.stringify({
-                            image_url: knownToken.imageUrl,
-                            token: knownToken.token.value
-                        })
-                    });
-                }
+                    loggedInUser.id === userInfo.id;
+                fetch(`${consts_1.API_ROOT_URL}/add_token_by_url`, {
+                    method: "POST",
+                    headers: isLoggedIn
+                        ? Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token)) : {},
+                    body: JSON.stringify({
+                        image_url: knownToken.imageUrl,
+                        token: knownToken.token.value
+                    })
+                });
                 if (loggedInUser) {
                     // Also store the used tokens locally, so they work even when
                     // not authorized with the extension.
@@ -659,7 +659,7 @@ exports.default = createTokenTag;
 
 /***/ }),
 /* 7 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
 /* jshint browser: true */
 
@@ -792,7 +792,7 @@ function getCaretCoordinates(element, position, options) {
   return coordinates;
 }
 
-if (typeof module != 'undefined' && typeof module.exports != 'undefined') {
+if ( true && typeof module.exports != 'undefined') {
   module.exports = getCaretCoordinates;
 } else if(isBrowser) {
   window.getCaretCoordinates = getCaretCoordinates;

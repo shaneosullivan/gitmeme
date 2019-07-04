@@ -2,7 +2,6 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as express from "express";
 import * as cors from "cors";
-import * as bodyParser from "body-parser";
 import handleOauthRedirect from "./handleOauthRedirect";
 import serviceAccount from "./auth/service_account";
 
@@ -28,16 +27,16 @@ interface AppRequest extends express.Request {
 // Allow cross origin requests
 app.options("*", cors());
 app.use(cors());
-app.use(bodyParser.json());
 
-app.use(async (req: AppRequest, res: express.Response, next: Function) => {
+const checkUserIsUnauthorized = async (req: AppRequest) => {
   // Validate the user
   const authHeader = req.headers["authorization"];
-  console.log("authorizing for route", req.originalUrl);
 
   if (!authHeader) {
-    res.status(403).json({ error: "No credentials sent!" });
-    return;
+    return {
+      status: 403,
+      body: { error: "No credentials sent!" }
+    };
   }
 
   if (authHeader.indexOf("Bearer ") === 0) {
@@ -50,15 +49,6 @@ app.use(async (req: AppRequest, res: express.Response, next: Function) => {
 
     const userId = parts[0].trim();
     const authToken = parts[1].trim();
-
-    console.log(
-      "Got authHeaderContents",
-      authHeaderContents,
-      " userId ",
-      userId,
-      " token ",
-      authToken
-    );
 
     if (userId && authToken) {
       const userDoc = await firestore
@@ -73,8 +63,7 @@ app.use(async (req: AppRequest, res: express.Response, next: Function) => {
           (req as any)["_user"] = data;
           console.log("User successfully authenticated");
 
-          next();
-          return;
+          return null;
         } else {
           console.log(
             `tokens do not match, ${data ? data.token : null} !== ${authToken}`
@@ -86,17 +75,32 @@ app.use(async (req: AppRequest, res: express.Response, next: Function) => {
     }
   }
   console.log("User failed authentication");
-  res.status(401).send("User not authorized"); // Not authorized
-});
+  // Not authorized
+  return {
+    status: 40,
+    body: { error: "User not authorized" }
+  };
+};
 
-app.get("/", (_req: express.Request, resp: express.Response) => {
-  resp.json({
-    url: "https://joinpromise.com/assets/media/Measure_Efficacy.svg"
-  });
-});
+function sendError(
+  res: express.Response,
+  err: { status: number; body: Object }
+) {
+  res.status(err.status).json(err.body);
+}
+
+// app.get("/", (_req: express.Request, resp: express.Response) => {
+//   resp.json({
+//     url: "https://joinpromise.com/assets/media/Measure_Efficacy.svg"
+//   });
+// });
 
 app.get("/search", async (req: AppRequest, res: express.Response) => {
-  console.log("Search called with ", req.query);
+  const authError = await checkUserIsUnauthorized(req);
+  if (authError) {
+    sendError(res, authError);
+    return;
+  }
   const token = req.query["t"];
 
   const userId = req._user ? req._user.uid : "";
@@ -118,22 +122,106 @@ app.get("/search", async (req: AppRequest, res: express.Response) => {
 app.post(
   "/add_token_by_url",
   async (req: AppRequest, res: express.Response) => {
-    const imageUrl = req.body.image_url;
-    const token = req.body.token;
+    const authError = await checkUserIsUnauthorized(req);
+    const body = JSON.parse(req.body);
 
-    const userId = req._user ? req._user.uid : "";
-    const docId = `${userId}_${token}`;
+    const imageUrl = body.image_url;
+    const token = body.token;
 
-    await firestore
-      .collection("user_tokens")
-      .doc(docId)
-      .set({
-        user: firestore.collection("users").doc(userId),
-        group: null,
-        token,
-        image_url: imageUrl,
-        created_at: new Date()
+    if (!token || !imageUrl) {
+      sendError(res, {
+        status: 400,
+        body: {
+          error: `Both the 'token' and the 'image_url' parameters are required, got token "${token}" and image_url "${imageUrl}"`
+        }
       });
+      return;
+    }
+
+    const now = new Date();
+
+    const promises: Array<Promise<void>> = [];
+
+    if (!authError) {
+      const userId = req._user ? req._user.uid : "";
+      async function storeForUser() {
+        const docId = `${userId}_${token}`;
+
+        const existingDoc = await firestore
+          .collection("user_tokens")
+          .doc(docId)
+          .get();
+        if (existingDoc.exists) {
+          await existingDoc.ref.update({
+            count: existingDoc.get("count") + 1,
+            image_url: imageUrl,
+            updated_at: new Date()
+          });
+        } else {
+          await existingDoc.ref.set({
+            user: firestore.collection("users").doc(userId),
+            count: 1,
+            group: null,
+            token,
+            image_url: imageUrl,
+            updated_at: now,
+            created_at: now
+          });
+        }
+      }
+
+      // If the user is logged in, store the message in their
+      // private data
+      promises.push(storeForUser());
+    }
+
+    async function storeGlobalToken() {
+      const collection = firestore.collection("all_tokens");
+      const existingDoc = await collection.doc(token).get();
+
+      if (existingDoc.exists) {
+        await existingDoc.ref.update({
+          count: existingDoc.get("count") + 1,
+          image_url: imageUrl,
+          updated_at: now
+        });
+      } else {
+        await existingDoc.ref.set({
+          image_url: imageUrl,
+          count: 1,
+          token,
+          updated_at: now,
+          created_at: now
+        });
+      }
+    }
+
+    async function storeGlobalImage() {
+      const collection = firestore.collection("all_images");
+      const imageId = imageUrl.split("/").join("_");
+      const existingDoc = await collection.doc(imageId).get();
+
+      if (existingDoc.exists) {
+        await existingDoc.ref.update({
+          count: existingDoc.get("count") + 1,
+          token,
+          updated_at: now
+        });
+      } else {
+        await existingDoc.ref.set({
+          image_url: imageUrl,
+          count: 1,
+          token,
+          updated_at: now,
+          created_at: now
+        });
+      }
+    }
+
+    promises.push(storeGlobalToken());
+    promises.push(storeGlobalImage());
+
+    await Promise.all(promises);
 
     res.json({ status: "success" });
   }

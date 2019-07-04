@@ -96,24 +96,26 @@ function listenToInput(
             knownToken.token.index + knownToken.token.value.length + 1
           );
 
-        if (
+        const isLoggedIn =
           userInfo &&
           userInfo.id &&
           userInfo.token &&
           loggedInUser &&
-          loggedInUser.id === userInfo
-        ) {
-          fetch(`${API_ROOT_URL}/add_token_by_url`, {
-            method: "POST",
-            headers: {
-              ...createAuthHeader(userInfo.id, userInfo.token)
-            },
-            body: JSON.stringify({
-              image_url: knownToken.imageUrl,
-              token: knownToken.token.value
-            })
-          });
-        }
+          loggedInUser.id === userInfo.id;
+
+        fetch(`${API_ROOT_URL}/add_token_by_url`, {
+          method: "POST",
+          headers: isLoggedIn
+            ? {
+                ...createAuthHeader(userInfo.id, userInfo.token)
+              }
+            : {},
+          body: JSON.stringify({
+            image_url: knownToken.imageUrl,
+            token: knownToken.token.value
+          })
+        });
+
         if (loggedInUser) {
           // Also store the used tokens locally, so they work even when
           // not authorized with the extension.
