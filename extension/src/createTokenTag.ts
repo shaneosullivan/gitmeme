@@ -22,7 +22,8 @@ const preferredTagUrls = {};
 
 export default function createTokenTag(
   textInput: HTMLInputElement,
-  token: Token
+  token: Token,
+  onTokenActive: (isActive: boolean, tokenTag: TokenTag) => void
 ): TokenTag {
   const startCoords = getCaretCoordinates(textInput, token.index);
   const endCoords = getCaretCoordinates(
@@ -52,16 +53,18 @@ export default function createTokenTag(
 
   function checkCaretPosition() {
     const caretPosition = textInput.selectionStart;
-    caretIsAtToken =
+    const nextCaretIsAtToken =
       caretPosition >= token.index &&
       caretPosition <= token.index + token.value.length + 1;
 
-    console.log(
-      "caretIsAtToken ",
-      caretIsAtToken,
-      " for position ",
-      caretPosition
-    );
+    if (nextCaretIsAtToken !== caretIsAtToken) {
+      setTimeout(() => {
+        onTokenActive(nextCaretIsAtToken, record);
+      });
+    }
+
+    caretIsAtToken = nextCaretIsAtToken;
+
     tagUi.classList.toggle("__selected", caretIsAtToken);
   }
 

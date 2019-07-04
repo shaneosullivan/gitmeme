@@ -219,6 +219,8 @@ let userInfo;
 const loggedInUser = getLoggedInUser_1.default();
 function listenToInput(input) {
     let knownTokens = [];
+    let toolbarButtonItem;
+    let activeTag = null;
     const updateTokensForInput = throttle_1.default(() => {
         let tokens = parseTokens_1.default(input.value);
         if (tokens.length > 0) {
@@ -230,7 +232,7 @@ function listenToInput(input) {
                 });
             });
             unknownTokens.forEach(token => {
-                const tokenTag = createTokenTag_1.default(input, token);
+                const tokenTag = createTokenTag_1.default(input, token, onTokenActive);
                 knownTokens.push(tokenTag);
             });
         }
@@ -305,10 +307,49 @@ function listenToInput(input) {
         input.value = value;
         cleanUp();
     }
+    const TOOLBAR_BUTTON_LABEL = "GM";
+    function onTokenActive(isActive, tokenTag) {
+        if (toolbarButtonItem) {
+            if (!isActive && activeTag !== tokenTag) {
+                // Prevent a race condition where the cursor moves
+                // from one tag to another
+                return;
+            }
+            toolbarButtonItem.classList.toggle("__active", isActive);
+        }
+        activeTag = tokenTag;
+    }
+    function addToolbarButton(form) {
+        const toolbarNode = form.querySelector("markdown-toolbar");
+        if (toolbarNode) {
+            if (toolbarNode.querySelector(".__toolbarButton")) {
+                console.log("already have a toolbar item for form ", form);
+                return;
+            }
+            const toolbarButton = document.createElement("div");
+            toolbarButton.className = "d-inline-block mr-3 __toolbarButton";
+            toolbarButtonItem = document.createElement("button");
+            toolbarButtonItem.className = "toolbar-item __toolbarButtonItem";
+            toolbarButtonItem.textContent = TOOLBAR_BUTTON_LABEL;
+            toolbarButton.appendChild(toolbarButtonItem);
+            toolbarButton.addEventListener("click", (evt) => {
+                evt.preventDefault();
+                evt.stopPropagation();
+                if (activeTag) {
+                    console.log("activeTag is ", activeTag);
+                }
+            });
+            toolbarNode.appendChild(toolbarButton);
+        }
+        else {
+            console.log("no toolbar button on form ", form);
+        }
+    }
     input.addEventListener("keyup", updateTokensForInput);
     input.addEventListener("change", updateTokensForInput);
     input.addEventListener("focus", updateTokensForInput);
     formNode.addEventListener("submit", processPreSubmit, true);
+    addToolbarButton(formNode);
     // In case the input is simply removed from the DOM without
     // being submitted, clean up too
     var mutationObserver = new MutationObserver(function (evt) {
@@ -410,7 +451,7 @@ const TAG_CONTAINER_ID = "__tagContainer";
 const TEXT_HEIGHT = 18;
 let removeOpenImage = null;
 const preferredTagUrls = {};
-function createTokenTag(textInput, token) {
+function createTokenTag(textInput, token, onTokenActive) {
     const startCoords = getCaretCoordinates(textInput, token.index);
     const endCoords = getCaretCoordinates(textInput, token.index + token.value.length + 1);
     let caretIsAtToken = false;
@@ -430,10 +471,14 @@ function createTokenTag(textInput, token) {
     tagContainer.appendChild(tagUi);
     function checkCaretPosition() {
         const caretPosition = textInput.selectionStart;
-        caretIsAtToken =
-            caretPosition >= token.index &&
-                caretPosition <= token.index + token.value.length + 1;
-        console.log("caretIsAtToken ", caretIsAtToken, " for position ", caretPosition);
+        const nextCaretIsAtToken = caretPosition >= token.index &&
+            caretPosition <= token.index + token.value.length + 1;
+        if (nextCaretIsAtToken !== caretIsAtToken) {
+            setTimeout(() => {
+                onTokenActive(nextCaretIsAtToken, record);
+            });
+        }
+        caretIsAtToken = nextCaretIsAtToken;
         tagUi.classList.toggle("__selected", caretIsAtToken);
     }
     function removeImage() {

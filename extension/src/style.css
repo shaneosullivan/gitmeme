@@ -42,7 +42,8 @@
   width: 0;
 }
 
-.__tokenTag.__selected .__tokenTagArrow {
+.__tokenTag.__selected .__tokenTagArrow,
+.__tokenTag:hover .__tokenTagArrow {
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
   border-top: 4px solid green;
@@ -124,4 +125,18 @@
 .__imageSelector a img {
   max-width: 250px;
   max-height: 250px;
+}
+
+.toolbar-item.__toolbarButtonItem {
+  border-radius: 3px;
+  padding: 2px;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.toolbar-item.__toolbarButtonItem.__active {
+  border: 2px solid green;
+  padding: 0px;
+  padding-left: 2px;
+  padding-right: 2px;
 }

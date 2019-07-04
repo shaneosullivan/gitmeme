@@ -1,4 +1,4 @@
-import parseTokens from "./parseTokens";
+import parseTokens, { Token } from "./parseTokens";
 import createTokenTag, { TokenTag } from "./createTokenTag";
 import throttle from "./util/throttle";
 import getParentByTagName from "./getParentByTagName";
@@ -20,6 +20,8 @@ function listenToInput(
   remove: Function;
 } {
   let knownTokens = [] as Array<TokenTag>;
+  let toolbarButtonItem;
+  let activeTag: TokenTag = null;
 
   const updateTokensForInput = throttle(() => {
     let tokens = parseTokens(input.value);
@@ -35,7 +37,7 @@ function listenToInput(
         });
       });
       unknownTokens.forEach(token => {
-        const tokenTag = createTokenTag(input, token);
+        const tokenTag = createTokenTag(input, token, onTokenActive);
         knownTokens.push(tokenTag);
       });
     }
@@ -54,7 +56,7 @@ function listenToInput(
     });
   }, 500);
 
-  let formNode = getParentByTagName(input, "form");
+  let formNode = getParentByTagName(input, "form") as HTMLFormElement;
 
   function cleanUp() {
     knownTokens.forEach(knownToken => {
@@ -81,6 +83,7 @@ function listenToInput(
       }
       return 0;
     });
+
     let value = input.value;
     knownTokens.forEach(knownToken => {
       if (knownToken.isValid && !knownToken.disabled) {
@@ -129,10 +132,58 @@ function listenToInput(
     cleanUp();
   }
 
+  const TOOLBAR_BUTTON_LABEL = "GM";
+
+  function onTokenActive(isActive: boolean, tokenTag: TokenTag) {
+    if (toolbarButtonItem) {
+      if (!isActive && activeTag !== tokenTag) {
+        // Prevent a race condition where the cursor moves
+        // from one tag to another
+        return;
+      }
+      toolbarButtonItem.classList.toggle("__active", isActive);
+    }
+    activeTag = tokenTag;
+  }
+
+  function addToolbarButton(form: HTMLFormElement) {
+    const toolbarNode = form.querySelector("markdown-toolbar");
+    if (toolbarNode) {
+      if (toolbarNode.querySelector(".__toolbarButton")) {
+        console.log("already have a toolbar item for form ", form);
+        return;
+      }
+
+      const toolbarButton = document.createElement("div");
+      toolbarButton.className = "d-inline-block mr-3 __toolbarButton";
+
+      toolbarButtonItem = document.createElement("button");
+      toolbarButtonItem.className = "toolbar-item __toolbarButtonItem";
+      toolbarButtonItem.textContent = TOOLBAR_BUTTON_LABEL;
+
+      toolbarButton.appendChild(toolbarButtonItem);
+
+      toolbarButton.addEventListener("click", (evt: Event) => {
+        evt.preventDefault();
+        evt.stopPropagation();
+
+        if (activeTag) {
+          console.log("activeTag is ", activeTag);
+        }
+      });
+
+      toolbarNode.appendChild(toolbarButton);
+    } else {
+      console.log("no toolbar button on form ", form);
+    }
+  }
+
   input.addEventListener("keyup", updateTokensForInput);
   input.addEventListener("change", updateTokensForInput);
   input.addEventListener("focus", updateTokensForInput);
   formNode.addEventListener("submit", processPreSubmit, true);
+
+  addToolbarButton(formNode);
 
   // In case the input is simply removed from the DOM without
   // being submitted, clean up too
