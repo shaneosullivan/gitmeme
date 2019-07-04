@@ -937,7 +937,6 @@ function searchGiphy(tokenValue) {
                         break;
                     }
                     catch (err) {
-                        console.error(err);
                         limit--;
                     }
                 }

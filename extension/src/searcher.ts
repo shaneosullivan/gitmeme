@@ -135,7 +135,6 @@ async function searchGiphy(tokenValue) {
           resolve(data);
           break;
         } catch (err) {
-          console.error(err);
           limit--;
         }
       }

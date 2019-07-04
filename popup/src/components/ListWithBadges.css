@@ -1,0 +1,32 @@
+.ListWithBadges input[type="text"] {
+  border: 1px solid black;
+  border-radius: 4px;
+  cursor: pointer;
+  padding-left: 4px;
+  text-align: center;
+  width: 120px;
+}
+
+.ListWithBadges input[type="text"]:focus {
+  outline: none;
+}
+
+.ListWithBadges .copiedText {
+  animation-name: fade_out_with_delay;
+  animation-duration: 2s;
+  opacity: 0;
+}
+
+@keyframes fade_out_with_delay {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}

@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { API_ROOT_URL } from "../shared/consts";
+import { TopTokenItem } from "../types";
+import ListWithBadges from "./ListWithBadges";
 
 interface Props {}
-
-interface TopTokenItem {
-  token: string;
-  count: number;
-}
 
 type TokenList = {
   user: Array<TopTokenItem>;
@@ -21,7 +18,7 @@ export default function TopTokensList(props: Props) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const results = fetch(API_ROOT_URL + "/top_tokens")
+    fetch(API_ROOT_URL + "/top_tokens")
       .then(resp => {
         if (resp.ok) {
           return resp.json();
@@ -38,15 +35,11 @@ export default function TopTokensList(props: Props) {
 
   return (
     <div className="TopTokensList">
-      <h2>Top Tokens</h2>
-      {tokenList.global.map((tokenItem: TopTokenItem) => {
-        return (
-          <div>
-            {tokenItem.token}
-            <span className="tokenCount">{tokenItem.count}</span>
-          </div>
-        );
-      })}
+      {!error ? (
+        <ListWithBadges label="Top Tokens" items={tokenList.global} />
+      ) : (
+        <div>Error</div>
+      )}
     </div>
   );
 }
