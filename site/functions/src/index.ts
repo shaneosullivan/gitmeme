@@ -235,6 +235,7 @@ app.post(
 
 app.get("/top_tokens", async (req: AppRequest, res: express.Response) => {
   const authError = await checkUserIsUnauthorized(req);
+  console.log("top_tokens got authError", JSON.stringify(authError));
 
   const results = {
     user: [] as Array<TopTokenItem>,

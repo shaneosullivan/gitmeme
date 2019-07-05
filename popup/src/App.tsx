@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import { getGithubInfo, GithubInfo } from "./shared/auth/githubInfo";
 import TopTokensList from "./components/TopTokensList";
-// import Login from "./components/Login";
+import Help from "./components/Help";
 
 const App = () => {
   const [auth, setAuth] = useState({
@@ -19,13 +19,21 @@ const App = () => {
     });
   }, []);
 
+  if (!auth.id) {
+    return null; // loading
+  }
   // if (!auth.token) {
   //   return <Login onAuth={(authInfo: GithubInfo) => setAuth(authInfo)} />;
   // }
   return (
-    <span>
-      <TopTokensList />
-    </span>
+    <div className="App">
+      <h1>GitMeme</h1>
+      <Help />
+      <TopTokensList
+        userInfo={auth}
+        onAuth={(authInfo: GithubInfo) => setAuth(authInfo)}
+      />
+    </div>
   );
 };
 

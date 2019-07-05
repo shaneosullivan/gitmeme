@@ -66,6 +66,7 @@ export default function createTokenTag(
     caretIsAtToken = nextCaretIsAtToken;
 
     tagUi.classList.toggle("__selected", caretIsAtToken);
+    setTagUiTitle();
   }
 
   function removeImage() {
@@ -92,22 +93,31 @@ export default function createTokenTag(
     removeImage();
   }
 
-  function updateTagUi() {
+  function setTagUiTitle() {
     let title = "";
+    if (record) {
+      if (!!record.imageUrl) {
+        const addition = caretIsAtToken
+          ? "Click or press the down arrow to see the meme image or to select others"
+          : "Click to see the meme image or to select others";
+        title = `GitMeme for "${token.value}". ${addition}`;
+      } else {
+        title = `GitMeme for "${token.value}" not found`;
+      }
 
+      if (record.disabled) {
+        title = `GitMeme image disabled`;
+      }
+    }
+    tagUi.title = title;
+  }
+
+  function updateTagUi() {
     tagUi.classList.toggle("imageFound", !!record.imageUrl);
     tagUi.classList.toggle("imageNotFound", !record.imageUrl);
-    if (!!record.imageUrl) {
-      title = `GitMeme for "${token.value}"`;
-    } else {
-      title = `GitMeme for "${token.value}"`;
-    }
 
     tagUi.classList.toggle("disabled", record.disabled);
     imageUi && imageUi.classList.toggle("disabled", record.disabled);
-    if (record.disabled) {
-      title = `GitMeme image disabled`;
-    }
 
     if (imageUi) {
       imageUi.classList.toggle(
@@ -121,7 +131,7 @@ export default function createTokenTag(
       }
     }
 
-    tagUi.title = title;
+    setTagUiTitle();
   }
 
   function selectImage() {
@@ -248,12 +258,6 @@ export default function createTokenTag(
     checkCaretPosition();
   }
 
-  reposition();
-  checkCaretPosition();
-  textInput.addEventListener("keyup", checkCaretPosition);
-  textInput.addEventListener("keydown", handleInputKey, true);
-  textInput.addEventListener("click", handleInputClick);
-
   const existingPreferredImageUrl = preferredTagUrls[token.value] || null;
 
   const record = {
@@ -266,6 +270,12 @@ export default function createTokenTag(
     imageUrls: [],
     disabled: false
   };
+
+  reposition();
+  checkCaretPosition();
+  textInput.addEventListener("keyup", checkCaretPosition);
+  textInput.addEventListener("keydown", handleInputKey, true);
+  textInput.addEventListener("click", handleInputClick);
 
   searcher(token.value).then((urls: Array<string>) => {
     const url = urls.length > 0 ? urls[0] : null;

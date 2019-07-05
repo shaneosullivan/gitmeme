@@ -480,6 +480,7 @@ function createTokenTag(textInput, token, onTokenActive) {
         }
         caretIsAtToken = nextCaretIsAtToken;
         tagUi.classList.toggle("__selected", caretIsAtToken);
+        setTagUiTitle();
     }
     function removeImage() {
         const hasOpenImage = imageUi && imageUi.parentNode;
@@ -502,21 +503,29 @@ function createTokenTag(textInput, token, onTokenActive) {
         record.disabled = false;
         removeImage();
     }
-    function updateTagUi() {
+    function setTagUiTitle() {
         let title = "";
+        if (record) {
+            if (!!record.imageUrl) {
+                const addition = caretIsAtToken
+                    ? "Click or press the down arrow to see the meme image or to select others"
+                    : "Click to see the meme image or to select others";
+                title = `GitMeme for "${token.value}". ${addition}`;
+            }
+            else {
+                title = `GitMeme for "${token.value}" not found`;
+            }
+            if (record.disabled) {
+                title = `GitMeme image disabled`;
+            }
+        }
+        tagUi.title = title;
+    }
+    function updateTagUi() {
         tagUi.classList.toggle("imageFound", !!record.imageUrl);
         tagUi.classList.toggle("imageNotFound", !record.imageUrl);
-        if (!!record.imageUrl) {
-            title = `GitMeme for "${token.value}"`;
-        }
-        else {
-            title = `GitMeme for "${token.value}"`;
-        }
         tagUi.classList.toggle("disabled", record.disabled);
         imageUi && imageUi.classList.toggle("disabled", record.disabled);
-        if (record.disabled) {
-            title = `GitMeme image disabled`;
-        }
         if (imageUi) {
             imageUi.classList.toggle("hasMultipleImages", record.imageUrls.length > 1);
             const imageNode = imageUi.querySelector("img");
@@ -524,7 +533,7 @@ function createTokenTag(textInput, token, onTokenActive) {
                 imageNode.src = record.imageUrl;
             }
         }
-        tagUi.title = title;
+        setTagUiTitle();
     }
     function selectImage() {
         const wrapper = document.createElement("div");
@@ -629,11 +638,6 @@ function createTokenTag(textInput, token, onTokenActive) {
         removeImage();
         checkCaretPosition();
     }
-    reposition();
-    checkCaretPosition();
-    textInput.addEventListener("keyup", checkCaretPosition);
-    textInput.addEventListener("keydown", handleInputKey, true);
-    textInput.addEventListener("click", handleInputClick);
     const existingPreferredImageUrl = preferredTagUrls[token.value] || null;
     const record = {
         input: textInput,
@@ -645,6 +649,11 @@ function createTokenTag(textInput, token, onTokenActive) {
         imageUrls: [],
         disabled: false
     };
+    reposition();
+    checkCaretPosition();
+    textInput.addEventListener("keyup", checkCaretPosition);
+    textInput.addEventListener("keydown", handleInputKey, true);
+    textInput.addEventListener("click", handleInputClick);
     searcher_1.default(token.value).then((urls) => {
         const url = urls.length > 0 ? urls[0] : null;
         record.imageUrl = record.imageUrl || url;

@@ -26,9 +26,7 @@ const Login = (props: Props) => {
   }
   return (
     <div className="Login">
-      <header className="App-header">
-        <button onClick={_logIn}>Log in with Github</button>
-      </header>
+      <button onClick={_logIn}>Log in with Github</button>
     </div>
   );
 };

@@ -1,3 +1,8 @@
+.ListWithBadges {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
 .ListWithBadges input[type="text"] {
   border: 1px solid black;
   border-radius: 4px;
@@ -14,6 +19,9 @@
 .ListWithBadges .copiedText {
   animation-name: fade_out_with_delay;
   animation-duration: 2s;
+  color: #666666;
+  font-size: 10px;
+
   opacity: 0;
 }
 

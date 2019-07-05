@@ -25,7 +25,7 @@ export default function ListWithBadges(props: Props) {
 
   return (
     <div className="ListWithBadges">
-      <h2>{props.label}</h2>
+      <h5>{props.label}</h5>
       <ul className="list-group">
         {props.items.map((tokenItem: TopTokenItem, idx: number) => {
           return (
