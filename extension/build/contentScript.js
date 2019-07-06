@@ -527,6 +527,7 @@ function createTokenTag(textInput, token, onTokenActive) {
         tagUi.classList.toggle("disabled", record.disabled);
         imageUi && imageUi.classList.toggle("disabled", record.disabled);
         if (imageUi) {
+            console.log("record.imageUrls.length ", record.imageUrls.length);
             imageUi.classList.toggle("hasMultipleImages", record.imageUrls.length > 1);
             const imageNode = imageUi.querySelector("img");
             if (imageNode.src !== record.imageUrl) {
@@ -837,13 +838,19 @@ function searcher(tokenValue) {
         }
         function filterToRemoveIdenticalImages(arr) {
             const seen = {};
-            return arr.filter(url => {
+            const c = arr.length;
+            // Need to filter in place so that subsequent searches
+            // add to the same array.
+            for (let i = 0; i < arr.length; i++) {
+                const url = arr[i];
                 if (seen[url]) {
-                    return false;
+                    arr.splice(i, 1);
+                    i--;
                 }
                 seen[url] = true;
-                return true;
-            });
+            }
+            console.log("started with", c, " images now has ", arr.length, arr);
+            return arr;
         }
         return new Promise((resolve, _reject) => __awaiter(this, void 0, void 0, function* () {
             let results = [];
@@ -853,6 +860,7 @@ function searcher(tokenValue) {
             let isResolved = false;
             function doResolve() {
                 if (isResolved) {
+                    filterToRemoveIdenticalImages(results);
                     return;
                 }
                 isResolved = true;
@@ -909,7 +917,12 @@ function searcher(tokenValue) {
                 if (giphyResult.data && giphyResult.data.length > 0) {
                     giphyResult.data
                         .map(imageData => imageData.images.downsized_medium.url)
-                        .forEach(url => {
+                        .forEach((url) => {
+                        // "https://media1.giphy.com/media/pHXfAOUcHlNo6oKjZv/giphy.gif?cid=2972a2b15d1d90c568723336731fb8e4&rid=giphy.gif"
+                        const idx = url.indexOf("?");
+                        if (idx > -1) {
+                            url = url.substring(0, idx);
+                        }
                         results.push(url);
                     });
                     // If the Gitmeme request has completed but didn't find anything,
@@ -921,6 +934,9 @@ function searcher(tokenValue) {
                         localComplete &&
                         results.length === giphyResult.data.length) {
                         doResolve();
+                    }
+                    else {
+                        filterToRemoveIdenticalImages(results);
                     }
                 }
             }

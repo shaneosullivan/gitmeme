@@ -12,13 +12,18 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
 
   function filterToRemoveIdenticalImages(arr) {
     const seen = {};
-    return arr.filter(url => {
+
+    // Need to filter in place so that subsequent searches
+    // add to the same array.
+    for (let i = 0; i < arr.length; i++) {
+      const url = arr[i];
       if (seen[url]) {
-        return false;
+        arr.splice(i, 1);
+        i--;
       }
       seen[url] = true;
-      return true;
-    });
+    }
+    return arr;
   }
 
   return new Promise(async (resolve, _reject) => {
@@ -30,6 +35,7 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
     let isResolved = false;
     function doResolve() {
       if (isResolved) {
+        filterToRemoveIdenticalImages(results);
         return;
       }
       isResolved = true;
@@ -93,7 +99,14 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
       if (giphyResult.data && giphyResult.data.length > 0) {
         giphyResult.data
           .map(imageData => imageData.images.downsized_medium.url)
-          .forEach(url => {
+          .forEach((url: string) => {
+            // "https://media1.giphy.com/media/pHXfAOUcHlNo6oKjZv/giphy.gif?cid=2972a2b15d1d90c568723336731fb8e4&rid=giphy.gif"
+            // Remove unnecessary parts of the Giphy url, as above, since these
+            // change all the time, making url deduplication impossible
+            const idx = url.indexOf("?");
+            if (idx > -1) {
+              url = url.substring(0, idx);
+            }
             results.push(url);
           });
 
@@ -108,6 +121,8 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
           results.length === giphyResult.data.length
         ) {
           doResolve();
+        } else {
+          filterToRemoveIdenticalImages(results);
         }
       }
     } catch (err) {
