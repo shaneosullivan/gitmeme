@@ -19,12 +19,6 @@ const App = () => {
     });
   }, []);
 
-  if (!auth.id) {
-    return null; // loading
-  }
-  // if (!auth.token) {
-  //   return <Login onAuth={(authInfo: GithubInfo) => setAuth(authInfo)} />;
-  // }
   return (
     <div className="App">
       <h1>GitMeme</h1>

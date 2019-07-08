@@ -672,7 +672,7 @@ exports.default = createTokenTag;
 
 /***/ }),
 /* 7 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
 /* jshint browser: true */
 
@@ -805,7 +805,7 @@ function getCaretCoordinates(element, position, options) {
   return coordinates;
 }
 
-if ( true && typeof module.exports != 'undefined') {
+if (typeof module != 'undefined' && typeof module.exports != 'undefined') {
   module.exports = getCaretCoordinates;
 } else if(isBrowser) {
   window.getCaretCoordinates = getCaretCoordinates;
@@ -835,27 +835,29 @@ const createAuthHeader_1 = __webpack_require__(1);
 const githubInfo_1 = __webpack_require__(2);
 const GIPHY_API_KEY = "I5ysXzZG4OIoiMD99Tz7v6AGN9uzGWpr";
 const allResults = {};
+function filterToRemoveIdenticalImages(arr) {
+    const seen = {};
+    // Need to filter in place so that subsequent searches
+    // add to the same array.
+    for (let i = 0; i < arr.length; i++) {
+        const url = arr[i];
+        if (seen[url]) {
+            arr.splice(i, 1);
+            i--;
+        }
+        seen[url] = true;
+    }
+    return arr;
+}
 function searcher(tokenValue) {
     return __awaiter(this, void 0, void 0, function* () {
+        console.log("searcher", tokenValue);
         if (!tokenValue) {
             return null;
         }
         if (allResults[tokenValue]) {
+            console.log("Returning cached values", allResults[tokenValue]);
             return allResults[tokenValue];
-        }
-        function filterToRemoveIdenticalImages(arr) {
-            const seen = {};
-            // Need to filter in place so that subsequent searches
-            // add to the same array.
-            for (let i = 0; i < arr.length; i++) {
-                const url = arr[i];
-                if (seen[url]) {
-                    arr.splice(i, 1);
-                    i--;
-                }
-                seen[url] = true;
-            }
-            return arr;
         }
         return new Promise((resolve, _reject) => __awaiter(this, void 0, void 0, function* () {
             let results = [];
@@ -886,40 +888,35 @@ function searcher(tokenValue) {
             else {
                 localComplete = true;
             }
-            // Only search our API if the user has logged in with us
-            if (userInfo && userInfo.id && userInfo.token) {
-                const gitmemeUrl = `${consts_1.API_ROOT_URL}/search?t=${encodeURIComponent(tokenValue)}`;
-                fetch(gitmemeUrl, {
-                    headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token))
-                })
-                    .then(function (response) {
-                    if (!response.ok) {
-                        throw Error(response.statusText);
-                    }
-                    // Read the response as json.
-                    return response.json();
-                })
-                    .then(function (data) {
-                    // Do stuff with the JSON
-                    gitmemeComplete = true;
-                    if (data && data.results && data.results.length > 0) {
-                        // The first party images are put in the first position
-                        for (let i = data.results.length - 1; i > -1; i--) {
-                            results.unshift(data.results[i].url);
-                        }
-                        doResolve();
-                    }
-                    else if (giphyResult) {
-                        doResolve();
-                    }
-                })
-                    .catch(function (error) {
-                    console.log("Looks like there was a problem: \n", error);
-                });
-            }
-            else {
+            // Search Gitmeme for previously used images
+            const gitmemeUrl = `${consts_1.API_ROOT_URL}/search?t=${encodeURIComponent(tokenValue)}`;
+            fetch(gitmemeUrl, {
+                headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token))
+            })
+                .then(function (response) {
+                if (!response.ok) {
+                    throw Error(response.statusText);
+                }
+                // Read the response as json.
+                return response.json();
+            })
+                .then(function (data) {
+                // Do stuff with the JSON
                 gitmemeComplete = true;
-            }
+                if (data && data.results && data.results.length > 0) {
+                    // The first party images are put in the first position
+                    for (let i = data.results.length - 1; i > -1; i--) {
+                        results.unshift(data.results[i].url);
+                    }
+                    doResolve();
+                }
+                else if (giphyResult) {
+                    doResolve();
+                }
+            })
+                .catch(function (error) {
+                console.log("Looks like there was a problem: \n", error);
+            });
             try {
                 giphyResult = yield searchGiphy(tokenValue);
                 if (giphyResult.data && giphyResult.data.length > 0) {

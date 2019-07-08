@@ -7,29 +7,31 @@ const GIPHY_API_KEY = "I5ysXzZG4OIoiMD99Tz7v6AGN9uzGWpr";
 
 const allResults = {};
 
+function filterToRemoveIdenticalImages(arr) {
+  const seen = {};
+
+  // Need to filter in place so that subsequent searches
+  // add to the same array.
+  for (let i = 0; i < arr.length; i++) {
+    const url = arr[i];
+    if (seen[url]) {
+      arr.splice(i, 1);
+      i--;
+    }
+    seen[url] = true;
+  }
+  return arr;
+}
+
 export default async function searcher(tokenValue): Promise<Array<string>> {
+  console.log("searcher", tokenValue);
   if (!tokenValue) {
     return null;
   }
 
   if (allResults[tokenValue]) {
+    console.log("Returning cached values", allResults[tokenValue]);
     return allResults[tokenValue];
-  }
-
-  function filterToRemoveIdenticalImages(arr) {
-    const seen = {};
-
-    // Need to filter in place so that subsequent searches
-    // add to the same array.
-    for (let i = 0; i < arr.length; i++) {
-      const url = arr[i];
-      if (seen[url]) {
-        arr.splice(i, 1);
-        i--;
-      }
-      seen[url] = true;
-    }
-    return arr;
   }
 
   return new Promise(async (resolve, _reject) => {
@@ -64,45 +66,41 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
       localComplete = true;
     }
 
-    // Only search our API if the user has logged in with us
-    if (userInfo && userInfo.id && userInfo.token) {
-      const gitmemeUrl = `${API_ROOT_URL}/search?t=${encodeURIComponent(
-        tokenValue
-      )}`;
+    // Search Gitmeme for previously used images
+    const gitmemeUrl = `${API_ROOT_URL}/search?t=${encodeURIComponent(
+      tokenValue
+    )}`;
 
-      fetch(gitmemeUrl, {
-        headers: {
-          ...createAuthHeader(userInfo.id, userInfo.token)
+    fetch(gitmemeUrl, {
+      headers: {
+        ...createAuthHeader(userInfo.id, userInfo.token)
+      }
+    })
+      .then(function(response) {
+        if (!response.ok) {
+          throw Error(response.statusText);
+        }
+        // Read the response as json.
+        return response.json();
+      })
+      .then(function(data) {
+        // Do stuff with the JSON
+        gitmemeComplete = true;
+        if (data && data.results && data.results.length > 0) {
+          // The first party images are put in the first position
+
+          for (let i = data.results.length - 1; i > -1; i--) {
+            results.unshift(data.results[i].url);
+          }
+
+          doResolve();
+        } else if (giphyResult) {
+          doResolve();
         }
       })
-        .then(function(response) {
-          if (!response.ok) {
-            throw Error(response.statusText);
-          }
-          // Read the response as json.
-          return response.json();
-        })
-        .then(function(data) {
-          // Do stuff with the JSON
-          gitmemeComplete = true;
-          if (data && data.results && data.results.length > 0) {
-            // The first party images are put in the first position
-
-            for (let i = data.results.length - 1; i > -1; i--) {
-              results.unshift(data.results[i].url);
-            }
-
-            doResolve();
-          } else if (giphyResult) {
-            doResolve();
-          }
-        })
-        .catch(function(error) {
-          console.log("Looks like there was a problem: \n", error);
-        });
-    } else {
-      gitmemeComplete = true;
-    }
+      .catch(function(error) {
+        console.log("Looks like there was a problem: \n", error);
+      });
 
     try {
       giphyResult = await searchGiphy(tokenValue);
