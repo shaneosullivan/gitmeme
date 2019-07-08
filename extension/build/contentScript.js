@@ -94,8 +94,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.GITHUB_CLIENT_ID = "9b9e17e168e82438cfb6";
 exports.API_ROOT_URL = "https://us-central1-git-meme-prod.cloudfunctions.net/api";
 // DO NOT CHECK IN
-// export const API_ROOT_URL =
-//   "http://localhost:5000/git-meme-prod/us-central1/api";
+// function getFakeUrl() {
+//   console.error("Do not check this in");
+//   return "http://localhost:5000/git-meme-prod/us-central1/api";
+// }
+// export const API_ROOT_URL = getFakeUrl();
 
 
 /***/ }),
@@ -247,7 +250,7 @@ function listenToInput(input) {
             }
             return stillExists;
         });
-    }, 500);
+    }, 500, { leading: false });
     let formNode = getParentByTagName_1.default(input, "form");
     function cleanUp() {
         knownTokens.forEach(knownToken => {
@@ -276,9 +279,10 @@ function listenToInput(input) {
         let value = input.value;
         knownTokens.forEach(knownToken => {
             if (knownToken.isValid && !knownToken.disabled) {
+                const tagInsert = `<a href="https://gitme.me/image?url=${encodeURIComponent(knownToken.imageUrl)}"><img src="${knownToken.imageUrl}" title="Created by gitme.me with /${knownToken.token.value}"/></a>`;
                 value =
                     value.substring(0, knownToken.token.index) +
-                        `<img src="${knownToken.imageUrl}" title="Created by gitme.me with /${knownToken.token.value}"/>` +
+                        tagInsert +
                         value.substring(knownToken.token.index + knownToken.token.value.length + 1);
                 const isLoggedIn = userInfo &&
                     userInfo.id &&
@@ -527,7 +531,6 @@ function createTokenTag(textInput, token, onTokenActive) {
         tagUi.classList.toggle("disabled", record.disabled);
         imageUi && imageUi.classList.toggle("disabled", record.disabled);
         if (imageUi) {
-            console.log("record.imageUrls.length ", record.imageUrls.length);
             imageUi.classList.toggle("hasMultipleImages", record.imageUrls.length > 1);
             const imageNode = imageUi.querySelector("img");
             if (imageNode.src !== record.imageUrl) {
@@ -831,14 +834,17 @@ const consts_1 = __webpack_require__(0);
 const createAuthHeader_1 = __webpack_require__(1);
 const githubInfo_1 = __webpack_require__(2);
 const GIPHY_API_KEY = "I5ysXzZG4OIoiMD99Tz7v6AGN9uzGWpr";
+const allResults = {};
 function searcher(tokenValue) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!tokenValue) {
             return null;
         }
+        if (allResults[tokenValue]) {
+            return allResults[tokenValue];
+        }
         function filterToRemoveIdenticalImages(arr) {
             const seen = {};
-            const c = arr.length;
             // Need to filter in place so that subsequent searches
             // add to the same array.
             for (let i = 0; i < arr.length; i++) {
@@ -849,7 +855,6 @@ function searcher(tokenValue) {
                 }
                 seen[url] = true;
             }
-            console.log("started with", c, " images now has ", arr.length, arr);
             return arr;
         }
         return new Promise((resolve, _reject) => __awaiter(this, void 0, void 0, function* () {
@@ -864,6 +869,7 @@ function searcher(tokenValue) {
                     return;
                 }
                 isResolved = true;
+                allResults[tokenValue] = results;
                 resolve(filterToRemoveIdenticalImages(results));
             }
             const userInfo = yield githubInfo_1.getGithubInfo();
@@ -896,9 +902,11 @@ function searcher(tokenValue) {
                     .then(function (data) {
                     // Do stuff with the JSON
                     gitmemeComplete = true;
-                    if (data && data.url) {
+                    if (data && data.results && data.results.length > 0) {
                         // The first party images are put in the first position
-                        results.unshift(data.url);
+                        for (let i = data.results.length - 1; i > -1; i--) {
+                            results.unshift(data.results[i].url);
+                        }
                         doResolve();
                     }
                     else if (giphyResult) {
@@ -919,6 +927,8 @@ function searcher(tokenValue) {
                         .map(imageData => imageData.images.downsized_medium.url)
                         .forEach((url) => {
                         // "https://media1.giphy.com/media/pHXfAOUcHlNo6oKjZv/giphy.gif?cid=2972a2b15d1d90c568723336731fb8e4&rid=giphy.gif"
+                        // Remove unnecessary parts of the Giphy url, as above, since these
+                        // change all the time, making url deduplication impossible
                         const idx = url.indexOf("?");
                         if (idx > -1) {
                             url = url.substring(0, idx);

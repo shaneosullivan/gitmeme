@@ -3,5 +3,8 @@ export const API_ROOT_URL =
   "https://us-central1-git-meme-prod.cloudfunctions.net/api";
 
 // DO NOT CHECK IN
-// export const API_ROOT_URL =
-//   "http://localhost:5000/git-meme-prod/us-central1/api";
+// function getFakeUrl() {
+//   console.error("Do not check this in");
+//   return "http://localhost:5000/git-meme-prod/us-central1/api";
+// }
+// export const API_ROOT_URL = getFakeUrl();

@@ -5,9 +5,15 @@ import { getGithubInfo } from "./shared/auth/githubInfo";
 
 const GIPHY_API_KEY = "I5ysXzZG4OIoiMD99Tz7v6AGN9uzGWpr";
 
+const allResults = {};
+
 export default async function searcher(tokenValue): Promise<Array<string>> {
   if (!tokenValue) {
     return null;
+  }
+
+  if (allResults[tokenValue]) {
+    return allResults[tokenValue];
   }
 
   function filterToRemoveIdenticalImages(arr) {
@@ -39,6 +45,7 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
         return;
       }
       isResolved = true;
+      allResults[tokenValue] = results;
       resolve(filterToRemoveIdenticalImages(results));
     }
 
@@ -78,9 +85,13 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
         .then(function(data) {
           // Do stuff with the JSON
           gitmemeComplete = true;
-          if (data && data.url) {
+          if (data && data.results && data.results.length > 0) {
             // The first party images are put in the first position
-            results.unshift(data.url);
+
+            for (let i = data.results.length - 1; i > -1; i--) {
+              results.unshift(data.results[i].url);
+            }
+
             doResolve();
           } else if (giphyResult) {
             doResolve();

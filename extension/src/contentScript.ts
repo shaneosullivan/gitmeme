@@ -23,38 +23,42 @@ function listenToInput(
   let toolbarButtonItem;
   let activeTag: TokenTag = null;
 
-  const updateTokensForInput = throttle(() => {
-    let tokens = parseTokens(input.value);
+  const updateTokensForInput = throttle(
+    () => {
+      let tokens = parseTokens(input.value);
 
-    if (tokens.length > 0) {
-      // Filter the tokens that we already know about
-      const unknownTokens = tokens.filter(token => {
-        return !knownTokens.some(knownToken => {
+      if (tokens.length > 0) {
+        // Filter the tokens that we already know about
+        const unknownTokens = tokens.filter(token => {
+          return !knownTokens.some(knownToken => {
+            return (
+              knownToken.token.index === token.index &&
+              knownToken.token.value === token.value
+            );
+          });
+        });
+        unknownTokens.forEach(token => {
+          const tokenTag = createTokenTag(input, token, onTokenActive);
+          knownTokens.push(tokenTag);
+        });
+      }
+      // Remove any tokens that are no longer valid
+      knownTokens = knownTokens.filter(knownToken => {
+        const stillExists = tokens.some(newToken => {
           return (
-            knownToken.token.index === token.index &&
-            knownToken.token.value === token.value
+            knownToken.token.index === newToken.index &&
+            knownToken.token.value === newToken.value
           );
         });
+        if (!stillExists) {
+          knownToken.remove();
+        }
+        return stillExists;
       });
-      unknownTokens.forEach(token => {
-        const tokenTag = createTokenTag(input, token, onTokenActive);
-        knownTokens.push(tokenTag);
-      });
-    }
-    // Remove any tokens that are no longer valid
-    knownTokens = knownTokens.filter(knownToken => {
-      const stillExists = tokens.some(newToken => {
-        return (
-          knownToken.token.index === newToken.index &&
-          knownToken.token.value === newToken.value
-        );
-      });
-      if (!stillExists) {
-        knownToken.remove();
-      }
-      return stillExists;
-    });
-  }, 500);
+    },
+    500,
+    { leading: false }
+  );
 
   let formNode = getParentByTagName(input, "form") as HTMLFormElement;
 
@@ -87,11 +91,14 @@ function listenToInput(
     let value = input.value;
     knownTokens.forEach(knownToken => {
       if (knownToken.isValid && !knownToken.disabled) {
+        const tagInsert = `<a href="https://gitme.me/image?url=${encodeURIComponent(
+          knownToken.imageUrl
+        )}"><img src="${
+          knownToken.imageUrl
+        }" title="Created by gitme.me with /${knownToken.token.value}"/></a>`;
         value =
           value.substring(0, knownToken.token.index) +
-          `<img src="${knownToken.imageUrl}" title="Created by gitme.me with /${
-            knownToken.token.value
-          }"/>` +
+          tagInsert +
           value.substring(
             knownToken.token.index + knownToken.token.value.length + 1
           );

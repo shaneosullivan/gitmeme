@@ -48,6 +48,14 @@ The public facing website, which you can see at https://gitme.me, is built using
 Gatsby.js, a static site generator around React. The code is at `/site/ui`, with
 most of the content being in `/site/ui/src`.
 
-It's very simple right now, just one single page, `index.tsx`. To work on it,
+It's very simple right now, just two pages, `index.tsx` and `image.tsx`. To work on it,
 type `yarn start`, and it should appear in your browser. Then as you modify it,
 the browser should update.
+
+The `index` page is obviously the landing page. We should likely have a link to
+the extension for download on Chrome and Firefox, and a short video of the
+extension being used.
+
+The `image` page is linked to from every image that we insert, and shows the
+image passed through in the url, as well as some upsell that we can design
+to get more virality in the app.
