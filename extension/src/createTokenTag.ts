@@ -79,6 +79,7 @@ export default function createTokenTag(
       imageUi = null;
       updateTagUi();
     }
+    tagUi.classList.remove("__isOpen");
     imageUi = null;
     return hasOpenImage;
   }
@@ -178,6 +179,7 @@ export default function createTokenTag(
         }
         imageUi = document.createElement("div");
         imageUi.className = "__tokenTagThumbnail";
+        tagUi.classList.add("__isOpen");
 
         const imagesContainer = document.createElement("div");
         imagesContainer.className = "__tokenTagThumbnailImages";

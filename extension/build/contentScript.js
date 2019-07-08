@@ -496,6 +496,7 @@ function createTokenTag(textInput, token, onTokenActive) {
             imageUi = null;
             updateTagUi();
         }
+        tagUi.classList.remove("__isOpen");
         imageUi = null;
         return hasOpenImage;
     }
@@ -580,6 +581,7 @@ function createTokenTag(textInput, token, onTokenActive) {
                 }
                 imageUi = document.createElement("div");
                 imageUi.className = "__tokenTagThumbnail";
+                tagUi.classList.add("__isOpen");
                 const imagesContainer = document.createElement("div");
                 imagesContainer.className = "__tokenTagThumbnailImages";
                 const imageNode = document.createElement("img");
