@@ -179,16 +179,26 @@ export default function createTokenTag(
         imageUi = document.createElement("div");
         imageUi.className = "__tokenTagThumbnail";
 
+        const imagesContainer = document.createElement("div");
+        imagesContainer.className = "__tokenTagThumbnailImages";
+
         const imageNode = document.createElement("img");
         imageNode.src = record.imageUrl;
+
+        imagesContainer.appendChild(imageNode);
 
         const removeButtonNode = document.createElement("button");
         removeButtonNode.textContent = record.disabled
           ? "Enable Tag"
           : "Disable Tag";
 
-        imageUi.appendChild(imageNode);
-        imageUi.appendChild(removeButtonNode);
+        const buttonContainer = document.createElement("div");
+        buttonContainer.className = "__tokenTagThumbnailButtons";
+
+        buttonContainer.appendChild(removeButtonNode);
+
+        imageUi.appendChild(imagesContainer);
+        imageUi.appendChild(buttonContainer);
 
         imageNode.addEventListener("click", removeImage);
         removeButtonNode.addEventListener(

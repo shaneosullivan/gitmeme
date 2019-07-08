@@ -51,13 +51,19 @@
 
 .__tokenTagThumbnail {
   animation: showImage 0.3s ease-in-out;
-  border: 2px solid green;
-  margin-top: -2px;
-  max-width: 150px;
+  background-color: #f0f0f0;
+  /* border: 1px solid #bfc1c3; */
+  border-radius: 6px;
+  box-shadow: 1px 6px 33px -7px rgba(0, 0, 0, 0.51);
+  display: flex;
+  flex-direction: column;
+  height: 360px;
+  margin-top: 4px;
   overflow: hidden;
   position: absolute;
   text-align: center;
   transform-origin: top left;
+  width: 320px;
 }
 
 .__tokenTagThumbnail img {
@@ -72,11 +78,6 @@
 
 .__tokenTagThumbnail.disabled img {
   opacity: 0.3;
-}
-
-.__tokenTagThumbnail button {
-  border-top: 2px solid green;
-  width: 100%;
 }
 
 .__tokenTagThumbnail.disabled button {
@@ -100,6 +101,16 @@
 
 .__tokenTagThumbnail.hasMultipleImages .__showAllImages {
   display: block;
+}
+
+.__tokenTagThumbnailImages {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.__tokenTagThumbnailButtons {
+  border-top: 1px solid #bfc1c3;
+  height: 38px;
 }
 
 .__imageSelector {
