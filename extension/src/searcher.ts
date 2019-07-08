@@ -24,7 +24,6 @@ function filterToRemoveIdenticalImages(arr) {
 }
 
 export default async function searcher(tokenValue): Promise<Array<string>> {
-  console.log("searcher", tokenValue);
   if (!tokenValue) {
     return null;
   }

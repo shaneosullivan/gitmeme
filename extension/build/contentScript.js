@@ -851,7 +851,6 @@ function filterToRemoveIdenticalImages(arr) {
 }
 function searcher(tokenValue) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log("searcher", tokenValue);
         if (!tokenValue) {
             return null;
         }
@@ -1080,8 +1079,14 @@ exports.default = getParentByTagName;
 Object.defineProperty(exports, "__esModule", { value: true });
 function findTextInputs(listenToInput) {
     const ids = ["new_comment_field", "issue_body"];
-    const inputsById = Array.from(document.querySelectorAll(ids.map(id => `#${id}`).join(",")));
+    const inputsById = Array.from(document.querySelectorAll(ids.map(id => `#${id}`).join(","))).filter(input => !!input);
     const allInputs = inputsById;
+    // If the cursor is already focused in a text area, get to work!
+    if (document.activeElement &&
+        document.activeElement.tagName.toLowerCase() === "textarea" &&
+        !allInputs.some(input => input === document.activeElement)) {
+        allInputs.push(document.activeElement);
+    }
     let listeners = allInputs.map(listenToInput);
     // Listen to any lazily created text areas too
     document.body.addEventListener("focusin", (evt) => {
