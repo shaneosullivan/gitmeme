@@ -31,15 +31,24 @@ const checkUserIsUnauthorized = async (req: AppRequest) => {
 
       if (userDoc.exists) {
         const data = userDoc.data();
+        console.log("got user data", data);
 
-        if (data && data.auth_token === authToken) {
+        if (
+          data &&
+          data.auth_tokens &&
+          data.auth_tokens.some(
+            (existingToken: string) => existingToken === authToken
+          )
+        ) {
           (req as any)["_user"] = data;
           console.log("User successfully authenticated");
 
           return null;
         } else {
           console.log(
-            `tokens do not match, ${data ? data.token : null} !== ${authToken}`
+            `tokens do not match, ${
+              data ? data.auth_token : null
+            } !== ${authToken}`
           );
         }
       } else {

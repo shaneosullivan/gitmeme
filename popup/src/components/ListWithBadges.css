@@ -25,6 +25,11 @@
   opacity: 0;
 }
 
+.ListWithBadges .emptyList {
+  padding: 8px;
+  padding-top: 20px;
+}
+
 @keyframes fade_out_with_delay {
   0% {
     opacity: 1;

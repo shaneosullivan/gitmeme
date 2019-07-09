@@ -10,12 +10,13 @@ const App = () => {
     id: "",
     avatar: ""
   } as GithubInfo);
+  const [authComplete, setAuthComplete] = useState(false);
 
   useEffect(() => {
     // Run on mount
     getGithubInfo().then(authInfo => {
-      console.log("Popup got Github Info", authInfo);
       setAuth(authInfo);
+      setAuthComplete(true);
     });
   }, []);
 
@@ -23,10 +24,12 @@ const App = () => {
     <div className="App">
       <h1>GitMeme</h1>
       <Help />
-      <TopTokensList
-        userInfo={auth}
-        onAuth={(authInfo: GithubInfo) => setAuth(authInfo)}
-      />
+      {authComplete ? (
+        <TopTokensList
+          userInfo={auth}
+          onAuth={(authInfo: GithubInfo) => setAuth(authInfo)}
+        />
+      ) : null}
     </div>
   );
 };

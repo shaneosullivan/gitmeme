@@ -63,15 +63,22 @@ async function createOrUpdateUser(
   const data = {
     uid: userId,
     avatar,
-    auth_token: token
+    auth_tokens: [token]
   };
 
   console.log("creating a user with ", data);
 
-  await firestore
-    .collection("users")
-    .doc(userId)
-    .set(data);
+  const docRef = firestore.collection("users").doc(userId);
+
+  const existingDoc = await docRef.get();
+  if (existingDoc.exists) {
+    await docRef.update({
+      avatar,
+      auth_tokens: (existingDoc.get("auth_tokens") || []).concat([token])
+    });
+  } else {
+    await docRef.set(data);
+  }
   return data;
 }
 

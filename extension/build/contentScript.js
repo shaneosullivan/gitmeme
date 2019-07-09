@@ -680,7 +680,7 @@ exports.default = createTokenTag;
 
 /***/ }),
 /* 7 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
 /* jshint browser: true */
 
@@ -813,7 +813,7 @@ function getCaretCoordinates(element, position, options) {
   return coordinates;
 }
 
-if (typeof module != 'undefined' && typeof module.exports != 'undefined') {
+if ( true && typeof module.exports != 'undefined') {
   module.exports = getCaretCoordinates;
 } else if(isBrowser) {
   window.getCaretCoordinates = getCaretCoordinates;
