@@ -1,7 +1,6 @@
 import getFirestore from "../util/getFirestore";
 import checkUserIsUnauthorized from "./checkUserIsUnauthorized";
 import { AppRequest, AppResponse } from "./apiTypes";
-import sendError from "../util/sendError";
 
 type SearchResult = Array<{
   category: string;
@@ -11,16 +10,19 @@ type SearchResult = Array<{
 
 export default async function apiSearch(req: AppRequest, res: AppResponse) {
   const authError = await checkUserIsUnauthorized(req);
-  if (authError) {
-    sendError(res, authError);
-    return;
-  }
+
   const token = req.query["t"];
   let results: SearchResult = [];
 
   const userId = req._user ? req._user.uid : "";
 
-  const promises = [getPersonalResults(userId, token), getGlobalResults(token)];
+  // Always get the global results
+  const promises = [getGlobalResults(token)];
+
+  if (!authError) {
+    // If the user is logged in, get their personal results.
+    promises.unshift(getPersonalResults(userId, token));
+  }
 
   const searchResults = await Promise.all(promises);
 

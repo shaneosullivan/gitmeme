@@ -50,7 +50,7 @@ const checkUserIsUnauthorized = async (req: AppRequest) => {
   console.log("User failed authentication");
   // Not authorized
   return {
-    status: 40,
+    status: 401,
     body: { error: "User not authorized" }
   };
 };
