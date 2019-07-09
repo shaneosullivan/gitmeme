@@ -496,6 +496,7 @@ function createTokenTag(textInput, token, onTokenActive) {
             imageUi = null;
             updateTagUi();
         }
+        tagUi.classList.remove("__isOpen");
         imageUi = null;
         return hasOpenImage;
     }
@@ -580,14 +581,21 @@ function createTokenTag(textInput, token, onTokenActive) {
                 }
                 imageUi = document.createElement("div");
                 imageUi.className = "__tokenTagThumbnail";
+                tagUi.classList.add("__isOpen");
+                const imagesContainer = document.createElement("div");
+                imagesContainer.className = "__tokenTagThumbnailImages";
                 const imageNode = document.createElement("img");
                 imageNode.src = record.imageUrl;
+                imagesContainer.appendChild(imageNode);
                 const removeButtonNode = document.createElement("button");
                 removeButtonNode.textContent = record.disabled
                     ? "Enable Tag"
                     : "Disable Tag";
-                imageUi.appendChild(imageNode);
-                imageUi.appendChild(removeButtonNode);
+                const buttonContainer = document.createElement("div");
+                buttonContainer.className = "__tokenTagThumbnailButtons";
+                buttonContainer.appendChild(removeButtonNode);
+                imageUi.appendChild(imagesContainer);
+                imageUi.appendChild(buttonContainer);
                 imageNode.addEventListener("click", removeImage);
                 removeButtonNode.addEventListener("click", record.disabled ? enableImage : disableImage);
                 const showAllImagesNode = document.createElement("button");
@@ -672,7 +680,7 @@ exports.default = createTokenTag;
 
 /***/ }),
 /* 7 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
 /* jshint browser: true */
 
@@ -805,7 +813,7 @@ function getCaretCoordinates(element, position, options) {
   return coordinates;
 }
 
-if ( true && typeof module.exports != 'undefined') {
+if (typeof module != 'undefined' && typeof module.exports != 'undefined') {
   module.exports = getCaretCoordinates;
 } else if(isBrowser) {
   window.getCaretCoordinates = getCaretCoordinates;
@@ -835,27 +843,28 @@ const createAuthHeader_1 = __webpack_require__(1);
 const githubInfo_1 = __webpack_require__(2);
 const GIPHY_API_KEY = "I5ysXzZG4OIoiMD99Tz7v6AGN9uzGWpr";
 const allResults = {};
+function filterToRemoveIdenticalImages(arr) {
+    const seen = {};
+    // Need to filter in place so that subsequent searches
+    // add to the same array.
+    for (let i = 0; i < arr.length; i++) {
+        const url = arr[i];
+        if (seen[url]) {
+            arr.splice(i, 1);
+            i--;
+        }
+        seen[url] = true;
+    }
+    return arr;
+}
 function searcher(tokenValue) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!tokenValue) {
             return null;
         }
         if (allResults[tokenValue]) {
+            console.log("Returning cached values", allResults[tokenValue]);
             return allResults[tokenValue];
-        }
-        function filterToRemoveIdenticalImages(arr) {
-            const seen = {};
-            // Need to filter in place so that subsequent searches
-            // add to the same array.
-            for (let i = 0; i < arr.length; i++) {
-                const url = arr[i];
-                if (seen[url]) {
-                    arr.splice(i, 1);
-                    i--;
-                }
-                seen[url] = true;
-            }
-            return arr;
         }
         return new Promise((resolve, _reject) => __awaiter(this, void 0, void 0, function* () {
             let results = [];
@@ -886,40 +895,35 @@ function searcher(tokenValue) {
             else {
                 localComplete = true;
             }
-            // Only search our API if the user has logged in with us
-            if (userInfo && userInfo.id && userInfo.token) {
-                const gitmemeUrl = `${consts_1.API_ROOT_URL}/search?t=${encodeURIComponent(tokenValue)}`;
-                fetch(gitmemeUrl, {
-                    headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token))
-                })
-                    .then(function (response) {
-                    if (!response.ok) {
-                        throw Error(response.statusText);
-                    }
-                    // Read the response as json.
-                    return response.json();
-                })
-                    .then(function (data) {
-                    // Do stuff with the JSON
-                    gitmemeComplete = true;
-                    if (data && data.results && data.results.length > 0) {
-                        // The first party images are put in the first position
-                        for (let i = data.results.length - 1; i > -1; i--) {
-                            results.unshift(data.results[i].url);
-                        }
-                        doResolve();
-                    }
-                    else if (giphyResult) {
-                        doResolve();
-                    }
-                })
-                    .catch(function (error) {
-                    console.log("Looks like there was a problem: \n", error);
-                });
-            }
-            else {
+            // Search Gitmeme for previously used images
+            const gitmemeUrl = `${consts_1.API_ROOT_URL}/search?t=${encodeURIComponent(tokenValue)}`;
+            fetch(gitmemeUrl, {
+                headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token))
+            })
+                .then(function (response) {
+                if (!response.ok) {
+                    throw Error(response.statusText);
+                }
+                // Read the response as json.
+                return response.json();
+            })
+                .then(function (data) {
+                // Do stuff with the JSON
                 gitmemeComplete = true;
-            }
+                if (data && data.results && data.results.length > 0) {
+                    // The first party images are put in the first position
+                    for (let i = data.results.length - 1; i > -1; i--) {
+                        results.unshift(data.results[i].url);
+                    }
+                    doResolve();
+                }
+                else if (giphyResult) {
+                    doResolve();
+                }
+            })
+                .catch(function (error) {
+                console.log("Looks like there was a problem: \n", error);
+            });
             try {
                 giphyResult = yield searchGiphy(tokenValue);
                 if (giphyResult.data && giphyResult.data.length > 0) {
@@ -1083,8 +1087,14 @@ exports.default = getParentByTagName;
 Object.defineProperty(exports, "__esModule", { value: true });
 function findTextInputs(listenToInput) {
     const ids = ["new_comment_field", "issue_body"];
-    const inputsById = Array.from(document.querySelectorAll(ids.map(id => `#${id}`).join(",")));
+    const inputsById = Array.from(document.querySelectorAll(ids.map(id => `#${id}`).join(","))).filter(input => !!input);
     const allInputs = inputsById;
+    // If the cursor is already focused in a text area, get to work!
+    if (document.activeElement &&
+        document.activeElement.tagName.toLowerCase() === "textarea" &&
+        !allInputs.some(input => input === document.activeElement)) {
+        allInputs.push(document.activeElement);
+    }
     let listeners = allInputs.map(listenToInput);
     // Listen to any lazily created text areas too
     document.body.addEventListener("focusin", (evt) => {

@@ -10,9 +10,19 @@ export default function findTextInputs(
 
   const inputsById = Array.from(
     document.querySelectorAll(ids.map(id => `#${id}`).join(","))
-  );
+  ).filter(input => !!input);
 
   const allInputs = inputsById;
+
+  // If the cursor is already focused in a text area, get to work!
+  if (
+    document.activeElement &&
+    document.activeElement.tagName.toLowerCase() === "textarea" &&
+    !allInputs.some(input => input === document.activeElement)
+  ) {
+    allInputs.push(document.activeElement);
+  }
+
   let listeners = allInputs.map(listenToInput as any) as Array<Listener>;
 
   // Listen to any lazily created text areas too
