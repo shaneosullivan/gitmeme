@@ -1,5 +1,6 @@
 import { Token } from "./parseTokens";
 import * as getCaretCoordinates from "textarea-caret";
+import ReactDOM from "react-dom";
 import searcher from "./searcher";
 
 const TAG_CONTAINER_ID = "__tagContainer";
@@ -166,7 +167,7 @@ export default function createTokenTag(
   }
 
   function openImageUI() {
-    // If a url exists, then show the image in thumnail form.
+    // If a url exists, then show the image in thumbnail form.
     // If the url does not exist, open a typeahead to find the
     // image you want (laterz...)
 
@@ -178,6 +179,7 @@ export default function createTokenTag(
           removeOpenImage();
         }
         imageUi = document.createElement("div");
+
         imageUi.className = "__tokenTagThumbnail";
         tagUi.classList.add("__isOpen");
 
