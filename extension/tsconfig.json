@@ -7,8 +7,9 @@
     "rootDir": "src",
     "outDir": "build",
     "noEmitOnError": true,
-    "typeRoots": ["node_modules/@types"]
+    "typeRoots": ["node_modules/@types"],
+    "jsx": "react"
   },
-  "include": ["./src/**/*.ts"],
+  "include": ["./src/**/*.ts", "src/components/TokenTag.tsx"],
   "exclude": ["node_modules"]
 }

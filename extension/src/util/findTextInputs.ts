@@ -6,6 +6,7 @@ interface Listener {
 export default function findTextInputs(
   listenToInput: (node: HTMLElement) => Listener
 ) {
+  console.log("findTextInputs");
   const ids = ["new_comment_field", "issue_body"];
 
   const inputsById = Array.from(
@@ -28,6 +29,7 @@ export default function findTextInputs(
   // Listen to any lazily created text areas too
   document.body.addEventListener("focusin", (evt: Event) => {
     const node = evt.target as HTMLElement;
+    console.log("focusin", node);
     const tagName = node.tagName;
     if (
       tagName &&

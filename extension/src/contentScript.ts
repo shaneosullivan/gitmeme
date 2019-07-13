@@ -1,5 +1,5 @@
-import parseTokens, { Token } from "./parseTokens";
-import createTokenTag, { TokenTag } from "./createTokenTag";
+import parseTokens from "./parseTokens";
+import createTokenTag, { TokenTagType } from "./createTokenTag";
 import throttle from "./util/throttle";
 import getParentByTagName from "./getParentByTagName";
 import findTextInputs from "./util/findTextInputs";
@@ -8,6 +8,7 @@ import { API_ROOT_URL } from "./shared/consts";
 import createAuthHeader from "./shared/auth/createAuthHeader";
 import getLoggedInUser from "./shared/auth/getLoggedInUser";
 
+console.log("in content script");
 let userInfo;
 
 // Get the logged in user from the DOM
@@ -19,9 +20,10 @@ function listenToInput(
   input: HTMLElement;
   remove: Function;
 } {
-  let knownTokens = [] as Array<TokenTag>;
+  console.log("listenToInput", input);
+  let knownTokens = [] as Array<TokenTagType>;
   let toolbarButtonItem;
-  let activeTag: TokenTag = null;
+  let activeTag: TokenTagType = null;
 
   const updateTokensForInput = throttle(
     () => {
@@ -38,8 +40,12 @@ function listenToInput(
           });
         });
         unknownTokens.forEach(token => {
-          const tokenTag = createTokenTag(input, token, onTokenActive);
-          knownTokens.push(tokenTag);
+          try {
+            const tokenTag = createTokenTag(input, token, onTokenActive);
+            knownTokens.push(tokenTag);
+          } catch (err) {
+            console.error(err);
+          }
         });
       }
       // Remove any tokens that are no longer valid
@@ -143,7 +149,7 @@ function listenToInput(
 
   const TOOLBAR_BUTTON_LABEL = "GM";
 
-  function onTokenActive(isActive: boolean, tokenTag: TokenTag) {
+  function onTokenActive(isActive: boolean, tokenTag: TokenTagType) {
     if (toolbarButtonItem) {
       if (!isActive && activeTag !== tokenTag) {
         // Prevent a race condition where the cursor moves
@@ -211,10 +217,12 @@ function listenToInput(
 
   updateTokensForInput();
 
-  return {
+  const ret = {
     input,
     remove: cleanUp
   };
+  console.log("listenToInput returning ", ret);
+  return ret;
 }
 
 getGithubInfo().then(
