@@ -33,16 +33,20 @@ export default function TokenTag(props: Props) {
     <div
       className={classes.join(" ")}
       data-token={props.token.value}
-      onClick={() => {
-        props.onToggleModal();
-      }}
       style={{
-        top: props.position.top + "px",
-        left: props.position.left + "px",
-        width: props.position.width + "px"
+        top: props.position.top - 19 + "px",
+        left: props.position.left - 4 + "px",
+        width: props.position.width + 24 + "px"
       }}
     >
-      <div className="__tokenTagArrow" />
+      <div
+        className="__tokenTagArrow"
+        onClick={() => {
+          props.onToggleModal();
+        }}
+      >
+        <div className="__inner" />
+      </div>
       {props.modalIsOpen ? (
         <TokenModal
           images={props.images}

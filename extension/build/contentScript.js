@@ -995,6 +995,7 @@ function createTokenTag(textInput, token, onTokenActive) {
     const tagUi = document.createElement("div");
     tagContainer.appendChild(tagUi);
     function renderTag() {
+        console.log("renderTag record.modalIsOpen = ", record.modalIsOpen);
         ReactDOM.render(React.createElement(TokenTag_1.default, { isDisabled: false, caretActive: record.caretIsAtToken, selectedImage: record.imageUrl, images: record.imageUrls, token: token, position: record.position, modalIsOpen: record.modalIsOpen, onSelectImage: (url) => {
                 record.imageUrl = url;
                 renderTag();
@@ -1002,7 +1003,7 @@ function createTokenTag(textInput, token, onTokenActive) {
                 record.disabled = !record.disabled;
                 renderTag();
             }, onToggleModal: () => {
-                record.modalIsOpen = !!record.modalIsOpen;
+                record.modalIsOpen = !record.modalIsOpen;
                 renderTag();
             } }), tagUi);
     }
@@ -1983,14 +1984,15 @@ function TokenTag(props) {
     if (props.caretActive) {
         classes.push("__selected");
     }
-    return (React.createElement("div", { className: classes.join(" "), "data-token": props.token.value, onClick: () => {
-            props.onToggleModal();
-        }, style: {
-            top: props.position.top + "px",
-            left: props.position.left + "px",
-            width: props.position.width + "px"
+    return (React.createElement("div", { className: classes.join(" "), "data-token": props.token.value, style: {
+            top: props.position.top - 19 + "px",
+            left: props.position.left - 4 + "px",
+            width: props.position.width + 24 + "px"
         } },
-        React.createElement("div", { className: "__tokenTagArrow" }),
+        React.createElement("div", { className: "__tokenTagArrow", onClick: () => {
+                props.onToggleModal();
+            } },
+            React.createElement("div", { className: "__inner" })),
         props.modalIsOpen ? (React.createElement(TokenModal_1.default, { images: props.images, isDisabled: props.isDisabled, selectedIndex: props.images.indexOf(props.selectedImage), onToggleDisabled: props.onToggleDisabled, onSelectImage: props.onSelectImage })) : null));
 }
 exports.default = TokenTag;

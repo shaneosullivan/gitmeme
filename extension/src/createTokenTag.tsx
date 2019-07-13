@@ -53,6 +53,7 @@ export default function createTokenTag(
   tagContainer.appendChild(tagUi);
 
   function renderTag() {
+    console.log("renderTag record.modalIsOpen = ", record.modalIsOpen);
     ReactDOM.render(
       <TokenTag
         isDisabled={false}
@@ -71,7 +72,7 @@ export default function createTokenTag(
           renderTag();
         }}
         onToggleModal={() => {
-          record.modalIsOpen = !!record.modalIsOpen;
+          record.modalIsOpen = !record.modalIsOpen;
           renderTag();
         }}
       />,
