@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 7);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -183,658 +183,6 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-if (true) {
-  module.exports = __webpack_require__(12);
-} else {}
-
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.GITHUB_CLIENT_ID = "9b9e17e168e82438cfb6";
-exports.API_ROOT_URL = "https://us-central1-git-meme-prod.cloudfunctions.net/api";
-// DO NOT CHECK IN
-// function getFakeUrl() {
-//   console.error("Do not check this in");
-//   return "http://localhost:5000/git-meme-prod/us-central1/api";
-// }
-// export const API_ROOT_URL = getFakeUrl();
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-function createAuthHeader(userId, token) {
-    return {
-        Authorization: `Bearer ${userId}___${token}`,
-        "Content-Type": "application/json"
-    };
-}
-exports.default = createAuthHeader;
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const getLoggedInUser_1 = __webpack_require__(5);
-function getGithubInfo() {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise(resolve => {
-            chrome.storage.sync.get(["github_token", "github_id", "github_avatar"], function (results) {
-                if (results.github_token) {
-                    resolve({
-                        token: results.github_token || null,
-                        id: results.github_id || null,
-                        avatar: results.github_avatar || null
-                    });
-                }
-                else {
-                    const loggedInUser = getLoggedInUser_1.default();
-                    resolve({
-                        token: null,
-                        id: loggedInUser ? loggedInUser.id : null,
-                        avatar: loggedInUser ? loggedInUser.avatar : null
-                    });
-                }
-            });
-        });
-    });
-}
-exports.getGithubInfo = getGithubInfo;
-function setGithubToken(token) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise(resolve => {
-            chrome.storage.sync.set({ github_token: token }, function () {
-                resolve();
-            });
-        });
-    });
-}
-exports.setGithubToken = setGithubToken;
-function setGithubUserId(userId, avatarUrl) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise(resolve => {
-            chrome.storage.sync.set({ github_id: userId, github_avatar: avatarUrl }, function () {
-                resolve();
-            });
-        });
-    });
-}
-exports.setGithubUserId = setGithubUserId;
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-function getLoggedInUser() {
-    const avatarNode = document.querySelector("summary img.avatar");
-    if (avatarNode) {
-        const userName = (avatarNode.getAttribute("alt") || "").substring(1);
-        const avatar = avatarNode.getAttribute("src");
-        return {
-            id: userName,
-            avatar
-        };
-    }
-    return null;
-}
-exports.default = getLoggedInUser;
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const parseTokens_1 = __webpack_require__(7);
-const createTokenTag_1 = __webpack_require__(8);
-const throttle_1 = __webpack_require__(19);
-const getParentByTagName_1 = __webpack_require__(20);
-const findTextInputs_1 = __webpack_require__(21);
-const githubInfo_1 = __webpack_require__(4);
-const consts_1 = __webpack_require__(2);
-const createAuthHeader_1 = __webpack_require__(3);
-const getLoggedInUser_1 = __webpack_require__(5);
-console.log("in content script");
-let userInfo;
-// Get the logged in user from the DOM
-const loggedInUser = getLoggedInUser_1.default();
-function listenToInput(input) {
-    console.log("listenToInput", input);
-    let knownTokens = [];
-    let toolbarButtonItem;
-    let activeTag = null;
-    const updateTokensForInput = throttle_1.default(() => {
-        let tokens = parseTokens_1.default(input.value);
-        if (tokens.length > 0) {
-            // Filter the tokens that we already know about
-            const unknownTokens = tokens.filter(token => {
-                return !knownTokens.some(knownToken => {
-                    return (knownToken.token.index === token.index &&
-                        knownToken.token.value === token.value);
-                });
-            });
-            unknownTokens.forEach(token => {
-                try {
-                    const tokenTag = createTokenTag_1.default(input, token, onTokenActive);
-                    knownTokens.push(tokenTag);
-                }
-                catch (err) {
-                    console.error(err);
-                }
-            });
-        }
-        // Remove any tokens that are no longer valid
-        knownTokens = knownTokens.filter(knownToken => {
-            const stillExists = tokens.some(newToken => {
-                return (knownToken.token.index === newToken.index &&
-                    knownToken.token.value === newToken.value);
-            });
-            if (!stillExists) {
-                knownToken.remove();
-            }
-            return stillExists;
-        });
-    }, 500, { leading: false });
-    let formNode = getParentByTagName_1.default(input, "form");
-    function cleanUp() {
-        knownTokens.forEach(knownToken => {
-            knownToken.remove();
-        });
-        knownTokens = [];
-        input.removeEventListener("keyup", updateTokensForInput);
-        input.removeEventListener("change", updateTokensForInput);
-        input.removeEventListener("focus", updateTokensForInput);
-        formNode.removeEventListener("submit", processPreSubmit, true);
-    }
-    // Replace all the tokens with image tags
-    function processPreSubmit(evt) {
-        // Process the tokens from the last to the first, so that
-        // we can modify the text contents without changing the
-        // index positions of tokens before we process them
-        knownTokens.sort((a, b) => {
-            if (a.token.index > b.token.index) {
-                return -1;
-            }
-            else if (b.token.index > a.token.index) {
-                return 1;
-            }
-            return 0;
-        });
-        let value = input.value;
-        knownTokens.forEach(knownToken => {
-            if (knownToken.isValid && !knownToken.disabled) {
-                const tagInsert = `<a href="https://gitme.me/image?url=${encodeURIComponent(knownToken.imageUrl)}"><img src="${knownToken.imageUrl}" title="Created by gitme.me with /${knownToken.token.value}"/></a>`;
-                value =
-                    value.substring(0, knownToken.token.index) +
-                        tagInsert +
-                        value.substring(knownToken.token.index + knownToken.token.value.length + 1);
-                const isLoggedIn = userInfo &&
-                    userInfo.id &&
-                    userInfo.token &&
-                    loggedInUser &&
-                    loggedInUser.id === userInfo.id;
-                fetch(`${consts_1.API_ROOT_URL}/add_token_by_url`, {
-                    method: "POST",
-                    headers: isLoggedIn
-                        ? Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token)) : {},
-                    body: JSON.stringify({
-                        image_url: knownToken.imageUrl,
-                        token: knownToken.token.value
-                    })
-                });
-                if (loggedInUser) {
-                    // Also store the used tokens locally, so they work even when
-                    // not authorized with the extension.
-                    const tokenStorageKey = `image:${loggedInUser.id}_${knownToken.token.value}`;
-                    chrome.storage.local.set({
-                        [tokenStorageKey]: knownToken.imageUrl
-                    });
-                }
-            }
-        });
-        input.value = value;
-        cleanUp();
-    }
-    const TOOLBAR_BUTTON_LABEL = "GM";
-    function onTokenActive(isActive, tokenTag) {
-        if (toolbarButtonItem) {
-            if (!isActive && activeTag !== tokenTag) {
-                // Prevent a race condition where the cursor moves
-                // from one tag to another
-                return;
-            }
-            toolbarButtonItem.classList.toggle("__active", isActive);
-        }
-        activeTag = tokenTag;
-    }
-    function addToolbarButton(form) {
-        const toolbarNode = form.querySelector("markdown-toolbar");
-        if (toolbarNode) {
-            if (toolbarNode.querySelector(".__toolbarButton")) {
-                console.log("already have a toolbar item for form ", form);
-                return;
-            }
-            const toolbarButton = document.createElement("div");
-            toolbarButton.className = "d-inline-block mr-3 __toolbarButton";
-            toolbarButtonItem = document.createElement("button");
-            toolbarButtonItem.className = "toolbar-item __toolbarButtonItem";
-            toolbarButtonItem.textContent = TOOLBAR_BUTTON_LABEL;
-            toolbarButton.appendChild(toolbarButtonItem);
-            toolbarButton.addEventListener("click", (evt) => {
-                evt.preventDefault();
-                evt.stopPropagation();
-                if (activeTag) {
-                    console.log("activeTag is ", activeTag);
-                }
-            });
-            toolbarNode.appendChild(toolbarButton);
-        }
-        else {
-            console.log("no toolbar button on form ", form);
-        }
-    }
-    input.addEventListener("keyup", updateTokensForInput);
-    input.addEventListener("change", updateTokensForInput);
-    input.addEventListener("focus", updateTokensForInput);
-    formNode.addEventListener("submit", processPreSubmit, true);
-    addToolbarButton(formNode);
-    // In case the input is simply removed from the DOM without
-    // being submitted, clean up too
-    var mutationObserver = new MutationObserver(function (evt) {
-        if (evt[0].removedNodes &&
-            Array.from(evt[0].removedNodes).indexOf(input) > -1) {
-            cleanUp();
-        }
-        else if (input.offsetHeight === 0) {
-            cleanUp();
-        }
-    });
-    mutationObserver.observe(formNode, { childList: true });
-    updateTokensForInput();
-    const ret = {
-        input,
-        remove: cleanUp
-    };
-    console.log("listenToInput returning ", ret);
-    return ret;
-}
-githubInfo_1.getGithubInfo().then((localUserInfo) => {
-    userInfo = localUserInfo;
-    findTextInputs_1.default(listenToInput);
-});
-
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-// Find all words beginning with "/"
-const regex = /(?<!\w)\/\w+/g;
-const charPrefixes = {
-    "\n": true,
-    "\t": true,
-    " ": true
-};
-function parseTokens(str) {
-    const ret = [];
-    let match;
-    do {
-        match = regex.exec(str);
-        if (match) {
-            // This is probably doable in regex, but screw it...
-            // Filter it out so that only tokens that are
-            // - at the start of a line
-            // -   or after a space or a tab
-            // - are at the end of a line
-            // -   or are followed by a space or a tab
-            // - are not inside an <img> tag
-            // are valid
-            const index = match.index;
-            let startIsValid = index === 0;
-            if (!startIsValid) {
-                const letterBefore = str.charAt(index - 1);
-                startIsValid = !!charPrefixes[letterBefore];
-            }
-            let endIsValid = index + match[0].length === str.length;
-            if (!endIsValid) {
-                // If not at the end of the string, check the characters after it
-                const letterAfter = str.charAt(index + match[0].length);
-                endIsValid = !!charPrefixes[letterAfter];
-            }
-            let outsideImageValid = true;
-            let imgIdx = str.indexOf("<img", 0);
-            while (outsideImageValid && imgIdx > -1) {
-                const closingBracket = str.indexOf(">", imgIdx);
-                if (closingBracket > -1) {
-                    if (index > imgIdx && index < closingBracket) {
-                        outsideImageValid = false;
-                    }
-                }
-                imgIdx = str.indexOf("<img", imgIdx + 1);
-            }
-            if (startIsValid && endIsValid && outsideImageValid) {
-                ret.push({
-                    index: match.index,
-                    value: match[0].substring(1).trim()
-                });
-            }
-        }
-    } while (match);
-    return ret;
-}
-exports.default = parseTokens;
-
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const React = __webpack_require__(9);
-const getCaretCoordinates = __webpack_require__(10);
-const ReactDOM = __webpack_require__(11);
-const searcher_1 = __webpack_require__(16);
-const TokenTag_1 = __webpack_require__(18);
-const TAG_CONTAINER_ID = "__tagContainer";
-const TEXT_HEIGHT = 18;
-// let removeOpenImage = null;
-const preferredTagUrls = {};
-function createTokenTag(textInput, token, onTokenActive) {
-    console.log("createTokenTag", token.value);
-    const startCoords = getCaretCoordinates(textInput, token.index);
-    const endCoords = getCaretCoordinates(textInput, token.index + token.value.length + 1);
-    let caretIsAtToken = false;
-    let tagContainer = document.getElementById(TAG_CONTAINER_ID);
-    if (!tagContainer) {
-        tagContainer = document.createElement("div");
-        tagContainer.id = TAG_CONTAINER_ID;
-        document.body.appendChild(tagContainer);
-    }
-    const tagUi = document.createElement("div");
-    tagContainer.appendChild(tagUi);
-    function renderTag() {
-        ReactDOM.render(React.createElement(TokenTag_1.default, { isDisabled: false, caretActive: record.caretIsAtToken, selectedImage: record.imageUrl, images: record.imageUrls, token: token, position: record.position, onToggleDisabled: () => {
-                record.disabled = !record.disabled;
-                renderTag();
-            } }), tagUi);
-    }
-    // const tagUiArrow = document.createElement("div");
-    // tagUiArrow.className = "__tokenTagArrow";
-    // tagUi.appendChild(tagUiArrow);
-    // let imageUi = null;
-    // tagUi.className = "__tokenTag";
-    // tagUi.setAttribute("data-token", token.value);
-    function checkCaretPosition() {
-        const caretPosition = textInput.selectionStart;
-        const nextCaretIsAtToken = caretPosition >= token.index &&
-            caretPosition <= token.index + token.value.length + 1;
-        if (nextCaretIsAtToken !== caretIsAtToken) {
-            setTimeout(() => {
-                onTokenActive(nextCaretIsAtToken, record);
-            });
-        }
-        record.caretIsAtToken = caretIsAtToken = nextCaretIsAtToken;
-        // tagUi.classList.toggle("__selected", caretIsAtToken);
-        renderTag();
-        // setTagUiTitle();
-    }
-    function reposition() {
-        const rect = textInput.getBoundingClientRect();
-        const top = TEXT_HEIGHT + window.scrollY + rect.top + startCoords.top;
-        const left = window.scrollX + rect.left + startCoords.left;
-        record.position = {
-            top,
-            left,
-            width: endCoords.left - startCoords.left
-        };
-        renderTag();
-    }
-    function remove() {
-        tagUi.parentNode.removeChild(tagUi);
-        textInput.removeEventListener("keyup", checkCaretPosition);
-        // textInput.removeEventListener("keydown", handleInputKey, true);
-        // textInput.removeEventListener("click", handleInputClick);
-        // removeImage();
-    }
-    const existingPreferredImageUrl = preferredTagUrls[token.value] || null;
-    const record = {
-        caretIsAtToken: false,
-        input: textInput,
-        remove,
-        reposition,
-        token,
-        isValid: existingPreferredImageUrl ? true : false,
-        imageUrl: existingPreferredImageUrl,
-        imageUrls: [],
-        disabled: false,
-        position: { top: 0, left: 0, width: 0 }
-    };
-    reposition();
-    checkCaretPosition();
-    textInput.addEventListener("keyup", checkCaretPosition);
-    // textInput.addEventListener("keydown", handleInputKey, true);
-    // textInput.addEventListener("click", handleInputClick);
-    renderTag();
-    searcher_1.default(token.value).then((urls) => {
-        const url = urls.length > 0 ? urls[0] : null;
-        record.imageUrl = record.imageUrl || url;
-        record.imageUrls = urls;
-        record.isValid = !!url;
-        renderTag();
-        // updateTagUi();
-    });
-    return record;
-    // const record = {
-    //   caretIsAtToken: false,
-    //   input: textInput,
-    //   remove: () => {},
-    //   reposition: () => {},
-    //   token,
-    //   isValid: false,
-    //   imageUrl: "",
-    //   imageUrls: [],
-    //   disabled: false,
-    //   position: null
-    // };
-    // return record;
-}
-exports.default = createTokenTag;
-// function handleInputKey(evt) {
-//   if (evt.keyCode === 40 && caretIsAtToken) {
-//     if (caretIsAtToken) {
-//       // Down arrow
-//       evt.preventDefault();
-//       evt.stopPropagation();
-//       openImageUI();
-//       return false;
-//     }
-//   } else {
-//     removeImage();
-//   }
-// }
-// function handleInputClick(evt) {
-//   removeImage();
-//   checkCaretPosition();
-// }
-// function removeImage() {
-//   const hasOpenImage = imageUi && imageUi.parentNode;
-//   if (removeOpenImage === removeImage) {
-//     removeOpenImage = null;
-//   }
-//   if (hasOpenImage) {
-//     imageUi.parentNode.removeChild(imageUi);
-//     imageUi = null;
-//     updateTagUi();
-//   }
-//   tagUi.classList.remove("__isOpen");
-//   imageUi = null;
-//   return hasOpenImage;
-// }
-// function disableImage() {
-//   record.disabled = true;
-//   removeImage();
-// }
-// function enableImage() {
-//   record.disabled = false;
-//   removeImage();
-// }
-// function setTagUiTitle() {
-//   let title = "";
-//   if (record) {
-//     if (!!record.imageUrl) {
-//       const addition = caretIsAtToken
-//         ? "Click or press the down arrow to see the meme image or to select others"
-//         : "Click to see the meme image or to select others";
-//       title = `GitMeme for "${token.value}". ${addition}`;
-//     } else {
-//       title = `GitMeme for "${token.value}" not found`;
-//     }
-//     if (record.disabled) {
-//       title = `GitMeme image disabled`;
-//     }
-//   }
-//   tagUi.title = title;
-// }
-// function updateTagUi() {
-//   tagUi.classList.toggle("imageFound", !!record.imageUrl);
-//   tagUi.classList.toggle("imageNotFound", !record.imageUrl);
-//   tagUi.classList.toggle("disabled", record.disabled);
-//   imageUi && imageUi.classList.toggle("disabled", record.disabled);
-//   if (imageUi) {
-//     imageUi.classList.toggle(
-//       "hasMultipleImages",
-//       record.imageUrls.length > 1
-//     );
-//     const imageNode = imageUi.querySelector("img");
-//     if (imageNode.src !== record.imageUrl) {
-//       imageNode.src = record.imageUrl;
-//     }
-//   }
-//   setTagUiTitle();
-// }
-// function selectImage() {
-//   const wrapper = document.createElement("div");
-//   wrapper.className = "__imageSelector";
-//   wrapper.innerHTML = `
-//     <div class="__imageSelectorTitle">Choose One Image</div>
-//       ${record.imageUrls
-//         .map((url, idx) => {
-//           return `<a href="#" data-index="${idx}"><img src="${url}" /></a>`;
-//         })
-//         .join("\n")}
-//   `;
-//   tagContainer.appendChild(wrapper);
-//   wrapper.addEventListener("click", evt => {
-//     let target = evt.target as HTMLElement;
-//     let targetName = target.tagName.toLowerCase();
-//     if (targetName === "img") {
-//       target = target.parentElement;
-//       targetName = target.tagName.toLowerCase();
-//     }
-//     if (targetName === "a") {
-//       record.imageUrl = record.imageUrls[target.getAttribute("data-index")];
-//       preferredTagUrls[record.token.value] = record.imageUrl;
-//       updateTagUi();
-//     }
-//     tagContainer.removeChild(wrapper);
-//   });
-// }
-// function openImageUI() {
-//   // If a url exists, then show the image in thumbnail form.
-//   // If the url does not exist, open a typeahead to find the
-//   // image you want (laterz...)
-//   if (record.imageUrl) {
-//     if (imageUi) {
-//       removeImage();
-//     } else {
-//       if (removeOpenImage) {
-//         removeOpenImage();
-//       }
-//       imageUi = document.createElement("div");
-//       imageUi.className = "__tokenTagThumbnail";
-//       tagUi.classList.add("__isOpen");
-//       const imagesContainer = document.createElement("div");
-//       imagesContainer.className = "__tokenTagThumbnailImages";
-//       const imageNode = document.createElement("img");
-//       imageNode.src = record.imageUrl;
-//       imagesContainer.appendChild(imageNode);
-//       const removeButtonNode = document.createElement("button");
-//       removeButtonNode.textContent = record.disabled
-//         ? "Enable Tag"
-//         : "Disable Tag";
-//       const buttonContainer = document.createElement("div");
-//       buttonContainer.className = "__tokenTagThumbnailButtons";
-//       buttonContainer.appendChild(removeButtonNode);
-//       imageUi.appendChild(imagesContainer);
-//       imageUi.appendChild(buttonContainer);
-//       imageNode.addEventListener("click", removeImage);
-//       removeButtonNode.addEventListener(
-//         "click",
-//         record.disabled ? enableImage : disableImage
-//       );
-//       const showAllImagesNode = document.createElement("button");
-//       showAllImagesNode.className = "__showAllImages";
-//       showAllImagesNode.textContent = `+${record.imageUrls.length - 1}`;
-//       showAllImagesNode.addEventListener("click", selectImage);
-//       imageUi.appendChild(showAllImagesNode);
-//       updateTagUi();
-//       tagContainer.appendChild(imageUi);
-//       // Store the global reference to ensure that only one image is
-//       // open at a time
-//       removeOpenImage = removeImage;
-//       reposition();
-//     }
-//   }
-// }
-// tagUi.addEventListener("click", openImageUI);
-// tagUi.style.top = top + "px";
-// tagUi.style.left = left + "px";
-// tagUi.style.width = endCoords.left - startCoords.left + "px";
-// if (imageUi) {
-//   imageUi.style.top = top + 2 + "px";
-//   imageUi.style.left = left + "px";
-// }
-
-
-/***/ }),
-/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1239,6 +587,670 @@ module.exports = Z.default || Z;
 
 
 /***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+if (true) {
+  module.exports = __webpack_require__(12);
+} else {}
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.GITHUB_CLIENT_ID = "9b9e17e168e82438cfb6";
+exports.API_ROOT_URL = "https://us-central1-git-meme-prod.cloudfunctions.net/api";
+// DO NOT CHECK IN
+// function getFakeUrl() {
+//   console.error("Do not check this in");
+//   return "http://localhost:5000/git-meme-prod/us-central1/api";
+// }
+// export const API_ROOT_URL = getFakeUrl();
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function createAuthHeader(userId, token) {
+    return {
+        Authorization: `Bearer ${userId}___${token}`,
+        "Content-Type": "application/json"
+    };
+}
+exports.default = createAuthHeader;
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const getLoggedInUser_1 = __webpack_require__(6);
+function getGithubInfo() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise(resolve => {
+            chrome.storage.sync.get(["github_token", "github_id", "github_avatar"], function (results) {
+                if (results.github_token) {
+                    resolve({
+                        token: results.github_token || null,
+                        id: results.github_id || null,
+                        avatar: results.github_avatar || null
+                    });
+                }
+                else {
+                    const loggedInUser = getLoggedInUser_1.default();
+                    resolve({
+                        token: null,
+                        id: loggedInUser ? loggedInUser.id : null,
+                        avatar: loggedInUser ? loggedInUser.avatar : null
+                    });
+                }
+            });
+        });
+    });
+}
+exports.getGithubInfo = getGithubInfo;
+function setGithubToken(token) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise(resolve => {
+            chrome.storage.sync.set({ github_token: token }, function () {
+                resolve();
+            });
+        });
+    });
+}
+exports.setGithubToken = setGithubToken;
+function setGithubUserId(userId, avatarUrl) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise(resolve => {
+            chrome.storage.sync.set({ github_id: userId, github_avatar: avatarUrl }, function () {
+                resolve();
+            });
+        });
+    });
+}
+exports.setGithubUserId = setGithubUserId;
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function getLoggedInUser() {
+    const avatarNode = document.querySelector("summary img.avatar");
+    if (avatarNode) {
+        const userName = (avatarNode.getAttribute("alt") || "").substring(1);
+        const avatar = avatarNode.getAttribute("src");
+        return {
+            id: userName,
+            avatar
+        };
+    }
+    return null;
+}
+exports.default = getLoggedInUser;
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const parseTokens_1 = __webpack_require__(8);
+const createTokenTag_1 = __webpack_require__(9);
+const throttle_1 = __webpack_require__(20);
+const getParentByTagName_1 = __webpack_require__(21);
+const findTextInputs_1 = __webpack_require__(22);
+const githubInfo_1 = __webpack_require__(5);
+const consts_1 = __webpack_require__(3);
+const createAuthHeader_1 = __webpack_require__(4);
+const getLoggedInUser_1 = __webpack_require__(6);
+console.log("in content script");
+let userInfo;
+// Get the logged in user from the DOM
+const loggedInUser = getLoggedInUser_1.default();
+function listenToInput(input) {
+    console.log("listenToInput", input);
+    let knownTokens = [];
+    let toolbarButtonItem;
+    let activeTag = null;
+    const updateTokensForInput = throttle_1.default(() => {
+        let tokens = parseTokens_1.default(input.value);
+        if (tokens.length > 0) {
+            // Filter the tokens that we already know about
+            const unknownTokens = tokens.filter(token => {
+                return !knownTokens.some(knownToken => {
+                    return (knownToken.token.index === token.index &&
+                        knownToken.token.value === token.value);
+                });
+            });
+            unknownTokens.forEach(token => {
+                try {
+                    const tokenTag = createTokenTag_1.default(input, token, onTokenActive);
+                    knownTokens.push(tokenTag);
+                }
+                catch (err) {
+                    console.error(err);
+                }
+            });
+        }
+        // Remove any tokens that are no longer valid
+        knownTokens = knownTokens.filter(knownToken => {
+            const stillExists = tokens.some(newToken => {
+                return (knownToken.token.index === newToken.index &&
+                    knownToken.token.value === newToken.value);
+            });
+            if (!stillExists) {
+                knownToken.remove();
+            }
+            return stillExists;
+        });
+    }, 500, { leading: false });
+    let formNode = getParentByTagName_1.default(input, "form");
+    function cleanUp() {
+        knownTokens.forEach(knownToken => {
+            knownToken.remove();
+        });
+        knownTokens = [];
+        input.removeEventListener("keyup", updateTokensForInput);
+        input.removeEventListener("change", updateTokensForInput);
+        input.removeEventListener("focus", updateTokensForInput);
+        formNode.removeEventListener("submit", processPreSubmit, true);
+    }
+    // Replace all the tokens with image tags
+    function processPreSubmit(evt) {
+        // Process the tokens from the last to the first, so that
+        // we can modify the text contents without changing the
+        // index positions of tokens before we process them
+        knownTokens.sort((a, b) => {
+            if (a.token.index > b.token.index) {
+                return -1;
+            }
+            else if (b.token.index > a.token.index) {
+                return 1;
+            }
+            return 0;
+        });
+        let value = input.value;
+        knownTokens.forEach(knownToken => {
+            if (knownToken.isValid && !knownToken.disabled) {
+                const tagInsert = `<a href="https://gitme.me/image?url=${encodeURIComponent(knownToken.imageUrl)}"><img src="${knownToken.imageUrl}" title="Created by gitme.me with /${knownToken.token.value}"/></a>`;
+                value =
+                    value.substring(0, knownToken.token.index) +
+                        tagInsert +
+                        value.substring(knownToken.token.index + knownToken.token.value.length + 1);
+                const isLoggedIn = userInfo &&
+                    userInfo.id &&
+                    userInfo.token &&
+                    loggedInUser &&
+                    loggedInUser.id === userInfo.id;
+                fetch(`${consts_1.API_ROOT_URL}/add_token_by_url`, {
+                    method: "POST",
+                    headers: isLoggedIn
+                        ? Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token)) : {},
+                    body: JSON.stringify({
+                        image_url: knownToken.imageUrl,
+                        token: knownToken.token.value
+                    })
+                });
+                if (loggedInUser) {
+                    // Also store the used tokens locally, so they work even when
+                    // not authorized with the extension.
+                    const tokenStorageKey = `image:${loggedInUser.id}_${knownToken.token.value}`;
+                    chrome.storage.local.set({
+                        [tokenStorageKey]: knownToken.imageUrl
+                    });
+                }
+            }
+        });
+        input.value = value;
+        cleanUp();
+    }
+    const TOOLBAR_BUTTON_LABEL = "GM";
+    function onTokenActive(isActive, tokenTag) {
+        if (toolbarButtonItem) {
+            if (!isActive && activeTag !== tokenTag) {
+                // Prevent a race condition where the cursor moves
+                // from one tag to another
+                return;
+            }
+            toolbarButtonItem.classList.toggle("__active", isActive);
+        }
+        activeTag = tokenTag;
+    }
+    function addToolbarButton(form) {
+        const toolbarNode = form.querySelector("markdown-toolbar");
+        if (toolbarNode) {
+            if (toolbarNode.querySelector(".__toolbarButton")) {
+                console.log("already have a toolbar item for form ", form);
+                return;
+            }
+            const toolbarButton = document.createElement("div");
+            toolbarButton.className = "d-inline-block mr-3 __toolbarButton";
+            toolbarButtonItem = document.createElement("button");
+            toolbarButtonItem.className = "toolbar-item __toolbarButtonItem";
+            toolbarButtonItem.textContent = TOOLBAR_BUTTON_LABEL;
+            toolbarButton.appendChild(toolbarButtonItem);
+            toolbarButton.addEventListener("click", (evt) => {
+                evt.preventDefault();
+                evt.stopPropagation();
+                if (activeTag) {
+                    console.log("activeTag is ", activeTag);
+                }
+            });
+            toolbarNode.appendChild(toolbarButton);
+        }
+        else {
+            console.log("no toolbar button on form ", form);
+        }
+    }
+    input.addEventListener("keyup", updateTokensForInput);
+    input.addEventListener("change", updateTokensForInput);
+    input.addEventListener("focus", updateTokensForInput);
+    formNode.addEventListener("submit", processPreSubmit, true);
+    addToolbarButton(formNode);
+    // In case the input is simply removed from the DOM without
+    // being submitted, clean up too
+    var mutationObserver = new MutationObserver(function (evt) {
+        if (evt[0].removedNodes &&
+            Array.from(evt[0].removedNodes).indexOf(input) > -1) {
+            cleanUp();
+        }
+        else if (input.offsetHeight === 0) {
+            cleanUp();
+        }
+    });
+    mutationObserver.observe(formNode, { childList: true });
+    updateTokensForInput();
+    const ret = {
+        input,
+        remove: cleanUp
+    };
+    console.log("listenToInput returning ", ret);
+    return ret;
+}
+githubInfo_1.getGithubInfo().then((localUserInfo) => {
+    userInfo = localUserInfo;
+    findTextInputs_1.default(listenToInput);
+});
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+// Find all words beginning with "/"
+const regex = /(?<!\w)\/\w+/g;
+const charPrefixes = {
+    "\n": true,
+    "\t": true,
+    " ": true
+};
+function parseTokens(str) {
+    const ret = [];
+    let match;
+    do {
+        match = regex.exec(str);
+        if (match) {
+            // This is probably doable in regex, but screw it...
+            // Filter it out so that only tokens that are
+            // - at the start of a line
+            // -   or after a space or a tab
+            // - are at the end of a line
+            // -   or are followed by a space or a tab
+            // - are not inside an <img> tag
+            // are valid
+            const index = match.index;
+            let startIsValid = index === 0;
+            if (!startIsValid) {
+                const letterBefore = str.charAt(index - 1);
+                startIsValid = !!charPrefixes[letterBefore];
+            }
+            let endIsValid = index + match[0].length === str.length;
+            if (!endIsValid) {
+                // If not at the end of the string, check the characters after it
+                const letterAfter = str.charAt(index + match[0].length);
+                endIsValid = !!charPrefixes[letterAfter];
+            }
+            let outsideImageValid = true;
+            let imgIdx = str.indexOf("<img", 0);
+            while (outsideImageValid && imgIdx > -1) {
+                const closingBracket = str.indexOf(">", imgIdx);
+                if (closingBracket > -1) {
+                    if (index > imgIdx && index < closingBracket) {
+                        outsideImageValid = false;
+                    }
+                }
+                imgIdx = str.indexOf("<img", imgIdx + 1);
+            }
+            if (startIsValid && endIsValid && outsideImageValid) {
+                ret.push({
+                    index: match.index,
+                    value: match[0].substring(1).trim()
+                });
+            }
+        }
+    } while (match);
+    return ret;
+}
+exports.default = parseTokens;
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const React = __webpack_require__(1);
+const getCaretCoordinates = __webpack_require__(10);
+const ReactDOM = __webpack_require__(11);
+const searcher_1 = __webpack_require__(16);
+const TokenTag_1 = __webpack_require__(18);
+const TAG_CONTAINER_ID = "__tagContainer";
+const TEXT_HEIGHT = 18;
+// let removeOpenImage = null;
+const preferredTagUrls = {};
+function createTokenTag(textInput, token, onTokenActive) {
+    console.log("createTokenTag", token.value);
+    const startCoords = getCaretCoordinates(textInput, token.index);
+    const endCoords = getCaretCoordinates(textInput, token.index + token.value.length + 1);
+    let caretIsAtToken = false;
+    let tagContainer = document.getElementById(TAG_CONTAINER_ID);
+    if (!tagContainer) {
+        tagContainer = document.createElement("div");
+        tagContainer.id = TAG_CONTAINER_ID;
+        document.body.appendChild(tagContainer);
+    }
+    const tagUi = document.createElement("div");
+    tagContainer.appendChild(tagUi);
+    function renderTag() {
+        ReactDOM.render(React.createElement(TokenTag_1.default, { isDisabled: false, caretActive: record.caretIsAtToken, selectedImage: record.imageUrl, images: record.imageUrls, token: token, position: record.position, modalIsOpen: record.modalIsOpen, onSelectImage: (url) => {
+                record.imageUrl = url;
+                renderTag();
+            }, onToggleDisabled: () => {
+                record.disabled = !record.disabled;
+                renderTag();
+            }, onToggleModal: () => {
+                record.modalIsOpen = !!record.modalIsOpen;
+                renderTag();
+            } }), tagUi);
+    }
+    // let imageUi = null;
+    // tagUi.setAttribute("data-token", token.value);
+    function checkCaretPosition() {
+        const caretPosition = textInput.selectionStart;
+        const nextCaretIsAtToken = caretPosition >= token.index &&
+            caretPosition <= token.index + token.value.length + 1;
+        if (nextCaretIsAtToken !== caretIsAtToken) {
+            setTimeout(() => {
+                onTokenActive(nextCaretIsAtToken, record);
+            });
+        }
+        record.caretIsAtToken = caretIsAtToken = nextCaretIsAtToken;
+        // tagUi.classList.toggle("__selected", caretIsAtToken);
+        renderTag();
+        // setTagUiTitle();
+    }
+    function reposition() {
+        const rect = textInput.getBoundingClientRect();
+        const top = TEXT_HEIGHT + window.scrollY + rect.top + startCoords.top;
+        const left = window.scrollX + rect.left + startCoords.left;
+        record.position = {
+            top,
+            left,
+            width: endCoords.left - startCoords.left
+        };
+        renderTag();
+    }
+    function remove() {
+        tagUi.parentNode.removeChild(tagUi);
+        textInput.removeEventListener("keyup", checkCaretPosition);
+        textInput.removeEventListener("keydown", handleInputKey, true);
+        textInput.removeEventListener("click", handleInputClick);
+        // removeImage();
+    }
+    function handleInputKey(evt) {
+        if (evt.keyCode === 40) {
+            if (record.caretIsAtToken) {
+                if (!record.modalIsOpen) {
+                    // Down arrow
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                    record.modalIsOpen = true;
+                    renderTag();
+                    return false;
+                }
+            }
+        }
+        if (record.modalIsOpen) {
+            record.modalIsOpen = false;
+            renderTag();
+        }
+        return true;
+    }
+    function handleInputClick(evt) {
+        if (record.modalIsOpen) {
+            record.modalIsOpen = false;
+            renderTag();
+        }
+        checkCaretPosition();
+    }
+    const existingPreferredImageUrl = preferredTagUrls[token.value] || null;
+    const record = {
+        caretIsAtToken: false,
+        modalIsOpen: false,
+        input: textInput,
+        remove,
+        reposition,
+        token,
+        isValid: existingPreferredImageUrl ? true : false,
+        imageUrl: existingPreferredImageUrl,
+        imageUrls: [],
+        disabled: false,
+        position: { top: 0, left: 0, width: 0 }
+    };
+    reposition();
+    checkCaretPosition();
+    textInput.addEventListener("keyup", checkCaretPosition);
+    textInput.addEventListener("keydown", handleInputKey, true);
+    textInput.addEventListener("click", handleInputClick);
+    renderTag();
+    searcher_1.default(token.value).then((urls) => {
+        const url = urls.length > 0 ? urls[0] : null;
+        record.imageUrl = record.imageUrl || url;
+        record.imageUrls = urls;
+        record.isValid = !!url;
+        renderTag();
+        // updateTagUi();
+    });
+    return record;
+    // const record = {
+    //   caretIsAtToken: false,
+    //   input: textInput,
+    //   remove: () => {},
+    //   reposition: () => {},
+    //   token,
+    //   isValid: false,
+    //   imageUrl: "",
+    //   imageUrls: [],
+    //   disabled: false,
+    //   position: null
+    // };
+    // return record;
+}
+exports.default = createTokenTag;
+// function removeImage() {
+//   const hasOpenImage = imageUi && imageUi.parentNode;
+//   if (removeOpenImage === removeImage) {
+//     removeOpenImage = null;
+//   }
+//   if (hasOpenImage) {
+//     imageUi.parentNode.removeChild(imageUi);
+//     imageUi = null;
+//     updateTagUi();
+//   }
+//   tagUi.classList.remove("__isOpen");
+//   imageUi = null;
+//   return hasOpenImage;
+// }
+// function disableImage() {
+//   record.disabled = true;
+//   removeImage();
+// }
+// function enableImage() {
+//   record.disabled = false;
+//   removeImage();
+// }
+// function setTagUiTitle() {
+//   let title = "";
+//   if (record) {
+//     if (!!record.imageUrl) {
+//       const addition = caretIsAtToken
+//         ? "Click or press the down arrow to see the meme image or to select others"
+//         : "Click to see the meme image or to select others";
+//       title = `GitMeme for "${token.value}". ${addition}`;
+//     } else {
+//       title = `GitMeme for "${token.value}" not found`;
+//     }
+//     if (record.disabled) {
+//       title = `GitMeme image disabled`;
+//     }
+//   }
+//   tagUi.title = title;
+// }
+// function updateTagUi() {
+//   tagUi.classList.toggle("imageFound", !!record.imageUrl);
+//   tagUi.classList.toggle("imageNotFound", !record.imageUrl);
+//   tagUi.classList.toggle("disabled", record.disabled);
+//   imageUi && imageUi.classList.toggle("disabled", record.disabled);
+//   if (imageUi) {
+//     imageUi.classList.toggle(
+//       "hasMultipleImages",
+//       record.imageUrls.length > 1
+//     );
+//     const imageNode = imageUi.querySelector("img");
+//     if (imageNode.src !== record.imageUrl) {
+//       imageNode.src = record.imageUrl;
+//     }
+//   }
+//   setTagUiTitle();
+// }
+// function selectImage() {
+//   const wrapper = document.createElement("div");
+//   wrapper.className = "__imageSelector";
+//   wrapper.innerHTML = `
+//     <div class="__imageSelectorTitle">Choose One Image</div>
+//       ${record.imageUrls
+//         .map((url, idx) => {
+//           return `<a href="#" data-index="${idx}"><img src="${url}" /></a>`;
+//         })
+//         .join("\n")}
+//   `;
+//   tagContainer.appendChild(wrapper);
+//   wrapper.addEventListener("click", evt => {
+//     let target = evt.target as HTMLElement;
+//     let targetName = target.tagName.toLowerCase();
+//     if (targetName === "img") {
+//       target = target.parentElement;
+//       targetName = target.tagName.toLowerCase();
+//     }
+//     if (targetName === "a") {
+//       record.imageUrl = record.imageUrls[target.getAttribute("data-index")];
+//       preferredTagUrls[record.token.value] = record.imageUrl;
+//       updateTagUi();
+//     }
+//     tagContainer.removeChild(wrapper);
+//   });
+// }
+// function openImageUI() {
+//   // If a url exists, then show the image in thumbnail form.
+//   // If the url does not exist, open a typeahead to find the
+//   // image you want (laterz...)
+//   if (record.imageUrl) {
+//     if (imageUi) {
+//       removeImage();
+//     } else {
+//       if (removeOpenImage) {
+//         removeOpenImage();
+//       }
+//       imageUi = document.createElement("div");
+//       imageUi.className = "__tokenTagThumbnail";
+//       tagUi.classList.add("__isOpen");
+//       const imagesContainer = document.createElement("div");
+//       imagesContainer.className = "__tokenTagThumbnailImages";
+//       const imageNode = document.createElement("img");
+//       imageNode.src = record.imageUrl;
+//       imagesContainer.appendChild(imageNode);
+//       const removeButtonNode = document.createElement("button");
+//       removeButtonNode.textContent = record.disabled
+//         ? "Enable Tag"
+//         : "Disable Tag";
+//       const buttonContainer = document.createElement("div");
+//       buttonContainer.className = "__tokenTagThumbnailButtons";
+//       buttonContainer.appendChild(removeButtonNode);
+//       imageUi.appendChild(imagesContainer);
+//       imageUi.appendChild(buttonContainer);
+//       imageNode.addEventListener("click", removeImage);
+//       removeButtonNode.addEventListener(
+//         "click",
+//         record.disabled ? enableImage : disableImage
+//       );
+//       const showAllImagesNode = document.createElement("button");
+//       showAllImagesNode.className = "__showAllImages";
+//       showAllImagesNode.textContent = `+${record.imageUrls.length - 1}`;
+//       showAllImagesNode.addEventListener("click", selectImage);
+//       imageUi.appendChild(showAllImagesNode);
+//       updateTagUi();
+//       tagContainer.appendChild(imageUi);
+//       // Store the global reference to ensure that only one image is
+//       // open at a time
+//       removeOpenImage = removeImage;
+//       reposition();
+//     }
+//   }
+// }
+// tagUi.addEventListener("click", openImageUI);
+// tagUi.style.top = top + "px";
+// tagUi.style.left = left + "px";
+// tagUi.style.width = endCoords.left - startCoords.left + "px";
+// if (imageUi) {
+//   imageUi.style.top = top + 2 + "px";
+//   imageUi.style.left = left + "px";
+// }
+
+
+/***/ }),
 /* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1399,7 +1411,7 @@ if ( true && typeof module.exports != 'undefined') {
 /*
  Modernizr 3.0.0pre (Custom Build) | MIT
 */
-var aa=__webpack_require__(1),n=__webpack_require__(0),r=__webpack_require__(13);function ba(a,b,c,d,e,f,g,h){if(!a){a=void 0;if(void 0===b)a=Error("Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings.");else{var l=[c,d,e,f,g,h],k=0;a=Error(b.replace(/%s/g,function(){return l[k++]}));a.name="Invariant Violation"}a.framesToPop=1;throw a;}}
+var aa=__webpack_require__(2),n=__webpack_require__(0),r=__webpack_require__(13);function ba(a,b,c,d,e,f,g,h){if(!a){a=void 0;if(void 0===b)a=Error("Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings.");else{var l=[c,d,e,f,g,h],k=0;a=Error(b.replace(/%s/g,function(){return l[k++]}));a.name="Invariant Violation"}a.framesToPop=1;throw a;}}
 function x(a){for(var b=arguments.length-1,c="https://reactjs.org/docs/error-decoder.html?invariant="+a,d=0;d<b;d++)c+="&args[]="+encodeURIComponent(arguments[d+1]);ba(!1,"Minified React error #"+a+"; visit %s for the full message or use the non-minified dev environment for full errors and additional helpful warnings. ",c)}aa?void 0:x("227");function ca(a,b,c,d,e,f,g,h,l){var k=Array.prototype.slice.call(arguments,3);try{b.apply(c,k)}catch(m){this.onError(m)}}
 var da=!1,ea=null,fa=!1,ha=null,ia={onError:function(a){da=!0;ea=a}};function ja(a,b,c,d,e,f,g,h,l){da=!1;ea=null;ca.apply(ia,arguments)}function ka(a,b,c,d,e,f,g,h,l){ja.apply(this,arguments);if(da){if(da){var k=ea;da=!1;ea=null}else x("198"),k=void 0;fa||(fa=!0,ha=k)}}var la=null,ma={};
 function na(){if(la)for(var a in ma){var b=ma[a],c=la.indexOf(a);-1<c?void 0:x("96",a);if(!oa[c]){b.extractEvents?void 0:x("97",a);oa[c]=b;c=b.eventTypes;for(var d in c){var e=void 0;var f=c[d],g=b,h=d;pa.hasOwnProperty(h)?x("99",h):void 0;pa[h]=f;var l=f.phasedRegistrationNames;if(l){for(e in l)l.hasOwnProperty(e)&&qa(l[e],g,h);e=!0}else f.registrationName?(qa(f.registrationName,g,h),e=!0):e=!1;e?void 0:x("98",d,a)}}}}
@@ -1773,9 +1785,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fetch = __webpack_require__(17);
-const consts_1 = __webpack_require__(2);
-const createAuthHeader_1 = __webpack_require__(3);
-const githubInfo_1 = __webpack_require__(4);
+const consts_1 = __webpack_require__(3);
+const createAuthHeader_1 = __webpack_require__(4);
+const githubInfo_1 = __webpack_require__(5);
 const GIPHY_API_KEY = "I5ysXzZG4OIoiMD99Tz7v6AGN9uzGWpr";
 const allResults = {};
 function filterToRemoveIdenticalImages(arr) {
@@ -1957,35 +1969,56 @@ exports.Response = global.Response;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const React = __webpack_require__(1);
-const useState = React.useState;
+const React = __webpack_require__(2);
+const TokenModal_1 = __webpack_require__(19);
 function TokenTag(props) {
-    const [modalVisible, setModalVisible] = useState(false);
     const classes = ["__tokenTag"];
     classes.push(props.selectedImage ? "imageFound" : "imageNotFound");
     if (props.isDisabled) {
         classes.push("disabled");
     }
-    if (modalVisible) {
+    if (props.modalIsOpen) {
         classes.push("__isOpen");
     }
     if (props.caretActive) {
         classes.push("__selected");
     }
     return (React.createElement("div", { className: classes.join(" "), "data-token": props.token.value, onClick: () => {
-            setModalVisible(!modalVisible);
+            props.onToggleModal();
         }, style: {
             top: props.position.top + "px",
             left: props.position.left + "px",
             width: props.position.width + "px"
         } },
-        React.createElement("div", { className: "__tokenTagArrow" })));
+        React.createElement("div", { className: "__tokenTagArrow" }),
+        props.modalIsOpen ? (React.createElement(TokenModal_1.default, { images: props.images, isDisabled: props.isDisabled, selectedIndex: props.images.indexOf(props.selectedImage), onToggleDisabled: props.onToggleDisabled, onSelectImage: props.onSelectImage })) : null));
 }
 exports.default = TokenTag;
 
 
 /***/ }),
 /* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const React = __webpack_require__(1);
+function TokenModal(props) {
+    return (React.createElement("div", { className: "__tokenTagThumbnail" },
+        React.createElement("div", { className: "__tokenTagThumbnailImages" }, props.images.map((url, idx) => {
+            return (React.createElement("img", { src: url, className: idx === props.selectedIndex ? "__selected" : "", onClick: () => {
+                    props.onSelectImage(props.images[idx]);
+                } }));
+        })),
+        React.createElement("div", { className: "__tokenTagThumbnailButtons" },
+            React.createElement("button", { onClick: props.onToggleDisabled }, props.isDisabled ? "Enable Tag" : "Disable Tag"))));
+}
+exports.default = TokenModal;
+
+
+/***/ }),
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2031,7 +2064,7 @@ exports.default = throttle;
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2048,7 +2081,7 @@ exports.default = getParentByTagName;
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

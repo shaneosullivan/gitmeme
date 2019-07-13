@@ -61,8 +61,17 @@ export default function createTokenTag(
         images={record.imageUrls}
         token={token}
         position={record.position}
+        modalIsOpen={record.modalIsOpen}
+        onSelectImage={(url: string) => {
+          record.imageUrl = url;
+          renderTag();
+        }}
         onToggleDisabled={() => {
           record.disabled = !record.disabled;
+          renderTag();
+        }}
+        onToggleModal={() => {
+          record.modalIsOpen = !!record.modalIsOpen;
           renderTag();
         }}
       />,
@@ -70,12 +79,7 @@ export default function createTokenTag(
     );
   }
 
-  // const tagUiArrow = document.createElement("div");
-  // tagUiArrow.className = "__tokenTagArrow";
-  // tagUi.appendChild(tagUiArrow);
-
   // let imageUi = null;
-  // tagUi.className = "__tokenTag";
   // tagUi.setAttribute("data-token", token.value);
 
   function checkCaretPosition() {
@@ -114,15 +118,44 @@ export default function createTokenTag(
   function remove() {
     tagUi.parentNode.removeChild(tagUi);
     textInput.removeEventListener("keyup", checkCaretPosition);
-    // textInput.removeEventListener("keydown", handleInputKey, true);
-    // textInput.removeEventListener("click", handleInputClick);
+    textInput.removeEventListener("keydown", handleInputKey, true);
+    textInput.removeEventListener("click", handleInputClick);
     // removeImage();
+  }
+
+  function handleInputKey(evt) {
+    if (evt.keyCode === 40) {
+      if (record.caretIsAtToken) {
+        if (!record.modalIsOpen) {
+          // Down arrow
+          evt.preventDefault();
+          evt.stopPropagation();
+          record.modalIsOpen = true;
+          renderTag();
+          return false;
+        }
+      }
+    }
+    if (record.modalIsOpen) {
+      record.modalIsOpen = false;
+      renderTag();
+    }
+    return true;
+  }
+
+  function handleInputClick(evt) {
+    if (record.modalIsOpen) {
+      record.modalIsOpen = false;
+      renderTag();
+    }
+    checkCaretPosition();
   }
 
   const existingPreferredImageUrl = preferredTagUrls[token.value] || null;
 
   const record = {
     caretIsAtToken: false,
+    modalIsOpen: false,
     input: textInput,
     remove,
     reposition,
@@ -137,8 +170,8 @@ export default function createTokenTag(
   reposition();
   checkCaretPosition();
   textInput.addEventListener("keyup", checkCaretPosition);
-  // textInput.addEventListener("keydown", handleInputKey, true);
-  // textInput.addEventListener("click", handleInputClick);
+  textInput.addEventListener("keydown", handleInputKey, true);
+  textInput.addEventListener("click", handleInputClick);
 
   renderTag();
 
@@ -169,25 +202,6 @@ export default function createTokenTag(
   // };
   // return record;
 }
-
-// function handleInputKey(evt) {
-//   if (evt.keyCode === 40 && caretIsAtToken) {
-//     if (caretIsAtToken) {
-//       // Down arrow
-//       evt.preventDefault();
-//       evt.stopPropagation();
-//       openImageUI();
-//       return false;
-//     }
-//   } else {
-//     removeImage();
-//   }
-// }
-
-// function handleInputClick(evt) {
-//   removeImage();
-//   checkCaretPosition();
-// }
 
 // function removeImage() {
 //   const hasOpenImage = imageUi && imageUi.parentNode;

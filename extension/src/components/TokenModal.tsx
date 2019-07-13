@@ -1,11 +1,11 @@
-import React from "react";
+import * as React from "../lib/react";
 
 interface Props {
   images: Array<string>;
   isDisabled: boolean;
   selectedIndex: number;
   onToggleDisabled: Function;
-  onSelectImage: (idx: number) => void;
+  onSelectImage: (url: string) => void;
 }
 
 export default function TokenModal(props: Props) {
@@ -18,7 +18,7 @@ export default function TokenModal(props: Props) {
               src={url}
               className={idx === props.selectedIndex ? "__selected" : ""}
               onClick={() => {
-                props.onSelectImage(idx);
+                props.onSelectImage(props.images[idx]);
               }}
             />
           );

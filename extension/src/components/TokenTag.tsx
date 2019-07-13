@@ -1,29 +1,28 @@
 import * as React from "react";
-//  import ReactDOM from "react-dom";
 import { Token } from "../parseTokens";
-// import TokenModal from "./TokenModal";
+import TokenModal from "./TokenModal";
 
 interface Props {
   caretActive: boolean;
   selectedImage: string;
   images: Array<string>;
   isDisabled: boolean;
+  modalIsOpen: boolean;
   position: { top: number; left: number; width: number };
   token: Token;
+  onSelectImage: (url: string) => void;
   onToggleDisabled: Function;
+  onToggleModal: Function;
 }
 
-const useState = React.useState;
-
 export default function TokenTag(props: Props) {
-  const [modalVisible, setModalVisible] = useState(false);
   const classes = ["__tokenTag"];
 
   classes.push(props.selectedImage ? "imageFound" : "imageNotFound");
   if (props.isDisabled) {
     classes.push("disabled");
   }
-  if (modalVisible) {
+  if (props.modalIsOpen) {
     classes.push("__isOpen");
   }
   if (props.caretActive) {
@@ -35,7 +34,7 @@ export default function TokenTag(props: Props) {
       className={classes.join(" ")}
       data-token={props.token.value}
       onClick={() => {
-        setModalVisible(!modalVisible);
+        props.onToggleModal();
       }}
       style={{
         top: props.position.top + "px",
@@ -44,13 +43,15 @@ export default function TokenTag(props: Props) {
       }}
     >
       <div className="__tokenTagArrow" />
-      {/* {modalVisible ? (
+      {props.modalIsOpen ? (
         <TokenModal
           images={props.images}
           isDisabled={props.isDisabled}
+          selectedIndex={props.images.indexOf(props.selectedImage)}
           onToggleDisabled={props.onToggleDisabled}
+          onSelectImage={props.onSelectImage}
         />
-      ) : null} */}
+      ) : null}
     </div>
   );
 }
