@@ -39,7 +39,7 @@ function createTokenTag(textInput, token) {
                     removeOpenImage();
                 }
                 imageUi = document.createElement("img");
-                imageUi.className = "__tokenTagThumbnail";
+                imageUi.className = "__tokenTagModal";
                 imageUi.src = imageUrl;
                 imageUi.addEventListener("click", removeImage);
                 tagContainer.appendChild(imageUi);

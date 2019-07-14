@@ -53,10 +53,10 @@ export default function createTokenTag(
   tagContainer.appendChild(tagUi);
 
   function renderTag() {
-    console.log("renderTag record.modalIsOpen = ", record.modalIsOpen);
+    console.log("renderTag record.disabled = ", record.disabled);
     ReactDOM.render(
       <TokenTag
-        isDisabled={false}
+        isDisabled={record.disabled}
         caretActive={record.caretIsAtToken}
         selectedImage={record.imageUrl}
         images={record.imageUrls}
@@ -65,10 +65,14 @@ export default function createTokenTag(
         modalIsOpen={record.modalIsOpen}
         onSelectImage={(url: string) => {
           record.imageUrl = url;
+          preferredTagUrls[token.value] = url;
           renderTag();
         }}
         onToggleDisabled={() => {
           record.disabled = !record.disabled;
+          if (record.disabled) {
+            record.modalIsOpen = false;
+          }
           renderTag();
         }}
         onToggleModal={() => {
@@ -79,9 +83,6 @@ export default function createTokenTag(
       tagUi
     );
   }
-
-  // let imageUi = null;
-  // tagUi.setAttribute("data-token", token.value);
 
   function checkCaretPosition() {
     const caretPosition = textInput.selectionStart;
@@ -97,7 +98,6 @@ export default function createTokenTag(
 
     record.caretIsAtToken = caretIsAtToken = nextCaretIsAtToken;
 
-    // tagUi.classList.toggle("__selected", caretIsAtToken);
     renderTag();
     // setTagUiTitle();
   }
@@ -184,90 +184,14 @@ export default function createTokenTag(
     record.isValid = !!url;
 
     renderTag();
-    // updateTagUi();
   });
 
   return record;
-
-  // const record = {
-  //   caretIsAtToken: false,
-  //   input: textInput,
-  //   remove: () => {},
-  //   reposition: () => {},
-  //   token,
-  //   isValid: false,
-  //   imageUrl: "",
-  //   imageUrls: [],
-  //   disabled: false,
-  //   position: null
-  // };
-  // return record;
 }
-
-// function removeImage() {
-//   const hasOpenImage = imageUi && imageUi.parentNode;
-//   if (removeOpenImage === removeImage) {
-//     removeOpenImage = null;
-//   }
-//   if (hasOpenImage) {
-//     imageUi.parentNode.removeChild(imageUi);
-//     imageUi = null;
-//     updateTagUi();
-//   }
-//   tagUi.classList.remove("__isOpen");
-//   imageUi = null;
-//   return hasOpenImage;
-// }
 
 // function disableImage() {
 //   record.disabled = true;
 //   removeImage();
-// }
-
-// function enableImage() {
-//   record.disabled = false;
-//   removeImage();
-// }
-
-// function setTagUiTitle() {
-//   let title = "";
-//   if (record) {
-//     if (!!record.imageUrl) {
-//       const addition = caretIsAtToken
-//         ? "Click or press the down arrow to see the meme image or to select others"
-//         : "Click to see the meme image or to select others";
-//       title = `GitMeme for "${token.value}". ${addition}`;
-//     } else {
-//       title = `GitMeme for "${token.value}" not found`;
-//     }
-
-//     if (record.disabled) {
-//       title = `GitMeme image disabled`;
-//     }
-//   }
-//   tagUi.title = title;
-// }
-
-// function updateTagUi() {
-//   tagUi.classList.toggle("imageFound", !!record.imageUrl);
-//   tagUi.classList.toggle("imageNotFound", !record.imageUrl);
-
-//   tagUi.classList.toggle("disabled", record.disabled);
-//   imageUi && imageUi.classList.toggle("disabled", record.disabled);
-
-//   if (imageUi) {
-//     imageUi.classList.toggle(
-//       "hasMultipleImages",
-//       record.imageUrls.length > 1
-//     );
-
-//     const imageNode = imageUi.querySelector("img");
-//     if (imageNode.src !== record.imageUrl) {
-//       imageNode.src = record.imageUrl;
-//     }
-//   }
-
-//   setTagUiTitle();
 // }
 
 // function selectImage() {
@@ -314,11 +238,11 @@ export default function createTokenTag(
 //       }
 //       imageUi = document.createElement("div");
 
-//       imageUi.className = "__tokenTagThumbnail";
+//       imageUi.className = "__tokenTagModal";
 //       tagUi.classList.add("__isOpen");
 
 //       const imagesContainer = document.createElement("div");
-//       imagesContainer.className = "__tokenTagThumbnailImages";
+//       imagesContainer.className = "__tokenTagModalImages";
 
 //       const imageNode = document.createElement("img");
 //       imageNode.src = record.imageUrl;
@@ -331,7 +255,7 @@ export default function createTokenTag(
 //         : "Disable Tag";
 
 //       const buttonContainer = document.createElement("div");
-//       buttonContainer.className = "__tokenTagThumbnailButtons";
+//       buttonContainer.className = "__tokenTagModalButtons";
 
 //       buttonContainer.appendChild(removeButtonNode);
 
@@ -361,15 +285,4 @@ export default function createTokenTag(
 //       reposition();
 //     }
 //   }
-// }
-
-// tagUi.addEventListener("click", openImageUI);
-
-// tagUi.style.top = top + "px";
-// tagUi.style.left = left + "px";
-// tagUi.style.width = endCoords.left - startCoords.left + "px";
-
-// if (imageUi) {
-//   imageUi.style.top = top + 2 + "px";
-//   imageUi.style.left = left + "px";
 // }

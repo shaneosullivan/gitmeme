@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from "../lib/react";
 import { Token } from "../parseTokens";
 import TokenModal from "./TokenModal";
 
@@ -20,13 +20,24 @@ export default function TokenTag(props: Props) {
 
   classes.push(props.selectedImage ? "imageFound" : "imageNotFound");
   if (props.isDisabled) {
-    classes.push("disabled");
+    classes.push("__disabled");
   }
   if (props.modalIsOpen) {
     classes.push("__isOpen");
   }
   if (props.caretActive) {
     classes.push("__selected");
+  }
+  let title;
+  if (props.isDisabled) {
+    title = `GitMeme image disabled`;
+  } else if (props.selectedImage) {
+    const addition = props.caretActive
+      ? "Click or press the down arrow to see the meme image or to select others"
+      : "Click to see the meme image or to select others";
+    title = `GitMeme for "${props.token.value}". ${addition}`;
+  } else {
+    title = `GitMeme for "${props.token.value}" not found`;
   }
 
   return (
@@ -38,6 +49,7 @@ export default function TokenTag(props: Props) {
         left: props.position.left - 4 + "px",
         width: props.position.width + 24 + "px"
       }}
+      title={title}
     >
       <div
         className="__tokenTagArrow"
