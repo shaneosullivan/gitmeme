@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 8);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -705,16 +705,86 @@ exports.default = getLoggedInUser;
 
 /***/ }),
 /* 6 */
+/***/ (function(module, exports) {
+
+// Unique ID creation requires a high quality random # generator.  In the
+// browser this is a little complicated due to unknown quality of Math.random()
+// and inconsistent support for the `crypto` API.  We do the best we can via
+// feature-detection
+
+// getRandomValues needs to be invoked in a context where "this" is a Crypto
+// implementation. Also, find the complete implementation of crypto on IE11.
+var getRandomValues = (typeof(crypto) != 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto)) ||
+                      (typeof(msCrypto) != 'undefined' && typeof window.msCrypto.getRandomValues == 'function' && msCrypto.getRandomValues.bind(msCrypto));
+
+if (getRandomValues) {
+  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
+
+  module.exports = function whatwgRNG() {
+    getRandomValues(rnds8);
+    return rnds8;
+  };
+} else {
+  // Math.random()-based (RNG)
+  //
+  // If all else fails, use Math.random().  It's fast, but is of unspecified
+  // quality.
+  var rnds = new Array(16);
+
+  module.exports = function mathRNG() {
+    for (var i = 0, r; i < 16; i++) {
+      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+    }
+
+    return rnds;
+  };
+}
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports) {
+
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex[i] = (i + 0x100).toString(16).substr(1);
+}
+
+function bytesToUuid(buf, offset) {
+  var i = offset || 0;
+  var bth = byteToHex;
+  // join used to fix memory issue caused by concatenation: https://bugs.chromium.org/p/v8/issues/detail?id=3175#c4
+  return ([bth[buf[i++]], bth[buf[i++]], 
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]],
+	bth[buf[i++]], bth[buf[i++]],
+	bth[buf[i++]], bth[buf[i++]]]).join('');
+}
+
+module.exports = bytesToUuid;
+
+
+/***/ }),
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const parseTokens_1 = __webpack_require__(7);
-const createTokenTag_1 = __webpack_require__(8);
-const throttle_1 = __webpack_require__(18);
-const getParentByTagName_1 = __webpack_require__(19);
-const findTextInputs_1 = __webpack_require__(20);
+const parseTokens_1 = __webpack_require__(9);
+const createTokenTag_1 = __webpack_require__(10);
+const throttle_1 = __webpack_require__(23);
+const getParentByTagName_1 = __webpack_require__(24);
+const findTextInputs_1 = __webpack_require__(25);
 const githubInfo_1 = __webpack_require__(4);
 const consts_1 = __webpack_require__(2);
 const createAuthHeader_1 = __webpack_require__(3);
@@ -769,6 +839,8 @@ function listenToInput(input) {
         input.removeEventListener("keyup", updateTokensForInput);
         input.removeEventListener("change", updateTokensForInput);
         input.removeEventListener("focus", updateTokensForInput);
+        input.removeEventListener("mouseenter", handleMouseEnter);
+        input.removeEventListener("mouseout", handleMouseOut);
         formNode.removeEventListener("submit", processPreSubmit, true);
     }
     // Replace all the tokens with image tags
@@ -858,9 +930,30 @@ function listenToInput(input) {
             console.log("no toolbar button on form ", form);
         }
     }
+    function getTagWrapper() {
+        const tagWrapperId = input.getAttribute("data-tags-id");
+        if (!tagWrapperId) {
+            return null;
+        }
+        return document.getElementById(tagWrapperId);
+    }
+    function handleMouseEnter(evt) {
+        let node;
+        if ((node = getTagWrapper())) {
+            node.classList.add("__tokenWrapperActive");
+        }
+    }
+    function handleMouseOut(evt) {
+        let node;
+        if ((node = getTagWrapper())) {
+            node.classList.remove("__tokenWrapperActive");
+        }
+    }
     input.addEventListener("keyup", updateTokensForInput);
     input.addEventListener("change", updateTokensForInput);
     input.addEventListener("focus", updateTokensForInput);
+    input.addEventListener("mouseenter", handleMouseEnter);
+    input.addEventListener("mouseout", handleMouseOut);
     formNode.addEventListener("submit", processPreSubmit, true);
     addToolbarButton(formNode);
     // In case the input is simply removed from the DOM without
@@ -890,7 +983,7 @@ githubInfo_1.getGithubInfo().then((localUserInfo) => {
 
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -954,25 +1047,27 @@ exports.default = parseTokens;
 
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
-const getCaretCoordinates = __webpack_require__(9);
-const ReactDOM = __webpack_require__(10);
-const searcher_1 = __webpack_require__(14);
-const TokenTag_1 = __webpack_require__(16);
+const getCaretCoordinates = __webpack_require__(11);
+const ReactDOM = __webpack_require__(12);
+const searcher_1 = __webpack_require__(16);
+const TokenTag_1 = __webpack_require__(18);
+const uuid = __webpack_require__(20);
 const TAG_CONTAINER_ID = "__tagContainer";
 const TEXT_HEIGHT = 18;
 // let removeOpenImage = null;
 const preferredTagUrls = {};
 function createTokenTag(textInput, token, onTokenActive) {
     console.log("createTokenTag", token.value);
+    const endOfTokenIdx = token.index + token.value.length + 1;
     const startCoords = getCaretCoordinates(textInput, token.index);
-    const endCoords = getCaretCoordinates(textInput, token.index + token.value.length + 1);
+    const endCoords = getCaretCoordinates(textInput, endOfTokenIdx);
     let caretIsAtToken = false;
     let tagContainer = document.getElementById(TAG_CONTAINER_ID);
     if (!tagContainer) {
@@ -980,10 +1075,19 @@ function createTokenTag(textInput, token, onTokenActive) {
         tagContainer.id = TAG_CONTAINER_ID;
         document.body.appendChild(tagContainer);
     }
+    let tagWrapperId = textInput.getAttribute("data-tags-id");
+    if (!tagWrapperId) {
+        textInput.setAttribute("data-tags-id", (tagWrapperId = uuid()));
+    }
+    let tagWrapperNode = document.getElementById(tagWrapperId);
+    if (!tagWrapperNode) {
+        tagWrapperNode = document.createElement("div");
+        tagWrapperNode.setAttribute("id", tagWrapperId);
+        tagContainer.appendChild(tagWrapperNode);
+    }
     const tagUi = document.createElement("div");
-    tagContainer.appendChild(tagUi);
+    tagWrapperNode.appendChild(tagUi);
     function renderTag() {
-        console.log("renderTag record.disabled = ", record.disabled);
         ReactDOM.render(React.createElement(TokenTag_1.default, { isDisabled: record.disabled, caretActive: record.caretIsAtToken, selectedImage: record.imageUrl, images: record.imageUrls, token: token, position: record.position, modalIsOpen: record.modalIsOpen, onSelectImage: (url) => {
                 record.imageUrl = url;
                 preferredTagUrls[token.value] = url;
@@ -1010,7 +1114,6 @@ function createTokenTag(textInput, token, onTokenActive) {
         }
         record.caretIsAtToken = caretIsAtToken = nextCaretIsAtToken;
         renderTag();
-        // setTagUiTitle();
     }
     function reposition() {
         const rect = textInput.getBoundingClientRect();
@@ -1024,11 +1127,11 @@ function createTokenTag(textInput, token, onTokenActive) {
         renderTag();
     }
     function remove() {
+        ReactDOM.unmountComponentAtNode(tagUi);
         tagUi.parentNode.removeChild(tagUi);
         textInput.removeEventListener("keyup", checkCaretPosition);
         textInput.removeEventListener("keydown", handleInputKey, true);
         textInput.removeEventListener("click", handleInputClick);
-        // removeImage();
     }
     function handleInputKey(evt) {
         if (evt.keyCode === 40) {
@@ -1086,88 +1189,10 @@ function createTokenTag(textInput, token, onTokenActive) {
     return record;
 }
 exports.default = createTokenTag;
-// function disableImage() {
-//   record.disabled = true;
-//   removeImage();
-// }
-// function selectImage() {
-//   const wrapper = document.createElement("div");
-//   wrapper.className = "__imageSelector";
-//   wrapper.innerHTML = `
-//     <div class="__imageSelectorTitle">Choose One Image</div>
-//       ${record.imageUrls
-//         .map((url, idx) => {
-//           return `<a href="#" data-index="${idx}"><img src="${url}" /></a>`;
-//         })
-//         .join("\n")}
-//   `;
-//   tagContainer.appendChild(wrapper);
-//   wrapper.addEventListener("click", evt => {
-//     let target = evt.target as HTMLElement;
-//     let targetName = target.tagName.toLowerCase();
-//     if (targetName === "img") {
-//       target = target.parentElement;
-//       targetName = target.tagName.toLowerCase();
-//     }
-//     if (targetName === "a") {
-//       record.imageUrl = record.imageUrls[target.getAttribute("data-index")];
-//       preferredTagUrls[record.token.value] = record.imageUrl;
-//       updateTagUi();
-//     }
-//     tagContainer.removeChild(wrapper);
-//   });
-// }
-// function openImageUI() {
-//   // If a url exists, then show the image in thumbnail form.
-//   // If the url does not exist, open a typeahead to find the
-//   // image you want (laterz...)
-//   if (record.imageUrl) {
-//     if (imageUi) {
-//       removeImage();
-//     } else {
-//       if (removeOpenImage) {
-//         removeOpenImage();
-//       }
-//       imageUi = document.createElement("div");
-//       imageUi.className = "__tokenTagModal";
-//       tagUi.classList.add("__isOpen");
-//       const imagesContainer = document.createElement("div");
-//       imagesContainer.className = "__tokenTagModalImages";
-//       const imageNode = document.createElement("img");
-//       imageNode.src = record.imageUrl;
-//       imagesContainer.appendChild(imageNode);
-//       const removeButtonNode = document.createElement("button");
-//       removeButtonNode.textContent = record.disabled
-//         ? "Enable Tag"
-//         : "Disable Tag";
-//       const buttonContainer = document.createElement("div");
-//       buttonContainer.className = "__tokenTagModalButtons";
-//       buttonContainer.appendChild(removeButtonNode);
-//       imageUi.appendChild(imagesContainer);
-//       imageUi.appendChild(buttonContainer);
-//       imageNode.addEventListener("click", removeImage);
-//       removeButtonNode.addEventListener(
-//         "click",
-//         record.disabled ? enableImage : disableImage
-//       );
-//       const showAllImagesNode = document.createElement("button");
-//       showAllImagesNode.className = "__showAllImages";
-//       showAllImagesNode.textContent = `+${record.imageUrls.length - 1}`;
-//       showAllImagesNode.addEventListener("click", selectImage);
-//       imageUi.appendChild(showAllImagesNode);
-//       updateTagUi();
-//       tagContainer.appendChild(imageUi);
-//       // Store the global reference to ensure that only one image is
-//       // open at a time
-//       removeOpenImage = removeImage;
-//       reposition();
-//     }
-//   }
-// }
 
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* jshint browser: true */
@@ -1311,7 +1336,7 @@ if ( true && typeof module.exports != 'undefined') {
 
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1328,7 +1353,7 @@ if ( true && typeof module.exports != 'undefined') {
  Modernizr 3.0.0pre (Custom Build) | MIT
 */
 var aa=__webpack_require__(0),
-n=__webpack_require__(1),r=__webpack_require__(11);function ba(a,b,c,d,e,f,g,h){if(!a){a=void 0;if(void 0===b)a=Error("Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings.");else{var l=[c,d,e,f,g,h],k=0;a=Error(b.replace(/%s/g,function(){return l[k++]}));a.name="Invariant Violation"}a.framesToPop=1;throw a;}}
+n=__webpack_require__(1),r=__webpack_require__(13);function ba(a,b,c,d,e,f,g,h){if(!a){a=void 0;if(void 0===b)a=Error("Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings.");else{var l=[c,d,e,f,g,h],k=0;a=Error(b.replace(/%s/g,function(){return l[k++]}));a.name="Invariant Violation"}a.framesToPop=1;throw a;}}
 function x(a){for(var b=arguments.length-1,c="https://reactjs.org/docs/error-decoder.html?invariant="+a,d=0;d<b;d++)c+="&args[]="+encodeURIComponent(arguments[d+1]);ba(!1,"Minified React error #"+a+"; visit %s for the full message or use the non-minified dev environment for full errors and additional helpful warnings. ",c)}aa?void 0:x("227");function ca(a,b,c,d,e,f,g,h,l){var k=Array.prototype.slice.call(arguments,3);try{b.apply(c,k)}catch(m){this.onError(m)}}
 var da=!1,ea=null,fa=!1,ha=null,ia={onError:function(a){da=!0;ea=a}};function ja(a,b,c,d,e,f,g,h,l){da=!1;ea=null;ca.apply(ia,arguments)}function ka(a,b,c,d,e,f,g,h,l){ja.apply(this,arguments);if(da){if(da){var k=ea;da=!1;ea=null}else x("198"),k=void 0;fa||(fa=!0,ha=k)}}var la=null,ma={};
 function na(){if(la)for(var a in ma){var b=ma[a],c=la.indexOf(a);-1<c?void 0:x("96",a);if(!oa[c]){b.extractEvents?void 0:x("97",a);oa[c]=b;c=b.eventTypes;for(var d in c){var e=void 0;var f=c[d],g=b,h=d;pa.hasOwnProperty(h)?x("99",h):void 0;pa[h]=f;var l=f.phasedRegistrationNames;if(l){for(e in l)l.hasOwnProperty(e)&&qa(l[e],g,h);e=!0}else f.registrationName?(qa(f.registrationName,g,h),e=!0):e=!1;e?void 0:x("98",d,a)}}}}
@@ -1588,19 +1613,19 @@ X;X=!0;try{ki(a)}finally{(X=b)||W||Yh(1073741823,!1)}},__SECRET_INTERNALS_DO_NOT
 
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 if (true) {
-  module.exports = __webpack_require__(12);
+  module.exports = __webpack_require__(14);
 } else {}
 
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1626,10 +1651,10 @@ exports.unstable_scheduleCallback=function(a,b){var c=-1!==k?k:exports.unstable_
 b=c.previous;b.next=c.previous=a;a.next=c;a.previous=b}return a};exports.unstable_cancelCallback=function(a){var b=a.next;if(null!==b){if(b===a)d=null;else{a===d&&(d=b);var c=a.previous;c.next=b;b.previous=c}a.next=a.previous=null}};exports.unstable_wrapCallback=function(a){var b=g;return function(){var c=g,f=k;g=b;k=exports.unstable_now();try{return a.apply(this,arguments)}finally{g=c,k=f,v()}}};exports.unstable_getCurrentPriorityLevel=function(){return g};
 exports.unstable_shouldYield=function(){return!e&&(null!==d&&d.expirationTime<l||w())};exports.unstable_continueExecution=function(){null!==d&&p()};exports.unstable_pauseExecution=function(){};exports.unstable_getFirstCallbackNode=function(){return d};
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(13)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(15)))
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, exports) {
 
 var g;
@@ -1655,7 +1680,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1669,7 +1694,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fetch = __webpack_require__(15);
+const fetch = __webpack_require__(17);
 const consts_1 = __webpack_require__(2);
 const createAuthHeader_1 = __webpack_require__(3);
 const githubInfo_1 = __webpack_require__(4);
@@ -1819,7 +1844,7 @@ function searchGiphy(tokenValue) {
 
 
 /***/ }),
-/* 15 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1848,15 +1873,16 @@ exports.Request = global.Request;
 exports.Response = global.Response;
 
 /***/ }),
-/* 16 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
-const TokenModal_1 = __webpack_require__(17);
+const TokenModal_1 = __webpack_require__(19);
 function TokenTag(props) {
+    const [arrowHovered, setArrowHovered] = React.useState(false);
     const classes = ["__tokenTag"];
     classes.push(props.selectedImage ? "imageFound" : "imageNotFound");
     if (props.isDisabled) {
@@ -1867,6 +1893,9 @@ function TokenTag(props) {
     }
     if (props.caretActive) {
         classes.push("__selected");
+    }
+    if (arrowHovered) {
+        classes.push("__arrowHovered");
     }
     let title;
     if (props.isDisabled) {
@@ -1884,10 +1913,14 @@ function TokenTag(props) {
     return (React.createElement("div", { className: classes.join(" "), "data-token": props.token.value, style: {
             top: props.position.top - 19 + "px",
             left: props.position.left - 4 + "px",
-            width: props.position.width + 24 + "px"
+            width: props.position.width + 5 + "px"
         }, title: title },
         React.createElement("div", { className: "__tokenTagArrow", onClick: () => {
                 props.onToggleModal();
+            }, onMouseEnter: () => {
+                setArrowHovered(true);
+            }, onMouseOut: () => {
+                setArrowHovered(false);
             } },
             React.createElement("div", { className: "__inner" })),
         props.modalIsOpen ? (React.createElement(TokenModal_1.default, { images: props.images, isDisabled: props.isDisabled, selectedIndex: props.images.indexOf(props.selectedImage), onToggleDisabled: props.onToggleDisabled, onSelectImage: props.onSelectImage })) : null));
@@ -1896,7 +1929,7 @@ exports.default = TokenTag;
 
 
 /***/ }),
-/* 17 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1914,38 +1947,40 @@ function TokenModal(props) {
     });
     const selectedButtonImage = chrome.runtime.getURL("assets/selectedButton.png");
     return (React.createElement("div", { className: "__tokenTagModal" },
-        React.createElement("div", { className: "__tokenTagModalImages" }, props.images.map((url, idx) => {
-            const isSelected = idx === props.selectedIndex;
-            return (React.createElement("div", { className: "__image" },
-                React.createElement("img", { className: "__memeImage", style: style, src: url, onLoad: evt => {
-                        const image = evt.target;
-                        const height = image.height;
-                        const width = image.width;
-                        console.log(idx, ": height", height, "width", width);
-                        let newStyle;
-                        if (height > width) {
-                            newStyle = {
-                                height: "inherit",
-                                marginLeft: "0px",
-                                marginTop: -((height - width) / 2) + "px",
-                                width: "100%"
-                            };
-                        }
-                        else {
-                            newStyle = {
-                                height: "100%",
-                                marginLeft: -((width - height) / 2) + "px",
-                                marginTop: "0px",
-                                width: "inherit"
-                            };
-                        }
-                        setStyle(newStyle);
-                    }, onClick: () => {
-                        props.onSelectImage(props.images[idx]);
-                    } }),
-                React.createElement("div", { className: "__selectButton" +
-                        (isSelected ? " __selected" : " __unselected") }, isSelected ? React.createElement("img", { src: selectedButtonImage }) : null)));
-        })),
+        React.createElement("div", { className: "__tokenTagModalImages" },
+            props.images.map((url, idx) => {
+                const isSelected = idx === props.selectedIndex;
+                return (React.createElement("div", { className: "__image" },
+                    React.createElement("img", { className: "__memeImage", style: style, src: url, onLoad: evt => {
+                            const image = evt.target;
+                            const height = image.height;
+                            const width = image.width;
+                            console.log(idx, ": height", height, "width", width);
+                            let newStyle;
+                            if (height > width) {
+                                newStyle = {
+                                    height: "inherit",
+                                    marginLeft: "0px",
+                                    marginTop: -((height - width) / 2) + "px",
+                                    width: "100%"
+                                };
+                            }
+                            else {
+                                newStyle = {
+                                    height: "100%",
+                                    marginLeft: -((width - height) / 2) + "px",
+                                    marginTop: "0px",
+                                    width: "inherit"
+                                };
+                            }
+                            setStyle(newStyle);
+                        }, onClick: () => {
+                            props.onSelectImage(props.images[idx]);
+                        } }),
+                    React.createElement("div", { className: "__selectButton" +
+                            (isSelected ? " __selected" : " __unselected") }, isSelected ? React.createElement("img", { src: selectedButtonImage }) : null)));
+            }),
+            props.images.length % 2 !== 0 ? React.createElement("div", { className: "__image" }) : null),
         React.createElement("div", { className: "__tokenTagModalButtons" },
             React.createElement("button", { onClick: props.onToggleDisabled }, props.isDisabled ? "Enable Tag" : "Disable Tag"))));
 }
@@ -1953,7 +1988,171 @@ exports.default = TokenModal;
 
 
 /***/ }),
-/* 18 */
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var v1 = __webpack_require__(21);
+var v4 = __webpack_require__(22);
+
+var uuid = v4;
+uuid.v1 = v1;
+uuid.v4 = v4;
+
+module.exports = uuid;
+
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var rng = __webpack_require__(6);
+var bytesToUuid = __webpack_require__(7);
+
+// **`v1()` - Generate time-based UUID**
+//
+// Inspired by https://github.com/LiosK/UUID.js
+// and http://docs.python.org/library/uuid.html
+
+var _nodeId;
+var _clockseq;
+
+// Previous uuid creation time
+var _lastMSecs = 0;
+var _lastNSecs = 0;
+
+// See https://github.com/broofa/node-uuid for API details
+function v1(options, buf, offset) {
+  var i = buf && offset || 0;
+  var b = buf || [];
+
+  options = options || {};
+  var node = options.node || _nodeId;
+  var clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq;
+
+  // node and clockseq need to be initialized to random values if they're not
+  // specified.  We do this lazily to minimize issues related to insufficient
+  // system entropy.  See #189
+  if (node == null || clockseq == null) {
+    var seedBytes = rng();
+    if (node == null) {
+      // Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
+      node = _nodeId = [
+        seedBytes[0] | 0x01,
+        seedBytes[1], seedBytes[2], seedBytes[3], seedBytes[4], seedBytes[5]
+      ];
+    }
+    if (clockseq == null) {
+      // Per 4.2.2, randomize (14 bit) clockseq
+      clockseq = _clockseq = (seedBytes[6] << 8 | seedBytes[7]) & 0x3fff;
+    }
+  }
+
+  // UUID timestamps are 100 nano-second units since the Gregorian epoch,
+  // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
+  // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
+  // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
+  var msecs = options.msecs !== undefined ? options.msecs : new Date().getTime();
+
+  // Per 4.2.1.2, use count of uuid's generated during the current clock
+  // cycle to simulate higher resolution clock
+  var nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1;
+
+  // Time since last uuid creation (in msecs)
+  var dt = (msecs - _lastMSecs) + (nsecs - _lastNSecs)/10000;
+
+  // Per 4.2.1.2, Bump clockseq on clock regression
+  if (dt < 0 && options.clockseq === undefined) {
+    clockseq = clockseq + 1 & 0x3fff;
+  }
+
+  // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
+  // time interval
+  if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === undefined) {
+    nsecs = 0;
+  }
+
+  // Per 4.2.1.2 Throw error if too many uuids are requested
+  if (nsecs >= 10000) {
+    throw new Error('uuid.v1(): Can\'t create more than 10M uuids/sec');
+  }
+
+  _lastMSecs = msecs;
+  _lastNSecs = nsecs;
+  _clockseq = clockseq;
+
+  // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
+  msecs += 12219292800000;
+
+  // `time_low`
+  var tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
+  b[i++] = tl >>> 24 & 0xff;
+  b[i++] = tl >>> 16 & 0xff;
+  b[i++] = tl >>> 8 & 0xff;
+  b[i++] = tl & 0xff;
+
+  // `time_mid`
+  var tmh = (msecs / 0x100000000 * 10000) & 0xfffffff;
+  b[i++] = tmh >>> 8 & 0xff;
+  b[i++] = tmh & 0xff;
+
+  // `time_high_and_version`
+  b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
+  b[i++] = tmh >>> 16 & 0xff;
+
+  // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
+  b[i++] = clockseq >>> 8 | 0x80;
+
+  // `clock_seq_low`
+  b[i++] = clockseq & 0xff;
+
+  // `node`
+  for (var n = 0; n < 6; ++n) {
+    b[i + n] = node[n];
+  }
+
+  return buf ? buf : bytesToUuid(b);
+}
+
+module.exports = v1;
+
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var rng = __webpack_require__(6);
+var bytesToUuid = __webpack_require__(7);
+
+function v4(options, buf, offset) {
+  var i = buf && offset || 0;
+
+  if (typeof(options) == 'string') {
+    buf = options === 'binary' ? new Array(16) : null;
+    options = null;
+  }
+  options = options || {};
+
+  var rnds = options.random || (options.rng || rng)();
+
+  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+  // Copy bytes to buffer, if provided
+  if (buf) {
+    for (var ii = 0; ii < 16; ++ii) {
+      buf[i + ii] = rnds[ii];
+    }
+  }
+
+  return buf || bytesToUuid(rnds);
+}
+
+module.exports = v4;
+
+
+/***/ }),
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1999,7 +2198,7 @@ exports.default = throttle;
 
 
 /***/ }),
-/* 19 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2016,7 +2215,7 @@ exports.default = getParentByTagName;
 
 
 /***/ }),
-/* 20 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

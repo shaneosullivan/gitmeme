@@ -77,6 +77,8 @@ function listenToInput(
     input.removeEventListener("keyup", updateTokensForInput);
     input.removeEventListener("change", updateTokensForInput);
     input.removeEventListener("focus", updateTokensForInput);
+    input.removeEventListener("mouseenter", handleMouseEnter);
+    input.removeEventListener("mouseout", handleMouseOut);
     formNode.removeEventListener("submit", processPreSubmit, true);
   }
 
@@ -193,9 +195,33 @@ function listenToInput(
     }
   }
 
+  function getTagWrapper() {
+    const tagWrapperId = input.getAttribute("data-tags-id");
+    if (!tagWrapperId) {
+      return null;
+    }
+    return document.getElementById(tagWrapperId);
+  }
+
+  function handleMouseEnter(evt) {
+    let node;
+    if ((node = getTagWrapper())) {
+      node.classList.add("__tokenWrapperActive");
+    }
+  }
+
+  function handleMouseOut(evt) {
+    let node;
+    if ((node = getTagWrapper())) {
+      node.classList.remove("__tokenWrapperActive");
+    }
+  }
+
   input.addEventListener("keyup", updateTokensForInput);
   input.addEventListener("change", updateTokensForInput);
   input.addEventListener("focus", updateTokensForInput);
+  input.addEventListener("mouseenter", handleMouseEnter);
+  input.addEventListener("mouseout", handleMouseOut);
   formNode.addEventListener("submit", processPreSubmit, true);
 
   addToolbarButton(formNode);

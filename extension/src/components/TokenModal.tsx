@@ -71,6 +71,7 @@ export default function TokenModal(props: Props) {
             </div>
           );
         })}
+        {props.images.length % 2 !== 0 ? <div className="__image" /> : null}
       </div>
       <div className="__tokenTagModalButtons">
         <button onClick={props.onToggleDisabled}>

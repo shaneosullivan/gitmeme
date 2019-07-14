@@ -7,14 +7,36 @@
   }
 }
 
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 .__tokenTag {
   border-radius: 3px;
+  box-sizing: content-box;
   cursor: pointer;
   display: none;
   height: 21px;
+  padding-right: 0px;
   position: absolute;
   text-align: center;
   pointer-events: none;
+  transition-property: padding-right;
+  transition-duration: 250ms;
+}
+
+.__tokenWrapperActive .__tokenTag,
+.__tokenTag.__selected,
+.__tokenTag.__arrowHovered {
+  padding-right: 20px;
 }
 
 .__tokenTag.imageNotFound,
@@ -38,12 +60,23 @@
   border-radius: 2px;
   border: solid 1px #ccc58b;
   cursor: pointer;
+  display: none;
   height: 12px;
   pointer-events: all;
   right: 4px;
   position: absolute;
   top: 4px;
   width: 12px;
+}
+
+.__tokenWrapperActive .__tokenTag .__tokenTagArrow,
+.__tokenTag.__selected .__tokenTagArrow {
+  display: block;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.__tokenTag.__arrowHovered .__tokenTagArrow {
+  display: block;
 }
 
 .__tokenTagArrow:hover {

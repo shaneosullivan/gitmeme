@@ -4,6 +4,7 @@ import * as getCaretCoordinates from "textarea-caret";
 import * as ReactDOM from "./lib/react-dom";
 import searcher from "./searcher";
 import TokenTag from "./components/TokenTag";
+import * as uuid from "uuid";
 
 const TAG_CONTAINER_ID = "__tagContainer";
 const TEXT_HEIGHT = 18;
@@ -35,11 +36,11 @@ export default function createTokenTag(
   onTokenActive: (isActive: boolean, tokenTag: TokenTagType) => void
 ): TokenTagType {
   console.log("createTokenTag", token.value);
+
+  const endOfTokenIdx = token.index + token.value.length + 1;
   const startCoords = getCaretCoordinates(textInput, token.index);
-  const endCoords = getCaretCoordinates(
-    textInput,
-    token.index + token.value.length + 1
-  );
+  const endCoords = getCaretCoordinates(textInput, endOfTokenIdx);
+
   let caretIsAtToken = false;
 
   let tagContainer = document.getElementById(TAG_CONTAINER_ID);
@@ -48,12 +49,21 @@ export default function createTokenTag(
     tagContainer.id = TAG_CONTAINER_ID;
     document.body.appendChild(tagContainer);
   }
+  let tagWrapperId = textInput.getAttribute("data-tags-id");
+  if (!tagWrapperId) {
+    textInput.setAttribute("data-tags-id", (tagWrapperId = uuid()));
+  }
+  let tagWrapperNode = document.getElementById(tagWrapperId);
+  if (!tagWrapperNode) {
+    tagWrapperNode = document.createElement("div");
+    tagWrapperNode.setAttribute("id", tagWrapperId);
+    tagContainer.appendChild(tagWrapperNode);
+  }
 
   const tagUi = document.createElement("div");
-  tagContainer.appendChild(tagUi);
+  tagWrapperNode.appendChild(tagUi);
 
   function renderTag() {
-    console.log("renderTag record.disabled = ", record.disabled);
     ReactDOM.render(
       <TokenTag
         isDisabled={record.disabled}
@@ -99,7 +109,6 @@ export default function createTokenTag(
     record.caretIsAtToken = caretIsAtToken = nextCaretIsAtToken;
 
     renderTag();
-    // setTagUiTitle();
   }
 
   function reposition() {
@@ -117,11 +126,11 @@ export default function createTokenTag(
   }
 
   function remove() {
+    ReactDOM.unmountComponentAtNode(tagUi);
     tagUi.parentNode.removeChild(tagUi);
     textInput.removeEventListener("keyup", checkCaretPosition);
     textInput.removeEventListener("keydown", handleInputKey, true);
     textInput.removeEventListener("click", handleInputClick);
-    // removeImage();
   }
 
   function handleInputKey(evt) {
@@ -188,101 +197,3 @@ export default function createTokenTag(
 
   return record;
 }
-
-// function disableImage() {
-//   record.disabled = true;
-//   removeImage();
-// }
-
-// function selectImage() {
-//   const wrapper = document.createElement("div");
-//   wrapper.className = "__imageSelector";
-
-//   wrapper.innerHTML = `
-//     <div class="__imageSelectorTitle">Choose One Image</div>
-//       ${record.imageUrls
-//         .map((url, idx) => {
-//           return `<a href="#" data-index="${idx}"><img src="${url}" /></a>`;
-//         })
-//         .join("\n")}
-//   `;
-//   tagContainer.appendChild(wrapper);
-//   wrapper.addEventListener("click", evt => {
-//     let target = evt.target as HTMLElement;
-//     let targetName = target.tagName.toLowerCase();
-//     if (targetName === "img") {
-//       target = target.parentElement;
-//       targetName = target.tagName.toLowerCase();
-//     }
-//     if (targetName === "a") {
-//       record.imageUrl = record.imageUrls[target.getAttribute("data-index")];
-//       preferredTagUrls[record.token.value] = record.imageUrl;
-//       updateTagUi();
-//     }
-
-//     tagContainer.removeChild(wrapper);
-//   });
-// }
-
-// function openImageUI() {
-//   // If a url exists, then show the image in thumbnail form.
-//   // If the url does not exist, open a typeahead to find the
-//   // image you want (laterz...)
-
-//   if (record.imageUrl) {
-//     if (imageUi) {
-//       removeImage();
-//     } else {
-//       if (removeOpenImage) {
-//         removeOpenImage();
-//       }
-//       imageUi = document.createElement("div");
-
-//       imageUi.className = "__tokenTagModal";
-//       tagUi.classList.add("__isOpen");
-
-//       const imagesContainer = document.createElement("div");
-//       imagesContainer.className = "__tokenTagModalImages";
-
-//       const imageNode = document.createElement("img");
-//       imageNode.src = record.imageUrl;
-
-//       imagesContainer.appendChild(imageNode);
-
-//       const removeButtonNode = document.createElement("button");
-//       removeButtonNode.textContent = record.disabled
-//         ? "Enable Tag"
-//         : "Disable Tag";
-
-//       const buttonContainer = document.createElement("div");
-//       buttonContainer.className = "__tokenTagModalButtons";
-
-//       buttonContainer.appendChild(removeButtonNode);
-
-//       imageUi.appendChild(imagesContainer);
-//       imageUi.appendChild(buttonContainer);
-
-//       imageNode.addEventListener("click", removeImage);
-//       removeButtonNode.addEventListener(
-//         "click",
-//         record.disabled ? enableImage : disableImage
-//       );
-
-//       const showAllImagesNode = document.createElement("button");
-//       showAllImagesNode.className = "__showAllImages";
-//       showAllImagesNode.textContent = `+${record.imageUrls.length - 1}`;
-//       showAllImagesNode.addEventListener("click", selectImage);
-//       imageUi.appendChild(showAllImagesNode);
-
-//       updateTagUi();
-
-//       tagContainer.appendChild(imageUi);
-
-//       // Store the global reference to ensure that only one image is
-//       // open at a time
-//       removeOpenImage = removeImage;
-
-//       reposition();
-//     }
-//   }
-// }

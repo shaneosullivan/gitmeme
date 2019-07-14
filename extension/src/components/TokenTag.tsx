@@ -16,6 +16,7 @@ interface Props {
 }
 
 export default function TokenTag(props: Props) {
+  const [arrowHovered, setArrowHovered] = React.useState(false);
   const classes = ["__tokenTag"];
 
   classes.push(props.selectedImage ? "imageFound" : "imageNotFound");
@@ -27,6 +28,9 @@ export default function TokenTag(props: Props) {
   }
   if (props.caretActive) {
     classes.push("__selected");
+  }
+  if (arrowHovered) {
+    classes.push("__arrowHovered");
   }
   let title;
   if (props.isDisabled) {
@@ -47,7 +51,7 @@ export default function TokenTag(props: Props) {
       style={{
         top: props.position.top - 19 + "px",
         left: props.position.left - 4 + "px",
-        width: props.position.width + 24 + "px"
+        width: props.position.width + 5 + "px"
       }}
       title={title}
     >
@@ -55,6 +59,12 @@ export default function TokenTag(props: Props) {
         className="__tokenTagArrow"
         onClick={() => {
           props.onToggleModal();
+        }}
+        onMouseEnter={() => {
+          setArrowHovered(true);
+        }}
+        onMouseOut={() => {
+          setArrowHovered(false);
         }}
       >
         <div className="__inner" />
