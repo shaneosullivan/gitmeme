@@ -812,6 +812,7 @@ function listenToInput(input) {
         loggedInUser.id === userInfo.id;
     const updateTokensForInput = throttle_1.default(() => {
         let tokens = parseTokens_1.default(input.value);
+        console.log("updateTokensForInput", tokens, input);
         if (tokens.length > 0) {
             // Filter the tokens that we already know about
             const unknownTokens = tokens.filter(token => {
@@ -2114,13 +2115,6 @@ function TokenModalImage(props) {
                 else {
                     const parentRatio = parentHeight / parentWidth;
                     const imageRatio = height / width;
-                    // console.log(
-                    //   "parentRatio = ",
-                    //   parentRatio,
-                    //   "imageRatio = ",
-                    //   imageRatio,
-                    //   props.src
-                    // );
                     if (parentRatio < imageRatio) {
                         // Image is not wide enough to fill the space
                         // We need to make it wide enough such that the
@@ -2136,9 +2130,6 @@ function TokenModalImage(props) {
                         };
                         transformY = parentHeight - newHeight;
                         transformX = parentWidth - newWidth;
-                        if (props.src.indexOf("59Je") > 0) {
-                            console.log(props.src + " transformY ", transformY, "transformX", transformX, " for newWidth", newWidth, " newHeight", newHeight, "imageRatio", imageRatio);
-                        }
                     }
                     else {
                         // Image is wide enough to fill the space

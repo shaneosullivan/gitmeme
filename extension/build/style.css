@@ -31,6 +31,7 @@
   pointer-events: none;
   transition-property: padding-right;
   transition-duration: 250ms;
+  z-index: 1000;
 }
 
 .__tokenWrapperActive .__tokenTag,
