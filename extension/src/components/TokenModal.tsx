@@ -1,82 +1,142 @@
 import * as React from "../lib/react";
+import TokenModalImage from "./TokenModalImage";
+import isValidUrl from "../util/isValidUrl";
 const { useState } = React;
 
 interface Props {
   images: Array<string>;
   isDisabled: boolean;
   selectedIndex: number;
+  onAddNewImage?: (url: string) => Promise<boolean>;
   onToggleDisabled: Function;
   onSelectImage: (url: string) => void;
 }
 
-export default function TokenModal(props: Props) {
-  const [style, setStyle] = useState({});
-  useState({
-    height: "inherit",
-    marginLeft: "0px",
-    marginTop: "0px",
-    width: "inherit"
-  });
+enum NewUrlSubmitState {
+  NOT_SUBMITTING,
+  SUBMITTING,
+  FAILED,
+  SUCCEEDED
+}
 
-  const selectedButtonImage = chrome.runtime.getURL(
-    "assets/selectedButton.png"
+export default function TokenModal(props: Props) {
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newUrl, setNewUrl] = useState("");
+  const [newUrlSubmitState, setNewUrlSubmitState] = useState(
+    NewUrlSubmitState.NOT_SUBMITTING
   );
 
-  return (
-    <div className="__tokenTagModal">
+  function handleAddNew() {
+    setIsAddingNew(true);
+  }
+
+  function renderImages() {
+    return (
       <div className="__tokenTagModalImages">
         {props.images.map((url, idx) => {
           const isSelected = idx === props.selectedIndex;
           return (
-            <div className="__image">
-              <img
-                className="__memeImage"
-                style={style}
-                src={url}
-                onLoad={evt => {
-                  const image = evt.target;
-                  const height = image.height;
-                  const width = image.width;
-                  console.log(idx, ": height", height, "width", width);
-                  let newStyle;
-                  if (height > width) {
-                    newStyle = {
-                      height: "inherit",
-                      marginLeft: "0px",
-                      marginTop: -((height - width) / 2) + "px",
-                      width: "100%"
-                    };
-                  } else {
-                    newStyle = {
-                      height: "100%",
-                      marginLeft: -((width - height) / 2) + "px",
-                      marginTop: "0px",
-                      width: "inherit"
-                    };
-                  }
-                  setStyle(newStyle);
-                }}
-                onClick={() => {
-                  props.onSelectImage(props.images[idx]);
-                }}
-              />
-              <div
-                className={
-                  "__selectButton" +
-                  (isSelected ? " __selected" : " __unselected")
-                }
-              >
-                {isSelected ? <img src={selectedButtonImage} /> : null}
-              </div>
-            </div>
+            <TokenModalImage
+              isSelected={isSelected}
+              src={url}
+              onSelectImage={props.onSelectImage}
+            />
           );
         })}
         {props.images.length % 2 !== 0 ? <div className="__image" /> : null}
       </div>
+    );
+  }
+
+  function renderAddNew() {
+    const canAddNewImage = !!props.onAddNewImage;
+
+    let content;
+
+    if (canAddNewImage) {
+      switch (newUrlSubmitState) {
+        case NewUrlSubmitState.FAILED:
+        case NewUrlSubmitState.NOT_SUBMITTING:
+          content = (
+            <div>
+              <input
+                type="text"
+                placeholder="Enter image URL"
+                value={newUrl}
+                onChange={evt => {
+                  setNewUrl(evt.target.value);
+                }}
+              />
+              {newUrlSubmitState === NewUrlSubmitState.FAILED ? (
+                <div>
+                  Failed to save image. Please check the URL and try again
+                </div>
+              ) : null}
+            </div>
+          );
+          break;
+        case NewUrlSubmitState.SUBMITTING:
+          content = <div>Submitting</div>;
+          break;
+      }
+    } else {
+      content = <div>To add new memes you must be logged in.</div>;
+    }
+
+    return (
+      <div className="__tokenTagModalAddNew">
+        <div>Add new meme</div>
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <div className="__tokenTagModal">
+      {isAddingNew ? renderAddNew() : renderImages()}
       <div className="__tokenTagModalButtons">
-        <button onClick={props.onToggleDisabled}>
-          {props.isDisabled ? "Enable Tag" : "Disable Tag"}
-        </button>
+        {isAddingNew ? (
+          <>
+            <button
+              onClick={async () => {
+                setNewUrlSubmitState(NewUrlSubmitState.SUBMITTING);
+                const success = await props.onAddNewImage(newUrl);
+
+                setNewUrlSubmitState(
+                  success
+                    ? NewUrlSubmitState.NOT_SUBMITTING
+                    : NewUrlSubmitState.FAILED
+                );
+                if (success) {
+                  setIsAddingNew(false);
+                }
+              }}
+              title={
+                isValidUrl(newUrl)
+                  ? "Click to submit your awesome new meme"
+                  : "Cannot submit, the url you entered is not valid"
+              }
+              disabled={!isValidUrl(newUrl)}
+            >
+              Submit
+            </button>
+            <button
+              onClick={() => {
+                setIsAddingNew(false);
+              }}
+            >
+              Cancel
+            </button>
+          </>
+        ) : (
+          <>
+            {" "}
+            <button onClick={props.onToggleDisabled}>
+              {props.isDisabled ? "Enable Tag" : "Disable Tag"}
+            </button>
+            <button onClick={handleAddNew}>{"Add New"}</button>
+          </>
+        )}
       </div>
     </div>
   );

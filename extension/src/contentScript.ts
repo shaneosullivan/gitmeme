@@ -8,7 +8,6 @@ import { API_ROOT_URL } from "./shared/consts";
 import createAuthHeader from "./shared/auth/createAuthHeader";
 import getLoggedInUser from "./shared/auth/getLoggedInUser";
 
-console.log("in content script");
 let userInfo;
 
 // Get the logged in user from the DOM
@@ -24,6 +23,13 @@ function listenToInput(
   let knownTokens = [] as Array<TokenTagType>;
   let toolbarButtonItem;
   let activeTag: TokenTagType = null;
+
+  const isLoggedIn =
+    userInfo &&
+    userInfo.id &&
+    userInfo.token &&
+    loggedInUser &&
+    loggedInUser.id === userInfo.id;
 
   const updateTokensForInput = throttle(
     () => {
@@ -41,7 +47,12 @@ function listenToInput(
         });
         unknownTokens.forEach(token => {
           try {
-            const tokenTag = createTokenTag(input, token, onTokenActive);
+            const tokenTag = createTokenTag(
+              input,
+              token,
+              onTokenActive,
+              isLoggedIn ? onAddNewImage : null
+            );
             knownTokens.push(tokenTag);
           } catch (err) {
             console.error(err);
@@ -111,13 +122,6 @@ function listenToInput(
             knownToken.token.index + knownToken.token.value.length + 1
           );
 
-        const isLoggedIn =
-          userInfo &&
-          userInfo.id &&
-          userInfo.token &&
-          loggedInUser &&
-          loggedInUser.id === userInfo.id;
-
         fetch(`${API_ROOT_URL}/add_token_by_url`, {
           method: "POST",
           headers: isLoggedIn
@@ -161,6 +165,26 @@ function listenToInput(
       toolbarButtonItem.classList.toggle("__active", isActive);
     }
     activeTag = tokenTag;
+  }
+
+  async function onAddNewImage(
+    tokenValue: string,
+    url: string
+  ): Promise<boolean> {
+    if (!isLoggedIn) {
+      throw new Error("Cannot add a new image unless logged in");
+    }
+    const result = await fetch(`${API_ROOT_URL}/add_token_by_url`, {
+      method: "POST",
+      headers: {
+        ...createAuthHeader(userInfo.id, userInfo.token)
+      },
+      body: JSON.stringify({
+        image_url: url,
+        token: tokenValue
+      })
+    });
+    return result.status === 200;
   }
 
   function addToolbarButton(form: HTMLFormElement) {

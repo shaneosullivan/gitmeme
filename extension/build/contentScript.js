@@ -779,17 +779,24 @@ module.exports = bytesToUuid;
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const parseTokens_1 = __webpack_require__(9);
 const createTokenTag_1 = __webpack_require__(10);
-const throttle_1 = __webpack_require__(23);
-const getParentByTagName_1 = __webpack_require__(24);
-const findTextInputs_1 = __webpack_require__(25);
+const throttle_1 = __webpack_require__(25);
+const getParentByTagName_1 = __webpack_require__(26);
+const findTextInputs_1 = __webpack_require__(27);
 const githubInfo_1 = __webpack_require__(4);
 const consts_1 = __webpack_require__(2);
 const createAuthHeader_1 = __webpack_require__(3);
 const getLoggedInUser_1 = __webpack_require__(5);
-console.log("in content script");
 let userInfo;
 // Get the logged in user from the DOM
 const loggedInUser = getLoggedInUser_1.default();
@@ -798,6 +805,11 @@ function listenToInput(input) {
     let knownTokens = [];
     let toolbarButtonItem;
     let activeTag = null;
+    const isLoggedIn = userInfo &&
+        userInfo.id &&
+        userInfo.token &&
+        loggedInUser &&
+        loggedInUser.id === userInfo.id;
     const updateTokensForInput = throttle_1.default(() => {
         let tokens = parseTokens_1.default(input.value);
         if (tokens.length > 0) {
@@ -810,7 +822,7 @@ function listenToInput(input) {
             });
             unknownTokens.forEach(token => {
                 try {
-                    const tokenTag = createTokenTag_1.default(input, token, onTokenActive);
+                    const tokenTag = createTokenTag_1.default(input, token, onTokenActive, isLoggedIn ? onAddNewImage : null);
                     knownTokens.push(tokenTag);
                 }
                 catch (err) {
@@ -865,11 +877,6 @@ function listenToInput(input) {
                     value.substring(0, knownToken.token.index) +
                         tagInsert +
                         value.substring(knownToken.token.index + knownToken.token.value.length + 1);
-                const isLoggedIn = userInfo &&
-                    userInfo.id &&
-                    userInfo.token &&
-                    loggedInUser &&
-                    loggedInUser.id === userInfo.id;
                 fetch(`${consts_1.API_ROOT_URL}/add_token_by_url`, {
                     method: "POST",
                     headers: isLoggedIn
@@ -903,6 +910,22 @@ function listenToInput(input) {
             toolbarButtonItem.classList.toggle("__active", isActive);
         }
         activeTag = tokenTag;
+    }
+    function onAddNewImage(tokenValue, url) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!isLoggedIn) {
+                throw new Error("Cannot add a new image unless logged in");
+            }
+            const result = yield fetch(`${consts_1.API_ROOT_URL}/add_token_by_url`, {
+                method: "POST",
+                headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token)),
+                body: JSON.stringify({
+                    image_url: url,
+                    token: tokenValue
+                })
+            });
+            return result.status === 200;
+        });
     }
     function addToolbarButton(form) {
         const toolbarNode = form.querySelector("markdown-toolbar");
@@ -1052,19 +1075,26 @@ exports.default = parseTokens;
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
 const getCaretCoordinates = __webpack_require__(11);
 const ReactDOM = __webpack_require__(12);
 const searcher_1 = __webpack_require__(16);
 const TokenTag_1 = __webpack_require__(18);
-const uuid = __webpack_require__(20);
+const uuid = __webpack_require__(22);
 const TAG_CONTAINER_ID = "__tagContainer";
 const TEXT_HEIGHT = 18;
 // let removeOpenImage = null;
 const preferredTagUrls = {};
-function createTokenTag(textInput, token, onTokenActive) {
-    console.log("createTokenTag", token.value);
+function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
     const endOfTokenIdx = token.index + token.value.length + 1;
     const startCoords = getCaretCoordinates(textInput, token.index);
     const endCoords = getCaretCoordinates(textInput, endOfTokenIdx);
@@ -1101,7 +1131,19 @@ function createTokenTag(textInput, token, onTokenActive) {
             }, onToggleModal: () => {
                 record.modalIsOpen = !record.modalIsOpen;
                 renderTag();
-            } }), tagUi);
+            }, onAddNewImage: onAddNewImage
+                ? (url) => __awaiter(this, void 0, void 0, function* () {
+                    // If the onAddNewImage function is null, set this to null too
+                    const addSucceeded = yield onAddNewImage(token.value, url);
+                    if (addSucceeded) {
+                        record.imageUrl = url;
+                        record.imageUrls.unshift(url);
+                        record.isValid = true;
+                        renderTag();
+                    }
+                    return addSucceeded;
+                })
+                : null }), tagUi);
     }
     function checkCaretPosition() {
         const caretPosition = textInput.selectionStart;
@@ -1923,7 +1965,7 @@ function TokenTag(props) {
                 setArrowHovered(false);
             } },
             React.createElement("div", { className: "__inner" })),
-        props.modalIsOpen ? (React.createElement(TokenModal_1.default, { images: props.images, isDisabled: props.isDisabled, selectedIndex: props.images.indexOf(props.selectedImage), onToggleDisabled: props.onToggleDisabled, onSelectImage: props.onSelectImage })) : null));
+        props.modalIsOpen ? (React.createElement(TokenModal_1.default, { images: props.images, isDisabled: props.isDisabled, selectedIndex: props.images.indexOf(props.selectedImage), onAddNewImage: props.onAddNewImage, onToggleDisabled: props.onToggleDisabled, onSelectImage: props.onSelectImage })) : null));
 }
 exports.default = TokenTag;
 
@@ -1934,55 +1976,87 @@ exports.default = TokenTag;
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
+const TokenModalImage_1 = __webpack_require__(20);
+const isValidUrl_1 = __webpack_require__(21);
 const { useState } = React;
+var NewUrlSubmitState;
+(function (NewUrlSubmitState) {
+    NewUrlSubmitState[NewUrlSubmitState["NOT_SUBMITTING"] = 0] = "NOT_SUBMITTING";
+    NewUrlSubmitState[NewUrlSubmitState["SUBMITTING"] = 1] = "SUBMITTING";
+    NewUrlSubmitState[NewUrlSubmitState["FAILED"] = 2] = "FAILED";
+    NewUrlSubmitState[NewUrlSubmitState["SUCCEEDED"] = 3] = "SUCCEEDED";
+})(NewUrlSubmitState || (NewUrlSubmitState = {}));
 function TokenModal(props) {
-    const [style, setStyle] = useState({});
-    useState({
-        height: "inherit",
-        marginLeft: "0px",
-        marginTop: "0px",
-        width: "inherit"
-    });
-    const selectedButtonImage = chrome.runtime.getURL("assets/selectedButton.png");
-    return (React.createElement("div", { className: "__tokenTagModal" },
-        React.createElement("div", { className: "__tokenTagModalImages" },
+    const [isAddingNew, setIsAddingNew] = useState(false);
+    const [newUrl, setNewUrl] = useState("");
+    const [newUrlSubmitState, setNewUrlSubmitState] = useState(NewUrlSubmitState.NOT_SUBMITTING);
+    function handleAddNew() {
+        setIsAddingNew(true);
+    }
+    function renderImages() {
+        return (React.createElement("div", { className: "__tokenTagModalImages" },
             props.images.map((url, idx) => {
                 const isSelected = idx === props.selectedIndex;
-                return (React.createElement("div", { className: "__image" },
-                    React.createElement("img", { className: "__memeImage", style: style, src: url, onLoad: evt => {
-                            const image = evt.target;
-                            const height = image.height;
-                            const width = image.width;
-                            console.log(idx, ": height", height, "width", width);
-                            let newStyle;
-                            if (height > width) {
-                                newStyle = {
-                                    height: "inherit",
-                                    marginLeft: "0px",
-                                    marginTop: -((height - width) / 2) + "px",
-                                    width: "100%"
-                                };
-                            }
-                            else {
-                                newStyle = {
-                                    height: "100%",
-                                    marginLeft: -((width - height) / 2) + "px",
-                                    marginTop: "0px",
-                                    width: "inherit"
-                                };
-                            }
-                            setStyle(newStyle);
-                        }, onClick: () => {
-                            props.onSelectImage(props.images[idx]);
-                        } }),
-                    React.createElement("div", { className: "__selectButton" +
-                            (isSelected ? " __selected" : " __unselected") }, isSelected ? React.createElement("img", { src: selectedButtonImage }) : null)));
+                return (React.createElement(TokenModalImage_1.default, { isSelected: isSelected, src: url, onSelectImage: props.onSelectImage }));
             }),
-            props.images.length % 2 !== 0 ? React.createElement("div", { className: "__image" }) : null),
-        React.createElement("div", { className: "__tokenTagModalButtons" },
-            React.createElement("button", { onClick: props.onToggleDisabled }, props.isDisabled ? "Enable Tag" : "Disable Tag"))));
+            props.images.length % 2 !== 0 ? React.createElement("div", { className: "__image" }) : null));
+    }
+    function renderAddNew() {
+        const canAddNewImage = !!props.onAddNewImage;
+        let content;
+        if (canAddNewImage) {
+            switch (newUrlSubmitState) {
+                case NewUrlSubmitState.FAILED:
+                case NewUrlSubmitState.NOT_SUBMITTING:
+                    content = (React.createElement("div", null,
+                        React.createElement("input", { type: "text", placeholder: "Enter image URL", value: newUrl, onChange: evt => {
+                                setNewUrl(evt.target.value);
+                            } }),
+                        newUrlSubmitState === NewUrlSubmitState.FAILED ? (React.createElement("div", null, "Failed to save image. Please check the URL and try again")) : null));
+                    break;
+                case NewUrlSubmitState.SUBMITTING:
+                    content = React.createElement("div", null, "Submitting");
+                    break;
+            }
+        }
+        else {
+            content = React.createElement("div", null, "To add new memes you must be logged in.");
+        }
+        return (React.createElement("div", { className: "__tokenTagModalAddNew" },
+            React.createElement("div", null, "Add new meme"),
+            content));
+    }
+    return (React.createElement("div", { className: "__tokenTagModal" },
+        isAddingNew ? renderAddNew() : renderImages(),
+        React.createElement("div", { className: "__tokenTagModalButtons" }, isAddingNew ? (React.createElement(React.Fragment, null,
+            React.createElement("button", { onClick: () => __awaiter(this, void 0, void 0, function* () {
+                    setNewUrlSubmitState(NewUrlSubmitState.SUBMITTING);
+                    const success = yield props.onAddNewImage(newUrl);
+                    setNewUrlSubmitState(success
+                        ? NewUrlSubmitState.NOT_SUBMITTING
+                        : NewUrlSubmitState.FAILED);
+                    if (success) {
+                        setIsAddingNew(false);
+                    }
+                }), title: isValidUrl_1.default(newUrl)
+                    ? "Click to submit your awesome new meme"
+                    : "Cannot submit, the url you entered is not valid", disabled: !isValidUrl_1.default(newUrl) }, "Submit"),
+            React.createElement("button", { onClick: () => {
+                    setIsAddingNew(false);
+                } }, "Cancel"))) : (React.createElement(React.Fragment, null,
+            " ",
+            React.createElement("button", { onClick: props.onToggleDisabled }, props.isDisabled ? "Enable Tag" : "Disable Tag"),
+            React.createElement("button", { onClick: handleAddNew }, "Add New"))))));
 }
 exports.default = TokenModal;
 
@@ -1991,8 +2065,130 @@ exports.default = TokenModal;
 /* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var v1 = __webpack_require__(21);
-var v4 = __webpack_require__(22);
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const React = __webpack_require__(0);
+const { useState } = React;
+// @ts-ignore: In extension
+const selectedButtonImage = chrome.runtime.getURL("assets/selectedButton.png");
+function TokenModalImage(props) {
+    const [style, setStyle] = useState({
+        height: "inherit",
+        marginLeft: "0px",
+        marginTop: "0px",
+        width: "inherit"
+    });
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [hoverTranslate, setHoverTranslate] = useState({ x: 0, y: 0 });
+    const [isHovered, setIsHovered] = useState(false);
+    const transformStyle = {
+        transform: `translate(${isHovered ? hoverTranslate.x : 0}px, ${isHovered ? hoverTranslate.y : 0}px)`
+    };
+    const currentStyle = Object.assign({}, style, transformStyle);
+    return (React.createElement("div", { className: "__image", onMouseEnter: () => {
+            setIsHovered(true);
+        }, onMouseLeave: () => {
+            setIsHovered(false);
+        } },
+        React.createElement("img", { className: "__memeImage" + (isLoaded ? " __loaded" : "__preload"), style: currentStyle, src: props.src, onLoad: evt => {
+                const image = evt.target;
+                const height = image.naturalHeight;
+                const width = image.naturalWidth;
+                const parentWidth = image.parentNode.offsetWidth;
+                const parentHeight = image.parentNode.offsetHeight;
+                let transformX = 0;
+                let transformY = 0;
+                let newStyle;
+                if (height >= width) {
+                    newStyle = {
+                        height: "auto",
+                        marginLeft: "0px",
+                        marginTop: "0px",
+                        width: "100%"
+                    };
+                    // The width will be parentWidth, so calculate the height offset
+                    // that the UI will auto-scroll when hovered
+                    transformY = -(height * (parentWidth / width) - parentHeight);
+                }
+                else {
+                    const parentRatio = parentHeight / parentWidth;
+                    const imageRatio = height / width;
+                    // console.log(
+                    //   "parentRatio = ",
+                    //   parentRatio,
+                    //   "imageRatio = ",
+                    //   imageRatio,
+                    //   props.src
+                    // );
+                    if (parentRatio < imageRatio) {
+                        // Image is not wide enough to fill the space
+                        // We need to make it wide enough such that the
+                        // height will fill the space.
+                        // Hmm.....
+                        const newWidth = parentWidth / imageRatio;
+                        const newHeight = height * (newWidth / width);
+                        newStyle = {
+                            height: newHeight + "px",
+                            marginLeft: "0px",
+                            marginTop: "0px",
+                            width: newWidth + "px"
+                        };
+                        transformY = parentHeight - newHeight;
+                        transformX = parentWidth - newWidth;
+                        if (props.src.indexOf("59Je") > 0) {
+                            console.log(props.src + " transformY ", transformY, "transformX", transformX, " for newWidth", newWidth, " newHeight", newHeight, "imageRatio", imageRatio);
+                        }
+                    }
+                    else {
+                        // Image is wide enough to fill the space
+                        newStyle = {
+                            height: "100%",
+                            marginLeft: "0px",
+                            marginTop: "0px",
+                            width: "auto"
+                        };
+                        // The height will be parentHeight, so calculate the width offset
+                        // that the UI will auto-scroll when hovered
+                        transformX = -(width * (parentHeight / height) - parentWidth);
+                    }
+                }
+                setStyle(newStyle);
+                setIsLoaded(true);
+                setHoverTranslate({
+                    x: transformX,
+                    y: transformY
+                });
+            }, onClick: () => {
+                props.onSelectImage(props.src);
+            } }),
+        React.createElement("div", { className: "__selectButton" +
+                (props.isSelected ? " __selected" : " __unselected") }, props.isSelected ? React.createElement("img", { src: selectedButtonImage }) : null)));
+}
+exports.default = TokenModalImage;
+
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const expression = /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/gi;
+const regex = new RegExp(expression);
+function isValidUrl(url) {
+    return !!url.match(regex);
+}
+exports.default = isValidUrl;
+
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var v1 = __webpack_require__(23);
+var v4 = __webpack_require__(24);
 
 var uuid = v4;
 uuid.v1 = v1;
@@ -2002,7 +2198,7 @@ module.exports = uuid;
 
 
 /***/ }),
-/* 21 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var rng = __webpack_require__(6);
@@ -2117,7 +2313,7 @@ module.exports = v1;
 
 
 /***/ }),
-/* 22 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var rng = __webpack_require__(6);
@@ -2152,7 +2348,7 @@ module.exports = v4;
 
 
 /***/ }),
-/* 23 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2198,7 +2394,7 @@ exports.default = throttle;
 
 
 /***/ }),
-/* 24 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2215,7 +2411,7 @@ exports.default = getParentByTagName;
 
 
 /***/ }),
-/* 25 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

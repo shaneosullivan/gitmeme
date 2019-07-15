@@ -33,10 +33,9 @@ const preferredTagUrls = {};
 export default function createTokenTag(
   textInput: HTMLInputElement,
   token: Token,
-  onTokenActive: (isActive: boolean, tokenTag: TokenTagType) => void
+  onTokenActive: (isActive: boolean, tokenTag: TokenTagType) => void,
+  onAddNewImage?: (tokenValue: string, url: string) => Promise<boolean>
 ): TokenTagType {
-  console.log("createTokenTag", token.value);
-
   const endOfTokenIdx = token.index + token.value.length + 1;
   const startCoords = getCaretCoordinates(textInput, token.index);
   const endCoords = getCaretCoordinates(textInput, endOfTokenIdx);
@@ -53,6 +52,7 @@ export default function createTokenTag(
   if (!tagWrapperId) {
     textInput.setAttribute("data-tags-id", (tagWrapperId = uuid()));
   }
+
   let tagWrapperNode = document.getElementById(tagWrapperId);
   if (!tagWrapperNode) {
     tagWrapperNode = document.createElement("div");
@@ -89,6 +89,24 @@ export default function createTokenTag(
           record.modalIsOpen = !record.modalIsOpen;
           renderTag();
         }}
+        onAddNewImage={
+          onAddNewImage
+            ? async (url: string): Promise<boolean> => {
+                // If the onAddNewImage function is null, set this to null too
+                const addSucceeded = await onAddNewImage(token.value, url);
+
+                if (addSucceeded) {
+                  record.imageUrl = url;
+                  record.imageUrls.unshift(url);
+                  record.isValid = true;
+
+                  renderTag();
+                }
+
+                return addSucceeded;
+              }
+            : null
+        }
       />,
       tagUi
     );
