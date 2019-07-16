@@ -49,6 +49,7 @@ export default function TokenModalImage(props: Props) {
   if (props.isExpanded && root.current) {
     const parentWidth = getParentSize().width;
     expandedStyle = {
+      height: "auto",
       width: parentWidth + "px",
       zIndex: 10
     };
@@ -61,7 +62,11 @@ export default function TokenModalImage(props: Props) {
 
   return (
     <div
-      className={"__image" + (props.isExpanded ? " __expanded" : "")}
+      className={
+        "__image" +
+        (props.isExpanded ? " __expanded" : "") +
+        (isLoaded ? " __loaded" : "")
+      }
       ref={root}
       onMouseEnter={() => {
         setIsHovered(true);
@@ -150,27 +155,36 @@ export default function TokenModalImage(props: Props) {
       >
         {props.isSelected ? <img src={selectedButtonImage} /> : null}
       </div>
-      {props.isSelected ? (
-        <button
-          className={
-            "__toggleExpandButton" +
-            (props.isExpanded ? " __expanded" : " __notexpanded")
-          }
-          onClick={() => {
-            // Calculate the height of the image
 
-            const height =
-              imageSize.height * (getParentSize().width / imageSize.width);
-            props.onToggleExpanded(props.src, height);
-          }}
-        >
-          {
-            <img
-              src={props.isExpanded ? unexpandButtonImage : expandButtonImage}
-            />
-          }
-        </button>
-      ) : null}
+      <button
+        className={
+          "__toggleExpandButton" +
+          (props.isExpanded ? " __expanded" : " __notexpanded")
+        }
+        onClick={() => {
+          // Calculate the height of the image
+          const parentWidth = getParentSize().width;
+
+          const height =
+            imageSize.height * (getParentSize().width / imageSize.width);
+
+          console.log(
+            "got height",
+            height,
+            " from parentWidth ",
+            parentWidth,
+            " and imageSize.width",
+            imageSize.width
+          );
+          props.onToggleExpanded(props.src, height);
+        }}
+      >
+        {
+          <img
+            src={props.isExpanded ? unexpandButtonImage : expandButtonImage}
+          />
+        }
+      </button>
     </div>
   );
 }

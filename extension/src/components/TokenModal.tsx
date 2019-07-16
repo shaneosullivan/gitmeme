@@ -51,7 +51,7 @@ export default function TokenModal(props: Props) {
               src={url}
               onSelectImage={props.onSelectImage}
               onToggleExpanded={(imgUrl: string, imageHeight: number) => {
-                if (expandedImageUrl === url) {
+                if (expandedImageUrl === imgUrl) {
                   setExpandedImageUrl(null);
                   setExpandedImageHeight(-1);
                 } else {

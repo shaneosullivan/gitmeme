@@ -34,15 +34,17 @@ export default function TokenTag(props: Props) {
     classes.push("__arrowHovered");
   }
   let title;
-  if (props.isDisabled) {
-    title = `GitMeme image disabled`;
-  } else if (props.selectedImage) {
-    const addition = props.caretActive
-      ? "Click or press the down arrow to see the meme image or to select others"
-      : "Click to see the meme image or to select others";
-    title = `GitMeme for "${props.token.value}". ${addition}`;
-  } else {
-    title = `GitMeme for "${props.token.value}" not found`;
+  if (!props.modalIsOpen) {
+    if (props.isDisabled) {
+      title = `GitMeme image disabled`;
+    } else if (props.selectedImage) {
+      const addition = props.caretActive
+        ? "Click or press the down arrow to see the meme image or to select others"
+        : "Click to see the meme image or to select others";
+      title = `GitMeme for "${props.token.value}". ${addition}`;
+    } else {
+      title = `GitMeme for "${props.token.value}" not found`;
+    }
   }
 
   return (

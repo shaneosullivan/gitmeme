@@ -1940,17 +1940,19 @@ function TokenTag(props) {
         classes.push("__arrowHovered");
     }
     let title;
-    if (props.isDisabled) {
-        title = `GitMeme image disabled`;
-    }
-    else if (props.selectedImage) {
-        const addition = props.caretActive
-            ? "Click or press the down arrow to see the meme image or to select others"
-            : "Click to see the meme image or to select others";
-        title = `GitMeme for "${props.token.value}". ${addition}`;
-    }
-    else {
-        title = `GitMeme for "${props.token.value}" not found`;
+    if (!props.modalIsOpen) {
+        if (props.isDisabled) {
+            title = `GitMeme image disabled`;
+        }
+        else if (props.selectedImage) {
+            const addition = props.caretActive
+                ? "Click or press the down arrow to see the meme image or to select others"
+                : "Click to see the meme image or to select others";
+            title = `GitMeme for "${props.token.value}". ${addition}`;
+        }
+        else {
+            title = `GitMeme for "${props.token.value}" not found`;
+        }
     }
     return (React.createElement("div", { className: classes.join(" "), "data-token": props.token.value, style: {
             top: props.position.top - 19 + "px",
@@ -2005,16 +2007,19 @@ function TokenModal(props) {
     function handleAddNew() {
         setIsAddingNew(true);
     }
+    console.log("expandedImageUrl = ", expandedImageUrl);
     function renderImages() {
         return (React.createElement("div", { className: "__tokenTagModalImages" + (!!expandedImageUrl ? " __expanded" : ""), style: expandedImageHeight > 0 ? { height: expandedImageHeight + "px" } : {} },
             props.images.map((url, idx) => {
                 const isSelected = idx === props.selectedIndex;
                 return (React.createElement(TokenModalImage_1.default, { isExpanded: expandedImageUrl && url === expandedImageUrl, isSelected: isSelected, src: url, onSelectImage: props.onSelectImage, onToggleExpanded: (imgUrl, imageHeight) => {
-                        if (expandedImageUrl === url) {
+                        if (expandedImageUrl === imgUrl) {
+                            console.log("unexpanding ", imgUrl);
                             setExpandedImageUrl(null);
                             setExpandedImageHeight(-1);
                         }
                         else {
+                            console.log("expanding ", url, "with height ", imageHeight);
                             setExpandedImageUrl(imgUrl);
                             setExpandedImageHeight(imageHeight);
                         }
@@ -2115,12 +2120,15 @@ function TokenModalImage(props) {
     if (props.isExpanded && root.current) {
         const parentWidth = getParentSize().width;
         expandedStyle = {
+            height: "auto",
             width: parentWidth + "px",
             zIndex: 10
         };
     }
     const currentStyle = Object.assign({}, style, (props.isExpanded ? expandedStyle : transformStyle));
-    return (React.createElement("div", { className: "__image" + (props.isExpanded ? " __expanded" : ""), ref: root, onMouseEnter: () => {
+    return (React.createElement("div", { className: "__image" +
+            (props.isExpanded ? " __expanded" : "") +
+            (isLoaded ? " __loaded" : ""), ref: root, onMouseEnter: () => {
             setIsHovered(true);
         }, onMouseLeave: () => {
             setIsHovered(false);
@@ -2189,12 +2197,14 @@ function TokenModalImage(props) {
             } }),
         React.createElement("div", { className: "__selectButton" +
                 (props.isSelected ? " __selected" : " __unselected") }, props.isSelected ? React.createElement("img", { src: selectedButtonImage }) : null),
-        props.isSelected ? (React.createElement("button", { className: "__toggleExpandButton" +
+        React.createElement("button", { className: "__toggleExpandButton" +
                 (props.isExpanded ? " __expanded" : " __notexpanded"), onClick: () => {
                 // Calculate the height of the image
+                const parentWidth = getParentSize().width;
                 const height = imageSize.height * (getParentSize().width / imageSize.width);
+                console.log("got height", height, " from parentWidth ", parentWidth, " and imageSize.width", imageSize.width);
                 props.onToggleExpanded(props.src, height);
-            } }, React.createElement("img", { src: props.isExpanded ? unexpandButtonImage : expandButtonImage }))) : null));
+            } }, React.createElement("img", { src: props.isExpanded ? unexpandButtonImage : expandButtonImage }))));
 }
 exports.default = TokenModalImage;
 
