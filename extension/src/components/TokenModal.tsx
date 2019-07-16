@@ -25,6 +25,8 @@ export default function TokenModal(props: Props) {
   const [newUrlSubmitState, setNewUrlSubmitState] = useState(
     NewUrlSubmitState.NOT_SUBMITTING
   );
+  const [expandedImageUrl, setExpandedImageUrl] = useState(null);
+  const [expandedImageHeight, setExpandedImageHeight] = useState(-1);
 
   function handleAddNew() {
     setIsAddingNew(true);
@@ -32,14 +34,31 @@ export default function TokenModal(props: Props) {
 
   function renderImages() {
     return (
-      <div className="__tokenTagModalImages">
+      <div
+        className={
+          "__tokenTagModalImages" + (!!expandedImageUrl ? " __expanded" : "")
+        }
+        style={
+          expandedImageHeight > 0 ? { height: expandedImageHeight + "px" } : {}
+        }
+      >
         {props.images.map((url, idx) => {
           const isSelected = idx === props.selectedIndex;
           return (
             <TokenModalImage
+              isExpanded={expandedImageUrl && url === expandedImageUrl}
               isSelected={isSelected}
               src={url}
               onSelectImage={props.onSelectImage}
+              onToggleExpanded={(imgUrl: string, imageHeight: number) => {
+                if (expandedImageUrl === url) {
+                  setExpandedImageUrl(null);
+                  setExpandedImageHeight(-1);
+                } else {
+                  setExpandedImageUrl(imgUrl);
+                  setExpandedImageHeight(imageHeight);
+                }
+              }}
             />
           );
         })}

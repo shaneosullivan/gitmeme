@@ -3,12 +3,18 @@ const { useState } = React;
 
 interface Props {
   isSelected: boolean;
+  isExpanded: boolean;
   src: string;
   onSelectImage: (url: string) => void;
+  onToggleExpanded: (url: string, imgHeight: number) => void;
 }
 
 // @ts-ignore: In extension
 const selectedButtonImage = chrome.runtime.getURL("assets/selectedButton.png");
+// @ts-ignore: In extension
+const expandButtonImage = chrome.runtime.getURL("assets/expandButton.png");
+// @ts-ignore: In extension
+const unexpandButtonImage = chrome.runtime.getURL("assets/expandButton.png");
 
 export default function TokenModalImage(props: Props) {
   const [style, setStyle] = useState({
@@ -20,6 +26,7 @@ export default function TokenModalImage(props: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hoverTranslate, setHoverTranslate] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
+  const [imageSize, setImageSize] = useState({ height: 0, width: 0 });
 
   const transformStyle = {
     transform: `translate(${isHovered ? hoverTranslate.x : 0}px, ${
@@ -27,14 +34,35 @@ export default function TokenModalImage(props: Props) {
     }px)`
   };
 
+  const root = React.useRef();
+
+  function getParentSize() {
+    if (root.current) {
+      return {
+        height: root.current.parentNode.offsetHeight,
+        width: root.current.parentNode.offsetWidth
+      };
+    }
+    return { height: 0, width: 0 };
+  }
+  let expandedStyle = {};
+  if (props.isExpanded && root.current) {
+    const parentWidth = getParentSize().width;
+    expandedStyle = {
+      width: parentWidth + "px",
+      zIndex: 10
+    };
+  }
+
   const currentStyle = {
     ...style,
-    ...transformStyle
+    ...(props.isExpanded ? expandedStyle : transformStyle)
   };
 
   return (
     <div
-      className="__image"
+      className={"__image" + (props.isExpanded ? " __expanded" : "")}
+      ref={root}
       onMouseEnter={() => {
         setIsHovered(true);
       }}
@@ -108,6 +136,7 @@ export default function TokenModalImage(props: Props) {
             x: transformX,
             y: transformY
           });
+          setImageSize({ height, width });
         }}
         onClick={() => {
           props.onSelectImage(props.src);
@@ -121,6 +150,27 @@ export default function TokenModalImage(props: Props) {
       >
         {props.isSelected ? <img src={selectedButtonImage} /> : null}
       </div>
+      {props.isSelected ? (
+        <button
+          className={
+            "__toggleExpandButton" +
+            (props.isExpanded ? " __expanded" : " __notexpanded")
+          }
+          onClick={() => {
+            // Calculate the height of the image
+
+            const height =
+              imageSize.height * (getParentSize().width / imageSize.width);
+            props.onToggleExpanded(props.src, height);
+          }}
+        >
+          {
+            <img
+              src={props.isExpanded ? unexpandButtonImage : expandButtonImage}
+            />
+          }
+        </button>
+      ) : null}
     </div>
   );
 }

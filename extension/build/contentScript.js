@@ -812,7 +812,6 @@ function listenToInput(input) {
         loggedInUser.id === userInfo.id;
     const updateTokensForInput = throttle_1.default(() => {
         let tokens = parseTokens_1.default(input.value);
-        console.log("updateTokensForInput", tokens, input);
         if (tokens.length > 0) {
             // Filter the tokens that we already know about
             const unknownTokens = tokens.filter(token => {
@@ -2001,14 +2000,25 @@ function TokenModal(props) {
     const [isAddingNew, setIsAddingNew] = useState(false);
     const [newUrl, setNewUrl] = useState("");
     const [newUrlSubmitState, setNewUrlSubmitState] = useState(NewUrlSubmitState.NOT_SUBMITTING);
+    const [expandedImageUrl, setExpandedImageUrl] = useState(null);
+    const [expandedImageHeight, setExpandedImageHeight] = useState(-1);
     function handleAddNew() {
         setIsAddingNew(true);
     }
     function renderImages() {
-        return (React.createElement("div", { className: "__tokenTagModalImages" },
+        return (React.createElement("div", { className: "__tokenTagModalImages" + (!!expandedImageUrl ? " __expanded" : ""), style: expandedImageHeight > 0 ? { height: expandedImageHeight + "px" } : {} },
             props.images.map((url, idx) => {
                 const isSelected = idx === props.selectedIndex;
-                return (React.createElement(TokenModalImage_1.default, { isSelected: isSelected, src: url, onSelectImage: props.onSelectImage }));
+                return (React.createElement(TokenModalImage_1.default, { isExpanded: expandedImageUrl && url === expandedImageUrl, isSelected: isSelected, src: url, onSelectImage: props.onSelectImage, onToggleExpanded: (imgUrl, imageHeight) => {
+                        if (expandedImageUrl === url) {
+                            setExpandedImageUrl(null);
+                            setExpandedImageHeight(-1);
+                        }
+                        else {
+                            setExpandedImageUrl(imgUrl);
+                            setExpandedImageHeight(imageHeight);
+                        }
+                    } }));
             }),
             props.images.length % 2 !== 0 ? React.createElement("div", { className: "__image" }) : null));
     }
@@ -2073,6 +2083,10 @@ const React = __webpack_require__(0);
 const { useState } = React;
 // @ts-ignore: In extension
 const selectedButtonImage = chrome.runtime.getURL("assets/selectedButton.png");
+// @ts-ignore: In extension
+const expandButtonImage = chrome.runtime.getURL("assets/expandButton.png");
+// @ts-ignore: In extension
+const unexpandButtonImage = chrome.runtime.getURL("assets/expandButton.png");
 function TokenModalImage(props) {
     const [style, setStyle] = useState({
         height: "inherit",
@@ -2083,11 +2097,30 @@ function TokenModalImage(props) {
     const [isLoaded, setIsLoaded] = useState(false);
     const [hoverTranslate, setHoverTranslate] = useState({ x: 0, y: 0 });
     const [isHovered, setIsHovered] = useState(false);
+    const [imageSize, setImageSize] = useState({ height: 0, width: 0 });
     const transformStyle = {
         transform: `translate(${isHovered ? hoverTranslate.x : 0}px, ${isHovered ? hoverTranslate.y : 0}px)`
     };
-    const currentStyle = Object.assign({}, style, transformStyle);
-    return (React.createElement("div", { className: "__image", onMouseEnter: () => {
+    const root = React.useRef();
+    function getParentSize() {
+        if (root.current) {
+            return {
+                height: root.current.parentNode.offsetHeight,
+                width: root.current.parentNode.offsetWidth
+            };
+        }
+        return { height: 0, width: 0 };
+    }
+    let expandedStyle = {};
+    if (props.isExpanded && root.current) {
+        const parentWidth = getParentSize().width;
+        expandedStyle = {
+            width: parentWidth + "px",
+            zIndex: 10
+        };
+    }
+    const currentStyle = Object.assign({}, style, (props.isExpanded ? expandedStyle : transformStyle));
+    return (React.createElement("div", { className: "__image" + (props.isExpanded ? " __expanded" : ""), ref: root, onMouseEnter: () => {
             setIsHovered(true);
         }, onMouseLeave: () => {
             setIsHovered(false);
@@ -2150,11 +2183,18 @@ function TokenModalImage(props) {
                     x: transformX,
                     y: transformY
                 });
+                setImageSize({ height, width });
             }, onClick: () => {
                 props.onSelectImage(props.src);
             } }),
         React.createElement("div", { className: "__selectButton" +
-                (props.isSelected ? " __selected" : " __unselected") }, props.isSelected ? React.createElement("img", { src: selectedButtonImage }) : null)));
+                (props.isSelected ? " __selected" : " __unselected") }, props.isSelected ? React.createElement("img", { src: selectedButtonImage }) : null),
+        props.isSelected ? (React.createElement("button", { className: "__toggleExpandButton" +
+                (props.isExpanded ? " __expanded" : " __notexpanded"), onClick: () => {
+                // Calculate the height of the image
+                const height = imageSize.height * (getParentSize().width / imageSize.width);
+                props.onToggleExpanded(props.src, height);
+            } }, React.createElement("img", { src: props.isExpanded ? unexpandButtonImage : expandButtonImage }))) : null));
 }
 exports.default = TokenModalImage;
 
