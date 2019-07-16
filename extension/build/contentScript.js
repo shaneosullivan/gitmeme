@@ -2007,19 +2007,16 @@ function TokenModal(props) {
     function handleAddNew() {
         setIsAddingNew(true);
     }
-    console.log("expandedImageUrl = ", expandedImageUrl);
     function renderImages() {
         return (React.createElement("div", { className: "__tokenTagModalImages" + (!!expandedImageUrl ? " __expanded" : ""), style: expandedImageHeight > 0 ? { height: expandedImageHeight + "px" } : {} },
             props.images.map((url, idx) => {
                 const isSelected = idx === props.selectedIndex;
                 return (React.createElement(TokenModalImage_1.default, { isExpanded: expandedImageUrl && url === expandedImageUrl, isSelected: isSelected, src: url, onSelectImage: props.onSelectImage, onToggleExpanded: (imgUrl, imageHeight) => {
                         if (expandedImageUrl === imgUrl) {
-                            console.log("unexpanding ", imgUrl);
                             setExpandedImageUrl(null);
                             setExpandedImageHeight(-1);
                         }
                         else {
-                            console.log("expanding ", url, "with height ", imageHeight);
                             setExpandedImageUrl(imgUrl);
                             setExpandedImageHeight(imageHeight);
                         }
@@ -2070,7 +2067,7 @@ function TokenModal(props) {
             React.createElement("button", { onClick: () => {
                     setIsAddingNew(false);
                 } }, "Cancel"))) : (React.createElement(React.Fragment, null,
-            " ",
+            props.images.some(url => url.indexOf("giphy.com") > -1) ? (React.createElement("span", { className: "_attribution" }, "Powered by Giphy")) : null,
             React.createElement("button", { onClick: props.onToggleDisabled }, props.isDisabled ? "Enable Tag" : "Disable Tag"),
             React.createElement("button", { onClick: handleAddNew }, "Add New"))))));
 }

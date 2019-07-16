@@ -147,6 +147,7 @@ img.__memeImage {
   opacity: 0;
   position: absolute;
 }
+
 img.__memeImage.__loaded {
   opacity: 1;
   position: relative;
@@ -251,6 +252,16 @@ img.__memeImage.__loaded {
 .__tokenTagModalButtons {
   border-top: 1px solid #bfc1c3;
   height: 38px;
+}
+
+.__tokenTagModalButtons ._attribution {
+  color: #24292d;
+  float: left;
+  font-size: 14px;
+  letter-spacing: -0.15px;
+  margin-left: 6px;
+  margin-top: 6px;
+  opacity: 0.5;
 }
 
 .__tokenTagModalButtons button {

@@ -149,7 +149,9 @@ export default function TokenModal(props: Props) {
           </>
         ) : (
           <>
-            {" "}
+            {props.images.some(url => url.indexOf("giphy.com") > -1) ? (
+              <span className="_attribution">Powered by Giphy</span>
+            ) : null}
             <button onClick={props.onToggleDisabled}>
               {props.isDisabled ? "Enable Tag" : "Disable Tag"}
             </button>
