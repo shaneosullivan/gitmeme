@@ -10,6 +10,6 @@
     "typeRoots": ["node_modules/@types"],
     "jsx": "react"
   },
-  "include": ["./src/**/*.ts", "src/components/TokenTag.tsx"],
+  "include": ["./src/**/*.ts", "./src/**/*.tsx", "./src/*.ts"],
   "exclude": ["node_modules"]
 }

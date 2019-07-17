@@ -10,6 +10,7 @@ interface Props {
   modalIsOpen: boolean;
   position: { top: number; left: number; width: number };
   token: Token;
+  onLogIn: Function;
   onSelectImage: (url: string) => void;
   onAddNewImage?: (url: string) => Promise<boolean>;
   onToggleDisabled: Function;
@@ -77,7 +78,9 @@ export default function TokenTag(props: Props) {
           images={props.images}
           isDisabled={props.isDisabled}
           selectedIndex={props.images.indexOf(props.selectedImage)}
+          tokenValue={props.token.value}
           onAddNewImage={props.onAddNewImage}
+          onLogIn={props.onLogIn}
           onToggleDisabled={props.onToggleDisabled}
           onSelectImage={props.onSelectImage}
         />

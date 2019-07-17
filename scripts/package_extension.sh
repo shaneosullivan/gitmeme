@@ -8,7 +8,7 @@ cd ~/.gitmeme/
 mv extension Gitmeme
 
 cd Gitmeme/build
-ls  | grep -v contentScript.js | grep -v style.css | xargs rm
+ls  | grep -v contentScript.js | grep -v style.css | grep -v background.js | xargs rm
 rm -rf util
 
 cd ../..

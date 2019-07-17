@@ -76,7 +76,7 @@ export default function TokenModalImage(props: Props) {
       }}
     >
       <img
-        className={"__memeImage" + (isLoaded ? " __loaded" : "__preload")}
+        className={"__memeImage" + (isLoaded ? " __loaded" : " __preload")}
         style={currentStyle}
         src={props.src}
         onLoad={evt => {

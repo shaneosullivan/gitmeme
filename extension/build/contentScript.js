@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 8);
+/******/ 	return __webpack_require__(__webpack_require__.s = 10);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -99,7 +99,7 @@
  */
 
 
-var k = __webpack_require__(1),
+var k = __webpack_require__(4),
   n = "function" === typeof Symbol && Symbol.for,
   p = n ? Symbol.for("react.element") : 60103,
   q = n ? Symbol.for("react.portal") : 60106,
@@ -494,6 +494,107 @@ module.exports = Z.default || Z;
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.GITHUB_CLIENT_ID = "9b9e17e168e82438cfb6";
+exports.API_ROOT_URL = "https://us-central1-git-meme-prod.cloudfunctions.net/api";
+// DO NOT CHECK IN
+// function getFakeUrl() {
+//   console.error("Do not check this in");
+//   return "http://localhost:5000/git-meme-prod/us-central1/api";
+// }
+// export const API_ROOT_URL = getFakeUrl();
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const getLoggedInUser_1 = __webpack_require__(3);
+function getGithubInfo() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise(resolve => {
+            chrome.storage.sync.get(["github_token", "github_id", "github_avatar"], function (results) {
+                if (results.github_token) {
+                    resolve({
+                        token: results.github_token || null,
+                        id: results.github_id || null,
+                        avatar: results.github_avatar || null
+                    });
+                }
+                else {
+                    const loggedInUser = getLoggedInUser_1.default();
+                    resolve({
+                        token: null,
+                        id: loggedInUser ? loggedInUser.id : null,
+                        avatar: loggedInUser ? loggedInUser.avatar : null
+                    });
+                }
+            });
+        });
+    });
+}
+exports.getGithubInfo = getGithubInfo;
+function setGithubToken(token) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise(resolve => {
+            chrome.storage.sync.set({ github_token: token }, function () {
+                resolve();
+            });
+        });
+    });
+}
+exports.setGithubToken = setGithubToken;
+function setGithubUserId(userId, avatarUrl) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise(resolve => {
+            chrome.storage.sync.set({ github_id: userId, github_avatar: avatarUrl }, function () {
+                resolve();
+            });
+        });
+    });
+}
+exports.setGithubUserId = setGithubUserId;
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function getLoggedInUser() {
+    const avatarNode = document.querySelector("summary img.avatar");
+    if (avatarNode) {
+        const userName = (avatarNode.getAttribute("alt") || "").substring(1);
+        const avatar = avatarNode.getAttribute("src");
+        return {
+            id: userName,
+            avatar
+        };
+    }
+    return null;
+}
+exports.default = getLoggedInUser;
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
 /*
 object-assign
 (c) Sindre Sorhus
@@ -587,24 +688,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.GITHUB_CLIENT_ID = "9b9e17e168e82438cfb6";
-exports.API_ROOT_URL = "https://us-central1-git-meme-prod.cloudfunctions.net/api";
-// DO NOT CHECK IN
-// function getFakeUrl() {
-//   console.error("Do not check this in");
-//   return "http://localhost:5000/git-meme-prod/us-central1/api";
-// }
-// export const API_ROOT_URL = getFakeUrl();
-
-
-/***/ }),
-/* 3 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -617,90 +701,6 @@ function createAuthHeader(userId, token) {
     };
 }
 exports.default = createAuthHeader;
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const getLoggedInUser_1 = __webpack_require__(5);
-function getGithubInfo() {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise(resolve => {
-            chrome.storage.sync.get(["github_token", "github_id", "github_avatar"], function (results) {
-                if (results.github_token) {
-                    resolve({
-                        token: results.github_token || null,
-                        id: results.github_id || null,
-                        avatar: results.github_avatar || null
-                    });
-                }
-                else {
-                    const loggedInUser = getLoggedInUser_1.default();
-                    resolve({
-                        token: null,
-                        id: loggedInUser ? loggedInUser.id : null,
-                        avatar: loggedInUser ? loggedInUser.avatar : null
-                    });
-                }
-            });
-        });
-    });
-}
-exports.getGithubInfo = getGithubInfo;
-function setGithubToken(token) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise(resolve => {
-            chrome.storage.sync.set({ github_token: token }, function () {
-                resolve();
-            });
-        });
-    });
-}
-exports.setGithubToken = setGithubToken;
-function setGithubUserId(userId, avatarUrl) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise(resolve => {
-            chrome.storage.sync.set({ github_id: userId, github_avatar: avatarUrl }, function () {
-                resolve();
-            });
-        });
-    });
-}
-exports.setGithubUserId = setGithubUserId;
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-function getLoggedInUser() {
-    const avatarNode = document.querySelector("summary img.avatar");
-    if (avatarNode) {
-        const userName = (avatarNode.getAttribute("alt") || "").substring(1);
-        const avatar = avatarNode.getAttribute("src");
-        return {
-            id: userName,
-            avatar
-        };
-    }
-    return null;
-}
-exports.default = getLoggedInUser;
 
 
 /***/ }),
@@ -774,7 +774,9 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 8 */
+/* 8 */,
+/* 9 */,
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -788,15 +790,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const parseTokens_1 = __webpack_require__(9);
-const createTokenTag_1 = __webpack_require__(10);
-const throttle_1 = __webpack_require__(25);
-const getParentByTagName_1 = __webpack_require__(26);
-const findTextInputs_1 = __webpack_require__(27);
-const githubInfo_1 = __webpack_require__(4);
-const consts_1 = __webpack_require__(2);
-const createAuthHeader_1 = __webpack_require__(3);
-const getLoggedInUser_1 = __webpack_require__(5);
+const parseTokens_1 = __webpack_require__(11);
+const createTokenTag_1 = __webpack_require__(12);
+const throttle_1 = __webpack_require__(27);
+const getParentByTagName_1 = __webpack_require__(28);
+const findTextInputs_1 = __webpack_require__(29);
+const githubInfo_1 = __webpack_require__(2);
+const consts_1 = __webpack_require__(1);
+const createAuthHeader_1 = __webpack_require__(5);
+const getLoggedInUser_1 = __webpack_require__(3);
 let userInfo;
 // Get the logged in user from the DOM
 const loggedInUser = getLoggedInUser_1.default();
@@ -1006,7 +1008,7 @@ githubInfo_1.getGithubInfo().then((localUserInfo) => {
 
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1070,7 +1072,7 @@ exports.default = parseTokens;
 
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1085,11 +1087,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
-const getCaretCoordinates = __webpack_require__(11);
-const ReactDOM = __webpack_require__(12);
-const searcher_1 = __webpack_require__(16);
-const TokenTag_1 = __webpack_require__(18);
-const uuid = __webpack_require__(22);
+const getCaretCoordinates = __webpack_require__(13);
+const ReactDOM = __webpack_require__(14);
+const searcher_1 = __webpack_require__(18);
+const TokenTag_1 = __webpack_require__(20);
+const uuid = __webpack_require__(24);
 const TAG_CONTAINER_ID = "__tagContainer";
 const TEXT_HEIGHT = 18;
 // let removeOpenImage = null;
@@ -1118,7 +1120,14 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
     const tagUi = document.createElement("div");
     tagWrapperNode.appendChild(tagUi);
     function renderTag() {
-        ReactDOM.render(React.createElement(TokenTag_1.default, { isDisabled: record.disabled, caretActive: record.caretIsAtToken, selectedImage: record.imageUrl, images: record.imageUrls, token: token, position: record.position, modalIsOpen: record.modalIsOpen, onSelectImage: (url) => {
+        ReactDOM.render(React.createElement(TokenTag_1.default, { isDisabled: record.disabled, caretActive: record.caretIsAtToken, selectedImage: record.imageUrl, images: record.imageUrls, token: token, position: record.position, modalIsOpen: record.modalIsOpen, onLogIn: () => {
+                chrome.runtime.sendMessage({ data: "login" }, success => {
+                    console.log("got success", success);
+                    if (success) {
+                        window.location.reload();
+                    }
+                });
+            }, onSelectImage: (url) => {
                 record.imageUrl = url;
                 preferredTagUrls[token.value] = url;
                 renderTag();
@@ -1176,10 +1185,10 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
         textInput.removeEventListener("click", handleInputClick);
     }
     function handleInputKey(evt) {
-        if (evt.keyCode === 40) {
+        // Up arrow
+        if (evt.keyCode === 38) {
             if (record.caretIsAtToken) {
                 if (!record.modalIsOpen) {
-                    // Down arrow
                     evt.preventDefault();
                     evt.stopPropagation();
                     record.modalIsOpen = true;
@@ -1234,7 +1243,7 @@ exports.default = createTokenTag;
 
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* jshint browser: true */
@@ -1378,7 +1387,7 @@ if ( true && typeof module.exports != 'undefined') {
 
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1395,7 +1404,7 @@ if ( true && typeof module.exports != 'undefined') {
  Modernizr 3.0.0pre (Custom Build) | MIT
 */
 var aa=__webpack_require__(0),
-n=__webpack_require__(1),r=__webpack_require__(13);function ba(a,b,c,d,e,f,g,h){if(!a){a=void 0;if(void 0===b)a=Error("Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings.");else{var l=[c,d,e,f,g,h],k=0;a=Error(b.replace(/%s/g,function(){return l[k++]}));a.name="Invariant Violation"}a.framesToPop=1;throw a;}}
+n=__webpack_require__(4),r=__webpack_require__(15);function ba(a,b,c,d,e,f,g,h){if(!a){a=void 0;if(void 0===b)a=Error("Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings.");else{var l=[c,d,e,f,g,h],k=0;a=Error(b.replace(/%s/g,function(){return l[k++]}));a.name="Invariant Violation"}a.framesToPop=1;throw a;}}
 function x(a){for(var b=arguments.length-1,c="https://reactjs.org/docs/error-decoder.html?invariant="+a,d=0;d<b;d++)c+="&args[]="+encodeURIComponent(arguments[d+1]);ba(!1,"Minified React error #"+a+"; visit %s for the full message or use the non-minified dev environment for full errors and additional helpful warnings. ",c)}aa?void 0:x("227");function ca(a,b,c,d,e,f,g,h,l){var k=Array.prototype.slice.call(arguments,3);try{b.apply(c,k)}catch(m){this.onError(m)}}
 var da=!1,ea=null,fa=!1,ha=null,ia={onError:function(a){da=!0;ea=a}};function ja(a,b,c,d,e,f,g,h,l){da=!1;ea=null;ca.apply(ia,arguments)}function ka(a,b,c,d,e,f,g,h,l){ja.apply(this,arguments);if(da){if(da){var k=ea;da=!1;ea=null}else x("198"),k=void 0;fa||(fa=!0,ha=k)}}var la=null,ma={};
 function na(){if(la)for(var a in ma){var b=ma[a],c=la.indexOf(a);-1<c?void 0:x("96",a);if(!oa[c]){b.extractEvents?void 0:x("97",a);oa[c]=b;c=b.eventTypes;for(var d in c){var e=void 0;var f=c[d],g=b,h=d;pa.hasOwnProperty(h)?x("99",h):void 0;pa[h]=f;var l=f.phasedRegistrationNames;if(l){for(e in l)l.hasOwnProperty(e)&&qa(l[e],g,h);e=!0}else f.registrationName?(qa(f.registrationName,g,h),e=!0):e=!1;e?void 0:x("98",d,a)}}}}
@@ -1655,19 +1664,19 @@ X;X=!0;try{ki(a)}finally{(X=b)||W||Yh(1073741823,!1)}},__SECRET_INTERNALS_DO_NOT
 
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 if (true) {
-  module.exports = __webpack_require__(14);
+  module.exports = __webpack_require__(16);
 } else {}
 
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1693,10 +1702,10 @@ exports.unstable_scheduleCallback=function(a,b){var c=-1!==k?k:exports.unstable_
 b=c.previous;b.next=c.previous=a;a.next=c;a.previous=b}return a};exports.unstable_cancelCallback=function(a){var b=a.next;if(null!==b){if(b===a)d=null;else{a===d&&(d=b);var c=a.previous;c.next=b;b.previous=c}a.next=a.previous=null}};exports.unstable_wrapCallback=function(a){var b=g;return function(){var c=g,f=k;g=b;k=exports.unstable_now();try{return a.apply(this,arguments)}finally{g=c,k=f,v()}}};exports.unstable_getCurrentPriorityLevel=function(){return g};
 exports.unstable_shouldYield=function(){return!e&&(null!==d&&d.expirationTime<l||w())};exports.unstable_continueExecution=function(){null!==d&&p()};exports.unstable_pauseExecution=function(){};exports.unstable_getFirstCallbackNode=function(){return d};
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(15)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(17)))
 
 /***/ }),
-/* 15 */
+/* 17 */
 /***/ (function(module, exports) {
 
 var g;
@@ -1722,7 +1731,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 16 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1736,10 +1745,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fetch = __webpack_require__(17);
-const consts_1 = __webpack_require__(2);
-const createAuthHeader_1 = __webpack_require__(3);
-const githubInfo_1 = __webpack_require__(4);
+const fetch = __webpack_require__(19);
+const consts_1 = __webpack_require__(1);
+const createAuthHeader_1 = __webpack_require__(5);
+const githubInfo_1 = __webpack_require__(2);
 const GIPHY_API_KEY = "I5ysXzZG4OIoiMD99Tz7v6AGN9uzGWpr";
 const allResults = {};
 function filterToRemoveIdenticalImages(arr) {
@@ -1886,7 +1895,7 @@ function searchGiphy(tokenValue) {
 
 
 /***/ }),
-/* 17 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1915,14 +1924,14 @@ exports.Request = global.Request;
 exports.Response = global.Response;
 
 /***/ }),
-/* 18 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
-const TokenModal_1 = __webpack_require__(19);
+const TokenModal_1 = __webpack_require__(21);
 function TokenTag(props) {
     const [arrowHovered, setArrowHovered] = React.useState(false);
     const classes = ["__tokenTag"];
@@ -1967,13 +1976,13 @@ function TokenTag(props) {
                 setArrowHovered(false);
             } },
             React.createElement("div", { className: "__inner" })),
-        props.modalIsOpen ? (React.createElement(TokenModal_1.default, { images: props.images, isDisabled: props.isDisabled, selectedIndex: props.images.indexOf(props.selectedImage), onAddNewImage: props.onAddNewImage, onToggleDisabled: props.onToggleDisabled, onSelectImage: props.onSelectImage })) : null));
+        props.modalIsOpen ? (React.createElement(TokenModal_1.default, { images: props.images, isDisabled: props.isDisabled, selectedIndex: props.images.indexOf(props.selectedImage), tokenValue: props.token.value, onAddNewImage: props.onAddNewImage, onLogIn: props.onLogIn, onToggleDisabled: props.onToggleDisabled, onSelectImage: props.onSelectImage })) : null));
 }
 exports.default = TokenTag;
 
 
 /***/ }),
-/* 19 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1988,8 +1997,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
-const TokenModalImage_1 = __webpack_require__(20);
-const isValidUrl_1 = __webpack_require__(21);
+const TokenModalImage_1 = __webpack_require__(22);
+const isValidUrl_1 = __webpack_require__(23);
 const { useState } = React;
 var NewUrlSubmitState;
 (function (NewUrlSubmitState) {
@@ -1998,12 +2007,31 @@ var NewUrlSubmitState;
     NewUrlSubmitState[NewUrlSubmitState["FAILED"] = 2] = "FAILED";
     NewUrlSubmitState[NewUrlSubmitState["SUCCEEDED"] = 3] = "SUCCEEDED";
 })(NewUrlSubmitState || (NewUrlSubmitState = {}));
+const AddNewLinks = [
+    {
+        url: "https://images.google.com",
+        label: "Google Images"
+    },
+    {
+        url: "https://imgflip.com/memegenerator",
+        label: "Imgflip"
+    },
+    {
+        url: "https://makeameme.org/memegenerator",
+        label: "Make A Meme"
+    },
+    {
+        url: "https://imgur.com/memegen",
+        label: "Imgur"
+    }
+];
 function TokenModal(props) {
     const [isAddingNew, setIsAddingNew] = useState(false);
     const [newUrl, setNewUrl] = useState("");
     const [newUrlSubmitState, setNewUrlSubmitState] = useState(NewUrlSubmitState.NOT_SUBMITTING);
     const [expandedImageUrl, setExpandedImageUrl] = useState(null);
     const [expandedImageHeight, setExpandedImageHeight] = useState(-1);
+    const canAddNewImage = !!props.onAddNewImage;
     function handleAddNew() {
         setIsAddingNew(true);
     }
@@ -2025,13 +2053,21 @@ function TokenModal(props) {
             props.images.length % 2 !== 0 ? React.createElement("div", { className: "__image" }) : null));
     }
     function renderAddNew() {
-        const canAddNewImage = !!props.onAddNewImage;
         let content;
         if (canAddNewImage) {
             switch (newUrlSubmitState) {
                 case NewUrlSubmitState.FAILED:
                 case NewUrlSubmitState.NOT_SUBMITTING:
                     content = (React.createElement("div", null,
+                        React.createElement("div", null,
+                            "To add a new meme for ",
+                            React.createElement("strong", null,
+                                "/",
+                                props.tokenValue),
+                            ", enter the URL to the image below. If you'd like to find or make a meme, you can use one of these sites"),
+                        React.createElement("div", { className: "thirdPartySiteLinks" }, AddNewLinks.map(linkInfo => {
+                            return (React.createElement("a", { href: linkInfo.url, target: "_blank" }, linkInfo.label));
+                        })),
                         React.createElement("input", { type: "text", placeholder: "Enter image URL", value: newUrl, onChange: evt => {
                                 setNewUrl(evt.target.value);
                             } }),
@@ -2049,21 +2085,22 @@ function TokenModal(props) {
             React.createElement("div", null, "Add new meme"),
             content));
     }
+    const actionButton = canAddNewImage ? (React.createElement("button", { onClick: () => __awaiter(this, void 0, void 0, function* () {
+            setNewUrlSubmitState(NewUrlSubmitState.SUBMITTING);
+            const success = yield props.onAddNewImage(newUrl);
+            setNewUrlSubmitState(success ? NewUrlSubmitState.NOT_SUBMITTING : NewUrlSubmitState.FAILED);
+            if (success) {
+                setIsAddingNew(false);
+            }
+        }), title: isValidUrl_1.default(newUrl)
+            ? "Click to submit your awesome new meme"
+            : "Cannot submit, the url you entered is not valid", disabled: !isValidUrl_1.default(newUrl) }, "Submit")) : (React.createElement("button", { onClick: () => {
+            props.onLogIn();
+        } }, "Log In"));
     return (React.createElement("div", { className: "__tokenTagModal" },
         isAddingNew ? renderAddNew() : renderImages(),
         React.createElement("div", { className: "__tokenTagModalButtons" }, isAddingNew ? (React.createElement(React.Fragment, null,
-            React.createElement("button", { onClick: () => __awaiter(this, void 0, void 0, function* () {
-                    setNewUrlSubmitState(NewUrlSubmitState.SUBMITTING);
-                    const success = yield props.onAddNewImage(newUrl);
-                    setNewUrlSubmitState(success
-                        ? NewUrlSubmitState.NOT_SUBMITTING
-                        : NewUrlSubmitState.FAILED);
-                    if (success) {
-                        setIsAddingNew(false);
-                    }
-                }), title: isValidUrl_1.default(newUrl)
-                    ? "Click to submit your awesome new meme"
-                    : "Cannot submit, the url you entered is not valid", disabled: !isValidUrl_1.default(newUrl) }, "Submit"),
+            actionButton,
             React.createElement("button", { onClick: () => {
                     setIsAddingNew(false);
                 } }, "Cancel"))) : (React.createElement(React.Fragment, null,
@@ -2075,7 +2112,7 @@ exports.default = TokenModal;
 
 
 /***/ }),
-/* 20 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2130,7 +2167,7 @@ function TokenModalImage(props) {
         }, onMouseLeave: () => {
             setIsHovered(false);
         } },
-        React.createElement("img", { className: "__memeImage" + (isLoaded ? " __loaded" : "__preload"), style: currentStyle, src: props.src, onLoad: evt => {
+        React.createElement("img", { className: "__memeImage" + (isLoaded ? " __loaded" : " __preload"), style: currentStyle, src: props.src, onLoad: evt => {
                 const image = evt.target;
                 const height = image.naturalHeight;
                 const width = image.naturalWidth;
@@ -2207,7 +2244,7 @@ exports.default = TokenModalImage;
 
 
 /***/ }),
-/* 21 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2222,11 +2259,11 @@ exports.default = isValidUrl;
 
 
 /***/ }),
-/* 22 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var v1 = __webpack_require__(23);
-var v4 = __webpack_require__(24);
+var v1 = __webpack_require__(25);
+var v4 = __webpack_require__(26);
 
 var uuid = v4;
 uuid.v1 = v1;
@@ -2236,7 +2273,7 @@ module.exports = uuid;
 
 
 /***/ }),
-/* 23 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var rng = __webpack_require__(6);
@@ -2351,7 +2388,7 @@ module.exports = v1;
 
 
 /***/ }),
-/* 24 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var rng = __webpack_require__(6);
@@ -2386,7 +2423,7 @@ module.exports = v4;
 
 
 /***/ }),
-/* 25 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2432,7 +2469,7 @@ exports.default = throttle;
 
 
 /***/ }),
-/* 26 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2449,7 +2486,7 @@ exports.default = getParentByTagName;
 
 
 /***/ }),
-/* 27 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

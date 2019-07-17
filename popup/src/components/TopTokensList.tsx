@@ -6,7 +6,6 @@ import { GithubInfo } from "../shared/auth/githubInfo";
 import "./TopTokensList.css";
 import Login from "./Login";
 import createAuthHeader from "../shared/auth/createAuthHeader";
-import { userInfo } from "os";
 
 interface Props {
   userInfo: GithubInfo;

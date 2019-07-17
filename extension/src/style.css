@@ -36,7 +36,8 @@
 
 .__tokenWrapperActive .__tokenTag,
 .__tokenTag.__selected,
-.__tokenTag.__arrowHovered {
+.__tokenTag.__arrowHovered,
+.__tokenTag.__isOpen {
   padding-right: 20px;
 }
 
@@ -72,7 +73,8 @@
 }
 
 .__tokenWrapperActive .__tokenTag .__tokenTagArrow,
-.__tokenTag.__selected .__tokenTagArrow {
+.__tokenTag.__selected .__tokenTagArrow,
+.__tokenTag.__isOpen .__tokenTagArrow {
   display: block;
   animation: fadeIn 0.3s ease-in-out;
 }
@@ -88,7 +90,7 @@
 .__tokenTagArrow .__inner {
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
-  border-top: 4px solid #656b6f;
+  border-bottom: 4px solid #656b6f;
   height: 0;
   margin-left: auto;
   margin-right: auto;
@@ -126,6 +128,8 @@
 .__tokenTagModal .__image img.__memeImage {
   float: left;
   transition: opacity 0.3s linear, transform 1s linear;
+  opacity: 0;
+  position: absolute;
 }
 
 .__tokenTagModal .__image.__expanded {
@@ -143,12 +147,7 @@
   visibility: hidden;
 }
 
-img.__memeImage {
-  opacity: 0;
-  position: absolute;
-}
-
-img.__memeImage.__loaded {
+.__tokenTagModal .__image img.__memeImage.__loaded {
   opacity: 1;
   position: relative;
 }
@@ -247,6 +246,11 @@ img.__memeImage.__loaded {
 .__tokenTagModalAddNew {
   flex: 1;
   overflow-y: auto;
+  padding: 16px;
+}
+
+.__tokenTagModalAddNew .thirdPartySiteLinks a + a {
+  margin-left: 16px;
 }
 
 .__tokenTagModalButtons {
@@ -259,7 +263,7 @@ img.__memeImage.__loaded {
   float: left;
   font-size: 14px;
   letter-spacing: -0.15px;
-  margin-left: 6px;
+  margin-left: 14px;
   margin-top: 6px;
   opacity: 0.5;
 }

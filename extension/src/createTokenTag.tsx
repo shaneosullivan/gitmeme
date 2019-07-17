@@ -5,6 +5,8 @@ import * as ReactDOM from "./lib/react-dom";
 import searcher from "./searcher";
 import TokenTag from "./components/TokenTag";
 import * as uuid from "uuid";
+import getToken from "./shared/auth/getToken";
+import { GithubInfo } from "./shared/auth/githubInfo";
 
 const TAG_CONTAINER_ID = "__tagContainer";
 const TEXT_HEIGHT = 18;
@@ -73,6 +75,14 @@ export default function createTokenTag(
         token={token}
         position={record.position}
         modalIsOpen={record.modalIsOpen}
+        onLogIn={() => {
+          chrome.runtime.sendMessage({ data: "login" }, success => {
+            console.log("got success", success);
+            if (success) {
+              window.location.reload();
+            }
+          });
+        }}
         onSelectImage={(url: string) => {
           record.imageUrl = url;
           preferredTagUrls[token.value] = url;
@@ -152,10 +162,10 @@ export default function createTokenTag(
   }
 
   function handleInputKey(evt) {
-    if (evt.keyCode === 40) {
+    // Up arrow
+    if (evt.keyCode === 38) {
       if (record.caretIsAtToken) {
         if (!record.modalIsOpen) {
-          // Down arrow
           evt.preventDefault();
           evt.stopPropagation();
           record.modalIsOpen = true;

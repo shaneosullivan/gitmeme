@@ -24,5 +24,9 @@
   "web_accessible_resources": [
     "assets/selectedButton.png",
     "assets/expandButton.png"
-  ]
+  ],
+  "background": {
+    "scripts": ["build/background.js"],
+    "persistent": false
+  }
 }
