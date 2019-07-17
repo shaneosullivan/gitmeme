@@ -90,7 +90,15 @@ export default function TokenModal(props: Props) {
             />
           );
         })}
-        {props.images.length % 2 !== 0 ? <div className="__image" /> : null}
+        {props.images.length % 2 !== 0 ? <div className="__image" /> : null}) }
+      </div>
+    );
+  }
+
+  function renderEmpty() {
+    return (
+      <div className="__tokenModalEmpty">
+        No memes found for <strong>/{props.tokenValue}</strong>
       </div>
     );
   }
@@ -184,7 +192,11 @@ export default function TokenModal(props: Props) {
 
   return (
     <div className="__tokenTagModal">
-      {isAddingNew ? renderAddNew() : renderImages()}
+      {isAddingNew
+        ? renderAddNew()
+        : props.images.length > 0
+        ? renderImages()
+        : renderEmpty()}
       <div className="__tokenTagModalButtons">
         {isAddingNew ? (
           <>
@@ -202,9 +214,12 @@ export default function TokenModal(props: Props) {
             {props.images.some(url => url.indexOf("giphy.com") > -1) ? (
               <span className="_attribution">Powered by Giphy</span>
             ) : null}
-            <button onClick={props.onToggleDisabled}>
-              {props.isDisabled ? "Enable Tag" : "Disable Tag"}
-            </button>
+            {props.images.length > 0 ? (
+              <button onClick={props.onToggleDisabled}>
+                {props.isDisabled ? "Enable Tag" : "Disable Tag"}
+              </button>
+            ) : null}
+
             <button onClick={handleAddNew}>{"Add New"}</button>
           </>
         )}

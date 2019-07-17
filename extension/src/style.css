@@ -223,6 +223,12 @@
   display: block;
 }
 
+.__tokenModalEmpty {
+  color: #929496;
+  font-size: 14px;
+  padding: 20px;
+}
+
 .__tokenTagModalImages {
   flex: 1;
   font-size: 0;

@@ -2071,7 +2071,15 @@ function TokenModal(props) {
                         }
                     } }));
             }),
-            props.images.length % 2 !== 0 ? React.createElement("div", { className: "__image" }) : null));
+            props.images.length % 2 !== 0 ? React.createElement("div", { className: "__image" }) : null,
+            ") }"));
+    }
+    function renderEmpty() {
+        return (React.createElement("div", { className: "__tokenModalEmpty" },
+            "No memes found for ",
+            React.createElement("strong", null,
+                "/",
+                props.tokenValue)));
     }
     function renderAddNew() {
         let content;
@@ -2119,14 +2127,18 @@ function TokenModal(props) {
             props.onLogIn();
         } }, "Log In"));
     return (React.createElement("div", { className: "__tokenTagModal" },
-        isAddingNew ? renderAddNew() : renderImages(),
+        isAddingNew
+            ? renderAddNew()
+            : props.images.length > 0
+                ? renderImages()
+                : renderEmpty(),
         React.createElement("div", { className: "__tokenTagModalButtons" }, isAddingNew ? (React.createElement(React.Fragment, null,
             actionButton,
             React.createElement("button", { onClick: () => {
                     setIsAddingNew(false);
                 } }, "Cancel"))) : (React.createElement(React.Fragment, null,
             props.images.some(url => url.indexOf("giphy.com") > -1) ? (React.createElement("span", { className: "_attribution" }, "Powered by Giphy")) : null,
-            React.createElement("button", { onClick: props.onToggleDisabled }, props.isDisabled ? "Enable Tag" : "Disable Tag"),
+            props.images.length > 0 ? (React.createElement("button", { onClick: props.onToggleDisabled }, props.isDisabled ? "Enable Tag" : "Disable Tag")) : null,
             React.createElement("button", { onClick: handleAddNew }, "Add New"))))));
 }
 exports.default = TokenModal;
