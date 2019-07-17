@@ -1,7 +1,7 @@
 import * as React from "../lib/react";
 import TokenModalImage from "./TokenModalImage";
 import isValidUrl from "../util/isValidUrl";
-const { useState } = React;
+const { useState, useRef, useEffect } = React;
 
 interface Props {
   images: Array<string>;
@@ -55,10 +55,17 @@ export default function TokenModal(props: Props) {
   const [expandedImageHeight, setExpandedImageHeight] = useState(-1);
 
   const canAddNewImage = !!props.onAddNewImage;
+  const modalImagesRef = useRef();
 
   function handleAddNew() {
     setIsAddingNew(true);
   }
+
+  useEffect(() => {
+    if (expandedImageUrl && modalImagesRef.current) {
+      modalImagesRef.current.scrollTop = 0;
+    }
+  }, [expandedImageUrl]);
 
   function renderImages() {
     return (
@@ -69,6 +76,7 @@ export default function TokenModal(props: Props) {
         style={
           expandedImageHeight > 0 ? { height: expandedImageHeight + "px" } : {}
         }
+        ref={modalImagesRef}
       >
         {props.images.map((url, idx) => {
           const isSelected = idx === props.selectedIndex;

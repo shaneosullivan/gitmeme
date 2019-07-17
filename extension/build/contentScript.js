@@ -2027,7 +2027,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
 const TokenModalImage_1 = __webpack_require__(22);
 const isValidUrl_1 = __webpack_require__(23);
-const { useState } = React;
+const { useState, useRef, useEffect } = React;
 var NewUrlSubmitState;
 (function (NewUrlSubmitState) {
     NewUrlSubmitState[NewUrlSubmitState["NOT_SUBMITTING"] = 0] = "NOT_SUBMITTING";
@@ -2060,11 +2060,17 @@ function TokenModal(props) {
     const [expandedImageUrl, setExpandedImageUrl] = useState(null);
     const [expandedImageHeight, setExpandedImageHeight] = useState(-1);
     const canAddNewImage = !!props.onAddNewImage;
+    const modalImagesRef = useRef();
     function handleAddNew() {
         setIsAddingNew(true);
     }
+    useEffect(() => {
+        if (expandedImageUrl && modalImagesRef.current) {
+            modalImagesRef.current.scrollTop = 0;
+        }
+    }, [expandedImageUrl]);
     function renderImages() {
-        return (React.createElement("div", { className: "__tokenTagModalImages" + (!!expandedImageUrl ? " __expanded" : ""), style: expandedImageHeight > 0 ? { height: expandedImageHeight + "px" } : {} },
+        return (React.createElement("div", { className: "__tokenTagModalImages" + (!!expandedImageUrl ? " __expanded" : ""), style: expandedImageHeight > 0 ? { height: expandedImageHeight + "px" } : {}, ref: modalImagesRef },
             props.images.map((url, idx) => {
                 const isSelected = idx === props.selectedIndex;
                 return (React.createElement(TokenModalImage_1.default, { isExpanded: expandedImageUrl && url === expandedImageUrl, isSelected: isSelected, src: url, onSelectImage: props.onSelectImage, onToggleExpanded: (imgUrl, imageHeight) => {
