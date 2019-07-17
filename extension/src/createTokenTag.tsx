@@ -44,7 +44,21 @@ export default function createTokenTag(
 
   let caretIsAtToken = false;
 
-  let tagContainer = document.getElementById(TAG_CONTAINER_ID);
+  // Check if a parent of the form is absolutely positions, such as
+  // when reviewing a PR.  If so, but the tag into that DIV, so the
+  // scrolling of the page will not make the tag fly off the top
+  // of the screen.
+  let customContainerNode = textInput.parentElement;
+  while (
+    customContainerNode &&
+    !customContainerNode.classList.contains("position-absolute")
+  ) {
+    customContainerNode = customContainerNode.parentElement;
+  }
+
+  let tagContainer =
+    customContainerNode || document.getElementById(TAG_CONTAINER_ID);
+
   if (!tagContainer) {
     tagContainer = document.createElement("div");
     tagContainer.id = TAG_CONTAINER_ID;
@@ -140,9 +154,22 @@ export default function createTokenTag(
   }
 
   function reposition() {
+    let top, left;
     const rect = textInput.getBoundingClientRect();
-    const top = TEXT_HEIGHT + window.scrollY + rect.top + startCoords.top;
-    const left = window.scrollX + rect.left + startCoords.left;
+
+    if (!customContainerNode) {
+      // If the text input is not inside a modal, position
+      // the tag relative to the window.
+      top = TEXT_HEIGHT + window.scrollY + rect.top + startCoords.top;
+      left = window.scrollX + rect.left + startCoords.left;
+    } else {
+      // If the text input is in a modal, position the tag
+      // relative to the modal position
+      const containerRect = customContainerNode.getBoundingClientRect();
+
+      top = TEXT_HEIGHT + rect.top - containerRect.top + startCoords.top;
+      left = rect.left - containerRect.left + startCoords.left;
+    }
 
     record.position = {
       top,
