@@ -846,14 +846,22 @@ function listenToInput(input) {
         });
     }, 250, { leading: false });
     let formNode = getParentByTagName_1.default(input, "form");
+    function handleInputKeyup() {
+        closePopupIframe();
+        updateTokensForInput();
+    }
+    function handleInputFocus() {
+        closePopupIframe();
+        updateTokensForInput();
+    }
     function cleanUp() {
         knownTokens.forEach(knownToken => {
             knownToken.remove();
         });
         knownTokens = [];
-        input.removeEventListener("keyup", updateTokensForInput);
+        input.removeEventListener("keyup", handleInputKeyup);
         input.removeEventListener("change", updateTokensForInput);
-        input.removeEventListener("focus", updateTokensForInput);
+        input.removeEventListener("focus", handleInputFocus);
         input.removeEventListener("mouseenter", handleMouseEnter);
         input.removeEventListener("mouseout", handleMouseOut);
         window.removeEventListener("resize", updatePosition);
@@ -902,6 +910,7 @@ function listenToInput(input) {
             }
         });
         input.value = value;
+        closePopupIframe();
         cleanUp();
     }
     const TOOLBAR_BUTTON_LABEL = "GM";
@@ -957,12 +966,20 @@ function listenToInput(input) {
             console.log("no toolbar button on form ", form);
         }
     }
-    function togglePopupIframe() {
+    function closePopupIframe() {
+        console.log("closePopupIframe", popupIframe);
         if (popupIframe) {
             popupIframe.parentNode.removeChild(popupIframe);
             popupIframe = null;
         }
+    }
+    function togglePopupIframe() {
+        if (popupIframe) {
+            console.log("removing iframe");
+            closePopupIframe();
+        }
         else {
+            console.log("adding iframe");
             popupIframe = document.createElement("iframe");
             popupIframe.className = "__popupIframe";
             toolbarButtonItem.parentNode.appendChild(popupIframe);
@@ -973,9 +990,7 @@ function listenToInput(input) {
         const { keyCode } = evt;
         // Handle the Esc key
         if (keyCode === 27) {
-            if (popupIframe) {
-                togglePopupIframe();
-            }
+            closePopupIframe();
             knownTokens.forEach(token => token.closeModal());
         }
     }
@@ -1003,9 +1018,9 @@ function listenToInput(input) {
             token.reposition();
         });
     }, 100);
-    input.addEventListener("keyup", updateTokensForInput);
+    input.addEventListener("keyup", handleInputKeyup);
     input.addEventListener("change", updateTokensForInput);
-    input.addEventListener("focus", updateTokensForInput);
+    input.addEventListener("focus", handleInputFocus);
     input.addEventListener("mouseenter", handleMouseEnter);
     input.addEventListener("mouseout", handleMouseOut);
     window.addEventListener("resize", updatePosition);

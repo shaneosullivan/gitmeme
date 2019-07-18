@@ -80,15 +80,25 @@ function listenToInput(
 
   let formNode = getParentByTagName(input, "form") as HTMLFormElement;
 
+  function handleInputKeyup() {
+    closePopupIframe();
+    updateTokensForInput();
+  }
+
+  function handleInputFocus() {
+    closePopupIframe();
+    updateTokensForInput();
+  }
+
   function cleanUp() {
     knownTokens.forEach(knownToken => {
       knownToken.remove();
     });
     knownTokens = [];
 
-    input.removeEventListener("keyup", updateTokensForInput);
+    input.removeEventListener("keyup", handleInputKeyup);
     input.removeEventListener("change", updateTokensForInput);
-    input.removeEventListener("focus", updateTokensForInput);
+    input.removeEventListener("focus", handleInputFocus);
     input.removeEventListener("mouseenter", handleMouseEnter);
     input.removeEventListener("mouseout", handleMouseOut);
     window.removeEventListener("resize", updatePosition);
@@ -153,6 +163,8 @@ function listenToInput(
 
     input.value = value;
 
+    closePopupIframe();
+
     cleanUp();
   }
 
@@ -194,7 +206,6 @@ function listenToInput(
     const toolbarNode = form.querySelector("markdown-toolbar");
     if (toolbarNode) {
       if (toolbarNode.querySelector(".__toolbarButton")) {
-        console.log("already have a toolbar item for form ", form);
         return;
       }
 
@@ -221,10 +232,16 @@ function listenToInput(
     }
   }
 
-  function togglePopupIframe() {
+  function closePopupIframe() {
     if (popupIframe) {
       popupIframe.parentNode.removeChild(popupIframe);
       popupIframe = null;
+    }
+  }
+
+  function togglePopupIframe() {
+    if (popupIframe) {
+      closePopupIframe();
     } else {
       popupIframe = document.createElement("iframe");
       popupIframe.className = "__popupIframe";
@@ -237,9 +254,7 @@ function listenToInput(
     const { keyCode } = evt;
     // Handle the Esc key
     if (keyCode === 27) {
-      if (popupIframe) {
-        togglePopupIframe();
-      }
+      closePopupIframe();
       knownTokens.forEach(token => token.closeModal());
     }
   }
@@ -272,9 +287,9 @@ function listenToInput(
     });
   }, 100);
 
-  input.addEventListener("keyup", updateTokensForInput);
+  input.addEventListener("keyup", handleInputKeyup);
   input.addEventListener("change", updateTokensForInput);
-  input.addEventListener("focus", updateTokensForInput);
+  input.addEventListener("focus", handleInputFocus);
   input.addEventListener("mouseenter", handleMouseEnter);
   input.addEventListener("mouseout", handleMouseOut);
   window.addEventListener("resize", updatePosition);
