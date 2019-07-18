@@ -1,19 +1,18 @@
 .ListWithBadges {
-  padding-left: 4px;
-  padding-right: 4px;
+  padding: 22px;
+  padding-bottom: 0;
 }
 
-.ListWithBadges input[type="text"] {
-  border: 1px solid black;
-  border-radius: 4px;
-  cursor: pointer;
-  padding-left: 4px;
-  text-align: center;
-  width: 120px;
+.ListWithBadges .list-group-item {
+  position: relative;
 }
 
-.ListWithBadges input[type="text"]:focus {
-  outline: none;
+.ListWithBadges .idx {
+  color: #919496;
+  display: inline-block;
+  font-size: 14px;
+  letter-spacing: -0.15px;
+  width: 24px;
 }
 
 .ListWithBadges .copiedText {
@@ -21,24 +20,64 @@
   animation-duration: 2s;
   color: #666666;
   font-size: 10px;
-
   opacity: 0;
+  padding-left: 6px;
+}
+
+.ListWithBadges .listHeader {
+  color: #24292d;
+  font-size: 14px;
+}
+
+.ListWithBadges .listHeader .listLabel {
+  color: #24292d;
+  display: inline-block;
+  text-align: left;
+  width: 50%;
+}
+
+.ListWithBadges .listHeader .timesUsed {
+  display: inline-block;
+  opacity: 0.5;
+  padding-right: 6px;
+  text-align: right;
+  width: 50%;
+}
+
+.ListWithBadges .token {
+  cursor: pointer;
 }
 
 .ListWithBadges .emptyList {
-  padding: 8px;
-  padding-top: 20px;
+  padding-top: 4px;
+}
+
+.ListWithBadges .count {
+  color: #24292d;
+  position: absolute;
+  top: 3px;
+  right: 6px;
+}
+
+.ListWithBadges .list-group-item {
+  border: none;
+  padding: 4px;
+}
+
+.ListWithBadges .emptyMsg {
+  font-size: 13px;
+  line-height: 1.43;
+  letter-spacing: -0.15px;
+  color: #919496;
 }
 
 @keyframes fade_out_with_delay {
   0% {
     opacity: 1;
   }
-
   50% {
     opacity: 1;
   }
-
   100% {
     opacity: 0;
   }

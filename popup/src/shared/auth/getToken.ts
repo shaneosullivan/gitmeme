@@ -47,7 +47,7 @@ export default function getToken(interactive: boolean, callback: Function) {
           console.log("calling handleProviderResponse");
           handleProviderResponse(parseRedirectFragment(matches[1]));
         } else {
-          callback(new Error("Invalid redirect URI"));
+          callback("Invalid redirect URI");
         }
       });
     }

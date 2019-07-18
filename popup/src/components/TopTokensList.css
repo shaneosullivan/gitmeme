@@ -1,8 +1,0 @@
-.TopTokensList {
-  display: flex;
-  flex-direction: row;
-}
-
-.TopTokensList > div {
-  flex: 1;
-}

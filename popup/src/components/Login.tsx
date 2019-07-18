@@ -3,6 +3,8 @@ import "../App.css";
 import getToken from "../shared/auth/getToken";
 import { GithubInfo } from "../shared/auth/githubInfo";
 
+import "./Login.css";
+
 declare const chrome: any;
 
 interface Props {

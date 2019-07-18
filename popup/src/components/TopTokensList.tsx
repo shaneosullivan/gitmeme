@@ -58,21 +58,22 @@ export default function TopTokensList(props: Props) {
     <div className="TopTokensList">
       {!error ? (
         <>
-          <ListWithBadges label="Global Top Memes" items={tokenList.global} />
-          {props.userInfo.token ? (
-            <ListWithBadges label="My Top Memes" items={tokenList.user} />
-          ) : (
-            <div>
-              <h2>My Top Memes</h2>
-              <div>
-                You must log in with your Github account to see the most popular
-                memes used by you and in your company as a whole
+          <ListWithBadges label="Trending" items={tokenList.global} />
+          <ListWithBadges
+            label="Your Memes"
+            items={props.userInfo.token ? tokenList.user : []}
+            emptyMessage={
+              <div className="emptyMsg">
+                <div>
+                  Log in with your Github account to see the most popular memes
+                  used by you and your team
+                </div>
+                <div>
+                  <Login onAuth={props.onAuth} />
+                </div>
               </div>
-              <div>
-                <Login onAuth={props.onAuth} />
-              </div>
-            </div>
-          )}
+            }
+          />
         </>
       ) : (
         <div>Error</div>

@@ -1,13 +1,12 @@
 body {
-  height: 500px;
-  width: 500px;
+  height: 470px;
+  width: 273px;
 }
 
 .App {
-  background-color: #f9f9fa;
+  background-color: #ffffff;
   box-sizing: border-box;
   height: 100%;
   overflow-y: auto;
-  padding: 8px;
   width: 100%;
 }

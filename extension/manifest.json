@@ -1,7 +1,7 @@
 {
   "name": "GitMeme",
   "version": "1.0",
-  "description": "Easy memes and macros Github",
+  "description": "Easy memes and macros for Github",
   "manifest_version": 2,
   "permissions": [
     "activeTab",

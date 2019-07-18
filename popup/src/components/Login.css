@@ -1,0 +1,13 @@
+.Login {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.Login button {
+  border: 0;
+  background-color: transparent;
+  color: #0066d6;
+  font-size: 14px;
+  letter-spacing: -0.15px;
+  padding: 0;
+}

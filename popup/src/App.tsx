@@ -22,7 +22,6 @@ const App = () => {
 
   return (
     <div className="App">
-      <h1>GitMeme</h1>
       <Help />
       {authComplete ? (
         <TopTokensList

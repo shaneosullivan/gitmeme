@@ -1,0 +1,16 @@
+.token {
+  background-color: #fff5b1;
+  border: solid 1px #ddd69b;
+  border-radius: 3px;
+  color: #576069;
+  font-size: 14px;
+  height: 20px;
+  line-height: 18px;
+  padding-left: 4px;
+  padding-right: 6px;
+  text-align: left;
+}
+
+.token:focus {
+  outline: none;
+}
