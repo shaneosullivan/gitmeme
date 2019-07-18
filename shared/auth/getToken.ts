@@ -4,28 +4,7 @@ import { getGithubInfo, setGithubUserId, setGithubToken } from "./githubInfo";
 declare const chrome: any;
 
 export default function getToken(interactive: boolean, callback: Function) {
-  getGithubInfo().then(async info => {
-    if (true || !info.token || !info.id || !info.avatar) {
-      chrome.identity.launchWebAuthFlow(options, function(
-        redirectUri2: string
-      ) {
-        if (chrome.runtime.lastError) {
-          callback(new Error(chrome.runtime.lastError));
-          return;
-        }
-
-        // Upon success the response is appended to redirectUri, e.g.
-        // https://{app_id}.chromiumapp.org/provider_cb#access_token={value}
-        //     &refresh_token={value}
-        const matches = redirectUri2.match(redirectRe);
-        if (matches && matches.length > 1) {
-          handleProviderResponse(parseRedirectFragment(matches[1]));
-        } else {
-          callback(new Error("Invalid redirect URI"));
-        }
-      });
-    }
-  });
+  console.log("getToken");
 
   const localRedirectUri = (chrome as any).identity.getRedirectURL(
     "provider_cb"
@@ -44,6 +23,36 @@ export default function getToken(interactive: boolean, callback: Function) {
       encodeURIComponent(redirectUri)
   };
 
+  getGithubInfo().then(async info => {
+    console.log("got github info ", info);
+    if (!info.token || !info.id || !info.avatar) {
+      console.log("calling launchWebAuthFlow with options", options);
+      chrome.identity.launchWebAuthFlow(options, function(
+        redirectUri2: string
+      ) {
+        console.log("launchWebAuthFlow callback with redirect ", redirectUri2);
+        if (chrome.runtime.lastError) {
+          console.error("launchWebAuthFlow error", chrome.runtime.lastError);
+          callback(new Error(chrome.runtime.lastError));
+          return;
+        }
+
+        // Upon success the response is appended to redirectUri, e.g.
+        // https://{app_id}.chromiumapp.org/provider_cb#access_token={value}
+        //     &refresh_token={value}
+        const matches = redirectUri2.match(redirectRe);
+
+        console.log("matches = ", matches);
+        if (matches && matches.length > 1) {
+          console.log("calling handleProviderResponse");
+          handleProviderResponse(parseRedirectFragment(matches[1]));
+        } else {
+          callback("Invalid redirect URI");
+        }
+      });
+    }
+  });
+
   function parseRedirectFragment(fragment: string) {
     const pairs = fragment.split(/&/);
     const values: { [key: string]: string } = {};
@@ -52,6 +61,8 @@ export default function getToken(interactive: boolean, callback: Function) {
       const nameVal = pair.split(/=/);
       values[nameVal[0]] = nameVal[1];
     });
+
+    console.log("parseRedirectFragment got values", values);
 
     return values;
   }

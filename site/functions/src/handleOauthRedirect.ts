@@ -16,6 +16,11 @@ export default async function handleOauthRedirect(
   console.log("Oauth called with query ", req.query);
 
   if (req.query.access_token) {
+    console.log(
+      "Oauth got an access token ",
+      req.query.access_token,
+      " creating/updating user"
+    );
     const userInfo = await createOrUpdateUser(
       firestore,
       req.query.access_token
@@ -27,13 +32,22 @@ export default async function handleOauthRedirect(
       userInfo.avatar
     );
   } else if (req.query.code) {
+    console.log(
+      "Oauth got an access code ",
+      req.query.code,
+      " exchanging code for token"
+    );
     const token = await exchangeCodeForToken(req.query.code);
+    console.log("Exchanged code for the token: ", token);
     if (token) {
       const userInfo = await createOrUpdateUser(firestore, token);
       redirectWithToken(res, token, userInfo.uid, userInfo.avatar);
       return;
     }
   }
+
+  console.error("Oauth was not successful after receiving query", req.query);
+
   // No idea what's going on here, just do a simple redirect
   const idx = req.originalUrl.indexOf("?");
   const queryString = req.originalUrl.substring(idx + 1);
@@ -60,26 +74,27 @@ async function createOrUpdateUser(
   const userId = result.login;
   const avatar = result.avatar_url || "";
 
-  const data = {
-    uid: userId,
-    avatar,
-    auth_tokens: [token]
-  };
-
-  console.log("creating a user with ", data);
-
   const docRef = firestore.collection("users").doc(userId);
 
   const existingDoc = await docRef.get();
   if (existingDoc.exists) {
-    await docRef.update({
+    const updateData = {
       avatar,
       auth_tokens: (existingDoc.get("auth_tokens") || []).concat([token])
-    });
+    };
+    console.log("updating a user with ", updateData);
+
+    await docRef.update(updateData);
   } else {
+    const data = {
+      uid: userId,
+      avatar,
+      auth_tokens: [token]
+    };
+    console.log("creating a user with ", data);
     await docRef.set(data);
   }
-  return data;
+  return (await docRef.get()).data();
 }
 
 function redirectWithToken(
@@ -88,6 +103,14 @@ function redirectWithToken(
   userId: string,
   avatar: string
 ) {
+  console.log(
+    "Doing redirectWithToken, using token ",
+    token,
+    " userId",
+    userId,
+    "avatar",
+    avatar
+  );
   let nextRedirectUrl = `https://mfbdjighmkbflpaeibcojoppcgkjefgf.chromiumapp.org/provider_cb?access_token=${token}&user_id=${userId}&avatar=${avatar}`;
 
   res.redirect(nextRedirectUrl);
