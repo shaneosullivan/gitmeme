@@ -23,6 +23,7 @@ function listenToInput(
   let knownTokens = [] as Array<TokenTagType>;
   let toolbarButtonItem;
   let activeTag: TokenTagType = null;
+  let popupIframe = null;
 
   const isLoggedIn =
     userInfo &&
@@ -92,10 +93,11 @@ function listenToInput(
     input.removeEventListener("mouseout", handleMouseOut);
     window.removeEventListener("resize", updatePosition);
     formNode.removeEventListener("submit", processPreSubmit, true);
+    document.body.removeEventListener("keyup", handleBodyKeys);
   }
 
   // Replace all the tokens with image tags
-  function processPreSubmit(evt: Event) {
+  function processPreSubmit(_evt: Event) {
     // Process the tokens from the last to the first, so that
     // we can modify the text contents without changing the
     // index positions of tokens before we process them
@@ -209,14 +211,36 @@ function listenToInput(
         evt.preventDefault();
         evt.stopPropagation();
 
-        if (activeTag) {
-          console.log("activeTag is ", activeTag);
-        }
+        // Insert an iframe containing the popup
+        togglePopupIframe();
       });
 
       toolbarNode.appendChild(toolbarButton);
     } else {
       console.log("no toolbar button on form ", form);
+    }
+  }
+
+  function togglePopupIframe() {
+    if (popupIframe) {
+      popupIframe.parentNode.removeChild(popupIframe);
+      popupIframe = null;
+    } else {
+      popupIframe = document.createElement("iframe");
+      popupIframe.className = "__popupIframe";
+      toolbarButtonItem.parentNode.appendChild(popupIframe);
+      popupIframe.src = chrome.runtime.getURL("popup/index.html");
+    }
+  }
+
+  function handleBodyKeys(evt) {
+    const { keyCode } = evt;
+    // Handle the Esc key
+    if (keyCode === 27) {
+      if (popupIframe) {
+        togglePopupIframe();
+      }
+      knownTokens.forEach(token => token.closeModal());
     }
   }
 
@@ -255,6 +279,7 @@ function listenToInput(
   input.addEventListener("mouseout", handleMouseOut);
   window.addEventListener("resize", updatePosition);
   formNode.addEventListener("submit", processPreSubmit, true);
+  document.body.addEventListener("keyup", handleBodyKeys);
 
   addToolbarButton(formNode);
 

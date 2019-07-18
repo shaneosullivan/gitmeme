@@ -23,7 +23,8 @@
   },
   "web_accessible_resources": [
     "assets/selectedButton.png",
-    "assets/expandButton.png"
+    "assets/expandButton.png",
+    "popup/index.html"
   ],
   "background": {
     "scripts": ["build/background.js"],

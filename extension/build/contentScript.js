@@ -807,6 +807,7 @@ function listenToInput(input) {
     let knownTokens = [];
     let toolbarButtonItem;
     let activeTag = null;
+    let popupIframe = null;
     const isLoggedIn = userInfo &&
         userInfo.id &&
         userInfo.token &&
@@ -857,9 +858,10 @@ function listenToInput(input) {
         input.removeEventListener("mouseout", handleMouseOut);
         window.removeEventListener("resize", updatePosition);
         formNode.removeEventListener("submit", processPreSubmit, true);
+        document.body.removeEventListener("keyup", handleBodyKeys);
     }
     // Replace all the tokens with image tags
-    function processPreSubmit(evt) {
+    function processPreSubmit(_evt) {
         // Process the tokens from the last to the first, so that
         // we can modify the text contents without changing the
         // index positions of tokens before we process them
@@ -946,14 +948,36 @@ function listenToInput(input) {
             toolbarButton.addEventListener("click", (evt) => {
                 evt.preventDefault();
                 evt.stopPropagation();
-                if (activeTag) {
-                    console.log("activeTag is ", activeTag);
-                }
+                // Insert an iframe containing the popup
+                togglePopupIframe();
             });
             toolbarNode.appendChild(toolbarButton);
         }
         else {
             console.log("no toolbar button on form ", form);
+        }
+    }
+    function togglePopupIframe() {
+        console.log("togglePopupIframe");
+        if (popupIframe) {
+            popupIframe.parentNode.removeChild(popupIframe);
+            popupIframe = null;
+        }
+        else {
+            popupIframe = document.createElement("iframe");
+            popupIframe.className = "__popupIframe";
+            toolbarButtonItem.parentNode.appendChild(popupIframe);
+            popupIframe.src = chrome.runtime.getURL("popup/index.html");
+        }
+    }
+    function handleBodyKeys(evt) {
+        const { keyCode } = evt;
+        // Handle the Esc key
+        if (keyCode === 27) {
+            if (popupIframe) {
+                togglePopupIframe();
+            }
+            knownTokens.forEach(token => token.closeModal());
         }
     }
     function getTagWrapper() {
@@ -987,6 +1011,7 @@ function listenToInput(input) {
     input.addEventListener("mouseout", handleMouseOut);
     window.addEventListener("resize", updatePosition);
     formNode.addEventListener("submit", processPreSubmit, true);
+    document.body.addEventListener("keyup", handleBodyKeys);
     addToolbarButton(formNode);
     // In case the input is simply removed from the DOM without
     // being submitted, clean up too
@@ -1225,18 +1250,18 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
                 }
             }
         }
-        if (record.modalIsOpen) {
-            record.modalIsOpen = false;
-            renderTag();
-        }
+        closeModal();
         return true;
     }
-    function handleInputClick(evt) {
+    function handleInputClick(_evt) {
+        closeModal();
+        checkCaretPosition();
+    }
+    function closeModal() {
         if (record.modalIsOpen) {
             record.modalIsOpen = false;
             renderTag();
         }
-        checkCaretPosition();
     }
     const existingPreferredImageUrl = preferredTagUrls[token.value] || null;
     const record = {
@@ -1244,6 +1269,7 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
         modalIsOpen: false,
         input: textInput,
         remove,
+        closeModal,
         reposition,
         token,
         isValid: existingPreferredImageUrl ? true : false,
@@ -1983,7 +2009,7 @@ function TokenTag(props) {
         }
         else if (props.selectedImage) {
             const addition = props.caretActive
-                ? "Click or press the down arrow to see the meme image or to select others"
+                ? "Click or press the UP arrow to see the meme image or to select others"
                 : "Click to see the meme image or to select others";
             title = `GitMeme for "${props.token.value}". ${addition}`;
         }

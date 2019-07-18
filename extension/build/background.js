@@ -229,26 +229,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const consts_1 = __webpack_require__(1);
 const githubInfo_1 = __webpack_require__(2);
 function getToken(interactive, callback) {
-    githubInfo_1.getGithubInfo().then((info) => __awaiter(this, void 0, void 0, function* () {
-        if (true) {
-            chrome.identity.launchWebAuthFlow(options, function (redirectUri2) {
-                if (chrome.runtime.lastError) {
-                    callback(new Error(chrome.runtime.lastError));
-                    return;
-                }
-                // Upon success the response is appended to redirectUri, e.g.
-                // https://{app_id}.chromiumapp.org/provider_cb#access_token={value}
-                //     &refresh_token={value}
-                const matches = redirectUri2.match(redirectRe);
-                if (matches && matches.length > 1) {
-                    handleProviderResponse(parseRedirectFragment(matches[1]));
-                }
-                else {
-                    callback(new Error("Invalid redirect URI"));
-                }
-            });
-        }
-    }));
+    console.log("getToken");
     const localRedirectUri = chrome.identity.getRedirectURL("provider_cb");
     const redirectUri = "https://us-central1-git-meme-prod.cloudfunctions.net/oauth";
     const redirectRe = new RegExp(localRedirectUri + "[#?](.*)");
@@ -260,6 +241,32 @@ function getToken(interactive, callback) {
             "&redirect_uri=" +
             encodeURIComponent(redirectUri)
     };
+    githubInfo_1.getGithubInfo().then((info) => __awaiter(this, void 0, void 0, function* () {
+        console.log("got github info ", info);
+        if (!info.token || !info.id || !info.avatar) {
+            console.log("calling launchWebAuthFlow with options", options);
+            chrome.identity.launchWebAuthFlow(options, function (redirectUri2) {
+                console.log("launchWebAuthFlow callback with redirect ", redirectUri2);
+                if (chrome.runtime.lastError) {
+                    console.error("launchWebAuthFlow error", chrome.runtime.lastError);
+                    callback(new Error(chrome.runtime.lastError));
+                    return;
+                }
+                // Upon success the response is appended to redirectUri, e.g.
+                // https://{app_id}.chromiumapp.org/provider_cb#access_token={value}
+                //     &refresh_token={value}
+                const matches = redirectUri2.match(redirectRe);
+                console.log("matches = ", matches);
+                if (matches && matches.length > 1) {
+                    console.log("calling handleProviderResponse");
+                    handleProviderResponse(parseRedirectFragment(matches[1]));
+                }
+                else {
+                    callback("Invalid redirect URI");
+                }
+            });
+        }
+    }));
     function parseRedirectFragment(fragment) {
         const pairs = fragment.split(/&/);
         const values = {};
@@ -267,6 +274,7 @@ function getToken(interactive, callback) {
             const nameVal = pair.split(/=/);
             values[nameVal[0]] = nameVal[1];
         });
+        console.log("parseRedirectFragment got values", values);
         return values;
     }
     function handleProviderResponse(values) {

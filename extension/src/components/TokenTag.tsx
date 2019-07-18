@@ -40,7 +40,7 @@ export default function TokenTag(props: Props) {
       title = `GitMeme image disabled`;
     } else if (props.selectedImage) {
       const addition = props.caretActive
-        ? "Click or press the down arrow to see the meme image or to select others"
+        ? "Click or press the UP arrow to see the meme image or to select others"
         : "Click to see the meme image or to select others";
       title = `GitMeme for "${props.token.value}". ${addition}`;
     } else {

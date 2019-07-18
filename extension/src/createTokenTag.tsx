@@ -13,6 +13,7 @@ const TEXT_HEIGHT = 18;
 
 export interface TokenTagType {
   caretIsAtToken: boolean;
+  closeModal: Function;
   reposition: Function;
   input: Element;
   isValid: boolean;
@@ -201,19 +202,20 @@ export default function createTokenTag(
         }
       }
     }
-    if (record.modalIsOpen) {
-      record.modalIsOpen = false;
-      renderTag();
-    }
+    closeModal();
     return true;
   }
 
-  function handleInputClick(evt) {
+  function handleInputClick(_evt) {
+    closeModal();
+    checkCaretPosition();
+  }
+
+  function closeModal() {
     if (record.modalIsOpen) {
       record.modalIsOpen = false;
       renderTag();
     }
-    checkCaretPosition();
   }
 
   const existingPreferredImageUrl = preferredTagUrls[token.value] || null;
@@ -223,6 +225,7 @@ export default function createTokenTag(
     modalIsOpen: false,
     input: textInput,
     remove,
+    closeModal,
     reposition,
     token,
     isValid: existingPreferredImageUrl ? true : false,

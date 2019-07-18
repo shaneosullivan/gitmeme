@@ -312,6 +312,10 @@
   max-height: 250px;
 }
 
+.__toolbarButton {
+  position: relative;
+}
+
 .toolbar-item.__toolbarButtonItem {
   border-radius: 3px;
   padding: 2px;
@@ -324,4 +328,16 @@
   padding: 0px;
   padding-left: 2px;
   padding-right: 2px;
+}
+
+.__popupIframe {
+  border: 0;
+  box-shadow: 0 5px 15px 0 rgba(0, 0, 0, 0.07),
+    0 15px 35px 0 rgba(50, 50, 93, 0.1);
+  width: 273px;
+  height: 470px;
+  position: absolute;
+  top: -280px;
+  left: -276px;
+  z-index: 100;
 }
