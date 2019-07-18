@@ -1,5 +1,6 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+rm -rf ~/.gitmeme
 mkdir ~/.gitmeme
 rsync -av --exclude="node_modules" --exclude="webpack" --exclude="yarn.lock" --exclude="tsconfig.json" "$DIR/../extension" ~/.gitmeme/
 
@@ -13,9 +14,10 @@ rm -rf util
 
 cd ../..
 zip Gitmeme.zip -r Gitmeme
-# mv Gitmeme.zip "$DIR/.."
 
-# cd $DIR
-# rm -rf ~/.gitmeme/
+mv Gitmeme.zip "$DIR/.."
 
-# 
+cd $DIR/..
+rm -rf ~/.gitmeme/
+
+echo "Packaged Gitmeme in ~/.gitmeme"
