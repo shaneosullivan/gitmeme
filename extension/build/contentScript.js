@@ -958,7 +958,6 @@ function listenToInput(input) {
         }
     }
     function togglePopupIframe() {
-        console.log("togglePopupIframe");
         if (popupIframe) {
             popupIframe.parentNode.removeChild(popupIframe);
             popupIframe = null;

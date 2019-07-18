@@ -3,7 +3,20 @@ body {
   width: 273px;
 }
 
+@keyframes fadeInPopup {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 .App {
+  animation: fadeInPopup 0.3s ease-in-out;
   background-color: #ffffff;
   box-sizing: border-box;
   height: 100%;
