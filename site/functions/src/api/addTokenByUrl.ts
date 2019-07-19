@@ -16,6 +16,7 @@ export default async function apiAddTokenByUrl(
 
   const imageUrl = body.image_url;
   const token = body.token;
+  const context = body.context;
 
   if (!token || !imageUrl) {
     sendError(res, {
@@ -40,6 +41,7 @@ export default async function apiAddTokenByUrl(
         .collection("user_tokens")
         .doc(docId)
         .get();
+
       if (existingDoc.exists) {
         await existingDoc.ref.update({
           count: existingDoc.get("count") + 1,
@@ -66,6 +68,10 @@ export default async function apiAddTokenByUrl(
     promises.push(storeForUser());
   }
 
+  function getImageId(url: string) {
+    return url.split("/").join("_");
+  }
+
   async function storeGlobalToken() {
     const collection = getFirestore().collection("all_tokens");
     const existingDoc = await collection.doc(token).get();
@@ -89,8 +95,7 @@ export default async function apiAddTokenByUrl(
 
   async function storeGlobalImage() {
     const collection = getFirestore().collection("all_images");
-    const imageId = imageUrl.split("/").join("_");
-    const existingDoc = await collection.doc(imageId).get();
+    const existingDoc = await collection.doc(getImageId(imageUrl)).get();
 
     if (existingDoc.exists) {
       await existingDoc.ref.update({
@@ -109,8 +114,34 @@ export default async function apiAddTokenByUrl(
     }
   }
 
+  async function storeContextImage() {
+    const collection = getFirestore().collection("context_images");
+    const docId = `${context}_${token}_${getImageId(imageUrl)}`;
+    const existingDoc = await collection.doc(docId).get();
+
+    if (existingDoc.exists) {
+      await existingDoc.ref.update({
+        count: existingDoc.get("count") + 1,
+        updated_at: now
+      });
+    } else {
+      await existingDoc.ref.set({
+        image_url: imageUrl,
+        context,
+        count: 1,
+        token,
+        updated_at: now,
+        created_at: now
+      });
+    }
+  }
+
   promises.push(storeGlobalToken());
   promises.push(storeGlobalImage());
+
+  if (context) {
+    promises.push(storeContextImage());
+  }
 
   await Promise.all(promises);
 

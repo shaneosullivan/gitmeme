@@ -15,9 +15,14 @@ export default async function apiSearch(req: AppRequest, res: AppResponse) {
   let results: SearchResult = [];
 
   const userId = req._user ? req._user.uid : "";
+  const context = req.query["context"];
 
   // Always get the global results
   const promises = [getGlobalResults(token)];
+
+  if (context) {
+    promises.push(getContextResults(context, token));
+  }
 
   if (!authError) {
     // If the user is logged in, get their personal results.
@@ -39,6 +44,17 @@ export default async function apiSearch(req: AppRequest, res: AppResponse) {
     return 0;
   });
 
+  // Filter the results for images with the same url
+  const seen: { [key: string]: boolean } = {};
+  results = results.filter(result => {
+    const url = result.url;
+    if (seen[url]) {
+      return false;
+    }
+    seen[url] = true;
+    return true;
+  });
+
   res.json({ results });
 }
 
@@ -58,6 +74,28 @@ async function getPersonalResults(
   return [];
 }
 
+async function getContextResults(
+  context: string,
+  token: string
+): Promise<SearchResult> {
+  const collectionSnapshot = await getFirestore()
+    .collection("context_images")
+    .where("context", "==", context)
+    .where("token", "==", token)
+    .get();
+
+  if (!collectionSnapshot.empty) {
+    return collectionSnapshot.docs.map(documentSnapshot => {
+      return {
+        category: "context",
+        priority: 1,
+        url: documentSnapshot.get("image_url")
+      };
+    });
+  }
+  return [];
+}
+
 async function getGlobalResults(token: string): Promise<SearchResult> {
   // Fetch results by most used, then by most recently used.
   const collectionSnapshot = await getFirestore()
@@ -71,7 +109,7 @@ async function getGlobalResults(token: string): Promise<SearchResult> {
     return collectionSnapshot.docs.map(documentSnapshot => {
       return {
         category: "global",
-        priority: 1,
+        priority: 2,
         url: documentSnapshot.get("image_url")
       };
     });
