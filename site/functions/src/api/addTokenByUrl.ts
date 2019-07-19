@@ -34,6 +34,7 @@ export default async function apiAddTokenByUrl(
 
   if (!authError) {
     const userId = req._user ? req._user.uid : "";
+
     async function storeForUser() {
       const docId = `${userId}_${token}`;
 

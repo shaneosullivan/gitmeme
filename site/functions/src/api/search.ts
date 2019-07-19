@@ -5,6 +5,7 @@ import { AppRequest, AppResponse } from "./apiTypes";
 type SearchResult = Array<{
   category: string;
   priority: number;
+  last_used_at: string;
   url: string;
 }>;
 
@@ -69,7 +70,9 @@ async function getPersonalResults(
     .get();
   if (userTokenDoc.exists) {
     const url = (userTokenDoc.data() || {}).image_url;
-    return [{ url, category: "me", priority: 0 }];
+    const lastUsedAt =
+      userTokenDoc.get("updated_at") || new Date().toISOString();
+    return [{ url, category: "me", priority: 0, last_used_at: lastUsedAt }];
   }
   return [];
 }
@@ -88,6 +91,8 @@ async function getContextResults(
     return collectionSnapshot.docs.map(documentSnapshot => {
       return {
         category: "context",
+        last_used_at:
+          documentSnapshot.get("updated_at") || new Date().toISOString(),
         priority: 1,
         url: documentSnapshot.get("image_url")
       };
@@ -109,6 +114,8 @@ async function getGlobalResults(token: string): Promise<SearchResult> {
     return collectionSnapshot.docs.map(documentSnapshot => {
       return {
         category: "global",
+        last_used_at:
+          documentSnapshot.get("updated_at") || new Date().toISOString(),
         priority: 2,
         url: documentSnapshot.get("image_url")
       };
