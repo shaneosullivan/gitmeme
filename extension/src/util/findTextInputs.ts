@@ -6,7 +6,6 @@ interface Listener {
 export default function findTextInputs(
   listenToInput: (node: HTMLElement) => Listener
 ) {
-  console.log("findTextInputs");
   const ids = ["new_comment_field", "issue_body"];
 
   const inputsById = Array.from(

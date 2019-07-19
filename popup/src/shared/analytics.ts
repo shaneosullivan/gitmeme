@@ -163,7 +163,6 @@ class Analytics {
      * &cd{n}= custom dimensions
      * &z= cache buster (prevent browsers from caching GET requests -- should always be last)
      */
-    console.log("==> Sending to Google", hit);
     return this.waitOnPromise.then(() => {
       const customDimensions = this.customDimensions
         .map((value, index) => `cd${index}=${value}`)

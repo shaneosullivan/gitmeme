@@ -911,7 +911,6 @@ class Analytics {
          * &cd{n}= custom dimensions
          * &z= cache buster (prevent browsers from caching GET requests -- should always be last)
          */
-        console.log("==> Sending to Google", hit);
         return this.waitOnPromise.then(() => {
             const customDimensions = this.customDimensions
                 .map((value, index) => `cd${index}=${value}`)
@@ -1087,15 +1086,13 @@ function listenToInput(input) {
             }
         });
         input.value = value;
+        // Log to Google Analytics
         if (knownTokens.length > 0) {
-            console.log("setting timeout to send use_token");
             const numTokens = knownTokens.length;
-            const currentUrl = knownTokens[0].imageUrl;
+            const currentTokenValue = knownTokens[0].token.value;
             setTimeout(() => {
-                console.log("timeout firing");
-                analytics_1.sendEvent("action", "use_token", currentUrl, numTokens);
+                analytics_1.sendEvent("action", "use_token", currentTokenValue, numTokens);
             }, 50);
-            console.log("after firing timeout");
         }
         closePopupIframe();
         cleanUp();
@@ -2773,7 +2770,6 @@ exports.default = getParentByTagName;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 function findTextInputs(listenToInput) {
-    console.log("findTextInputs");
     const ids = ["new_comment_field", "issue_body"];
     const inputsById = Array.from(document.querySelectorAll(ids.map(id => `#${id}`).join(","))).filter(input => !!input);
     const allInputs = inputsById;
