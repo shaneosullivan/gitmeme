@@ -4,6 +4,7 @@ import getToken from "../shared/auth/getToken";
 import { GithubInfo } from "../shared/auth/githubInfo";
 
 import "./Login.css";
+import { sendEvent } from "../shared/analytics";
 
 declare const chrome: any;
 
@@ -19,12 +20,15 @@ const Login = (props: Props) => {
         console.log("Not in an extension");
         return;
       }
+      sendEvent("action", "login", "begin", "popup");
       getToken(true, async (err: any, info: GithubInfo) => {
         console.log("getToken complete", "Error is ", err, "info is ", info);
         if (err) {
+          sendEvent("action", "login", "fail", "popup");
           console.error(err);
         } else {
           console.log("got token info ", info);
+          sendEvent("action", "login", "success", "popup");
           props.onAuth(info);
         }
       });

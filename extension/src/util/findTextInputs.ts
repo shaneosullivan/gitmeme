@@ -54,7 +54,6 @@ function validateListeners(listeners: Array<Listener>): Array<Listener> {
     // A Node's offsetParent is null if it or any of its
     // parent nodes are hidden.  Handy!
     if (!listener.input.offsetParent) {
-      console.log("Cleaning up", listener.input);
       listener.remove();
       return false;
     }

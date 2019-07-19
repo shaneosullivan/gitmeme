@@ -7,6 +7,7 @@ import { getGithubInfo, GithubInfo } from "./shared/auth/githubInfo";
 import { API_ROOT_URL } from "./shared/consts";
 import createAuthHeader from "./shared/auth/createAuthHeader";
 import getLoggedInUser from "./shared/auth/getLoggedInUser";
+import { sendEvent, sendPageHit } from "./shared/analytics";
 
 let userInfo = null;
 let githubContext = null;
@@ -20,7 +21,6 @@ function listenToInput(
   input: HTMLElement;
   remove: Function;
 } {
-  console.log("listenToInput", input);
   let knownTokens = [] as Array<TokenTagType>;
   let toolbarButtonItem;
   let activeTag: TokenTagType = null;
@@ -165,6 +165,15 @@ function listenToInput(
 
     input.value = value;
 
+    // Log to Google Analytics
+    if (knownTokens.length > 0) {
+      const numTokens = knownTokens.length;
+      const currentTokenValue = knownTokens[0].token.value;
+      setTimeout(() => {
+        sendEvent("action", "use_token", currentTokenValue, numTokens);
+      }, 50);
+    }
+
     closePopupIframe();
 
     cleanUp();
@@ -250,6 +259,8 @@ function listenToInput(
       popupIframe.className = "__popupIframe";
       toolbarButtonItem.parentNode.appendChild(popupIframe);
       popupIframe.src = chrome.runtime.getURL("popup/index.html");
+
+      sendEvent("action", "open_popup", "iframe");
     }
   }
 
@@ -322,7 +333,6 @@ function listenToInput(
     input,
     remove: cleanUp
   };
-  console.log("listenToInput returning ", ret);
   return ret;
 }
 
@@ -331,3 +341,5 @@ getGithubInfo().then((localUserInfo: GithubInfo) => {
   githubContext = localUserInfo.context;
   findTextInputs(listenToInput);
 });
+
+sendPageHit("inline");

@@ -3,6 +3,7 @@ import "./App.css";
 import { getGithubInfo, GithubInfo } from "./shared/auth/githubInfo";
 import TopTokensList from "./components/TopTokensList";
 import Help from "./components/Help";
+import { sendPageHit } from "./shared/analytics";
 
 const App = () => {
   const [auth, setAuth] = useState({
@@ -18,6 +19,7 @@ const App = () => {
       setAuth(authInfo);
       setAuthComplete(true);
     });
+    sendPageHit("popup");
   }, []);
 
   return (

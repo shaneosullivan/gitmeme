@@ -7,6 +7,7 @@ import TokenTag from "./components/TokenTag";
 import * as uuid from "uuid";
 import getToken from "./shared/auth/getToken";
 import { GithubInfo } from "./shared/auth/githubInfo";
+import { sendEvent } from "./shared/analytics";
 
 const TAG_CONTAINER_ID = "__tagContainer";
 const TEXT_HEIGHT = 18;
@@ -91,10 +92,17 @@ export default function createTokenTag(
         position={record.position}
         modalIsOpen={record.modalIsOpen}
         onLogIn={() => {
+          sendEvent("action", "login", "begin", "inline");
           chrome.runtime.sendMessage({ data: "login" }, success => {
-            console.log("got success", success);
             if (success) {
-              window.location.reload();
+              function reload() {
+                window.location.reload();
+              }
+              sendEvent("action", "login", "success", "inline")
+                .then(reload)
+                .catch(reload);
+            } else {
+              sendEvent("action", "login", "fail", "inline");
             }
           });
         }}

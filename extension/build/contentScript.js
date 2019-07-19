@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 11);
+/******/ 	return __webpack_require__(__webpack_require__.s = 12);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -799,9 +799,159 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 9 */,
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+let defaultOptions = { debug: false };
+class Serializable {
+    constructor(props) {
+        this.properties = props || {};
+    }
+    toObject() {
+        return this.properties;
+    }
+    toString() {
+        return JSON.stringify(this.toObject());
+    }
+    toJSON() {
+        return JSON.stringify(this.properties);
+    }
+    toQueryString() {
+        const str = [];
+        const obj = this.toObject();
+        for (const p in obj) {
+            if (obj.hasOwnProperty(p) && obj[p]) {
+                str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+            }
+        }
+        return str.join("&");
+    }
+}
+class Hit extends Serializable {
+    constructor(props) {
+        super(props);
+        this.sent = false;
+    }
+}
+class PageHit extends Hit {
+    constructor(screenName) {
+        super({ dp: screenName, t: "pageview" });
+    }
+}
+class ScreenHit extends Hit {
+    constructor(screenName) {
+        super({ cd: screenName, t: "screenview" });
+    }
+}
+class AnalyticsEvent extends Hit {
+    constructor(category, action, label, value) {
+        super({ ec: category, ea: action, el: label, ev: value, t: "event" });
+    }
+}
+class Analytics {
+    constructor(propertyId, additionalParameters = {}, options = defaultOptions) {
+        this.customDimensions = [];
+        this.propertyId = propertyId;
+        this.options = options;
+        this.clientId = "";
+        this.userAgent = window.navigator.userAgent;
+        this.parameters = Object.assign({}, additionalParameters);
+        const storageKey = "analytics_id";
+        // Get the client ID from local storage
+        this.waitOnPromise = new Promise((resolve, _reject) => {
+            chrome.storage.local.get([storageKey], (result) => {
+                const clientId = result[storageKey];
+                if (clientId) {
+                    this.clientId = clientId;
+                }
+                else {
+                    this.clientId = genClientID();
+                    const obj = {};
+                    obj[storageKey] = this.clientId;
+                    chrome.storage.local.set(obj);
+                }
+                resolve();
+            });
+        });
+    }
+    hit(hit) {
+        // send only after the user agent is saved
+        return this.send(hit);
+    }
+    event(event) {
+        // send only after the user agent is saved
+        return this.send(event);
+    }
+    addParameter(name, value) {
+        this.parameters[name] = value;
+    }
+    addCustomDimension(index, value) {
+        this.customDimensions[index] = value;
+    }
+    removeCustomDimension(index) {
+        delete this.customDimensions[index];
+    }
+    send(hit) {
+        /* format: https://www.google-analytics.com/collect? +
+         * &tid= GA property ID (required)
+         * &v= GA protocol version (always 1) (required)
+         * &t= hit type (pageview / screenview)
+         * &dp= page name (if hit type is pageview)
+         * &cd= screen name (if hit type is screenview)
+         * &cid= anonymous client ID (optional if uid is given)
+         * &uid= user id (optional if cid is given)
+         * &ua= user agent override
+         * &an= app name (required for any of the other app parameters to work)
+         * &aid= app id
+         * &av= app version
+         * &sr= screen resolution
+         * &cd{n}= custom dimensions
+         * &z= cache buster (prevent browsers from caching GET requests -- should always be last)
+         */
+        console.log("==> Sending to Google", hit);
+        return this.waitOnPromise.then(() => {
+            const customDimensions = this.customDimensions
+                .map((value, index) => `cd${index}=${value}`)
+                .join("&");
+            const params = new Serializable(this.parameters).toQueryString();
+            const url = `https://www.google-analytics.com/collect?tid=${this.propertyId}&v=1&cid=${this.clientId}&${hit.toQueryString()}&${params}&${customDimensions}&z=${Math.round(Math.random() * 1e8)}`;
+            let options = {
+                method: "get",
+                headers: {
+                    "User-Agent": this.userAgent
+                }
+            };
+            return fetch(url, options);
+        });
+    }
+}
+function genClientID() {
+    return Date.now() + "_" + Math.floor(Math.random() * 1000);
+}
+const UaString = "UA-11032269-7";
+const analytics = new Analytics(UaString);
+function newEvent(category, action, label, value) {
+    return new AnalyticsEvent(category, action, label, value);
+}
+function sendEvent(category, action, label, value) {
+    const evt = newEvent(category, action, label, value);
+    return analytics.event(evt);
+}
+exports.sendEvent = sendEvent;
+function sendPageHit(pageName) {
+    const hit = new PageHit(pageName);
+    return analytics.hit(hit);
+}
+exports.sendPageHit = sendPageHit;
+
+
+/***/ }),
 /* 10 */,
-/* 11 */
+/* 11 */,
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -815,21 +965,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const parseTokens_1 = __webpack_require__(12);
-const createTokenTag_1 = __webpack_require__(13);
-const throttle_1 = __webpack_require__(28);
-const getParentByTagName_1 = __webpack_require__(29);
-const findTextInputs_1 = __webpack_require__(30);
+const parseTokens_1 = __webpack_require__(13);
+const createTokenTag_1 = __webpack_require__(14);
+const throttle_1 = __webpack_require__(29);
+const getParentByTagName_1 = __webpack_require__(30);
+const findTextInputs_1 = __webpack_require__(31);
 const githubInfo_1 = __webpack_require__(2);
 const consts_1 = __webpack_require__(1);
 const createAuthHeader_1 = __webpack_require__(6);
 const getLoggedInUser_1 = __webpack_require__(3);
+const analytics_1 = __webpack_require__(9);
 let userInfo = null;
 let githubContext = null;
 // Get the logged in user from the DOM
 const loggedInUser = getLoggedInUser_1.default();
 function listenToInput(input) {
-    console.log("listenToInput", input);
     let knownTokens = [];
     let toolbarButtonItem;
     let activeTag = null;
@@ -937,6 +1087,16 @@ function listenToInput(input) {
             }
         });
         input.value = value;
+        if (knownTokens.length > 0) {
+            console.log("setting timeout to send use_token");
+            const numTokens = knownTokens.length;
+            const currentUrl = knownTokens[0].imageUrl;
+            setTimeout(() => {
+                console.log("timeout firing");
+                analytics_1.sendEvent("action", "use_token", currentUrl, numTokens);
+            }, 50);
+            console.log("after firing timeout");
+        }
         closePopupIframe();
         cleanUp();
     }
@@ -1008,6 +1168,7 @@ function listenToInput(input) {
             popupIframe.className = "__popupIframe";
             toolbarButtonItem.parentNode.appendChild(popupIframe);
             popupIframe.src = chrome.runtime.getURL("popup/index.html");
+            analytics_1.sendEvent("action", "open_popup", "iframe");
         }
     }
     function handleBodyKeys(evt) {
@@ -1068,7 +1229,6 @@ function listenToInput(input) {
         input,
         remove: cleanUp
     };
-    console.log("listenToInput returning ", ret);
     return ret;
 }
 githubInfo_1.getGithubInfo().then((localUserInfo) => {
@@ -1076,10 +1236,11 @@ githubInfo_1.getGithubInfo().then((localUserInfo) => {
     githubContext = localUserInfo.context;
     findTextInputs_1.default(listenToInput);
 });
+analytics_1.sendPageHit("inline");
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1143,7 +1304,7 @@ exports.default = parseTokens;
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1158,11 +1319,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
-const getCaretCoordinates = __webpack_require__(14);
-const ReactDOM = __webpack_require__(15);
-const searcher_1 = __webpack_require__(19);
-const TokenTag_1 = __webpack_require__(21);
-const uuid = __webpack_require__(25);
+const getCaretCoordinates = __webpack_require__(15);
+const ReactDOM = __webpack_require__(16);
+const searcher_1 = __webpack_require__(20);
+const TokenTag_1 = __webpack_require__(22);
+const uuid = __webpack_require__(26);
+const analytics_1 = __webpack_require__(9);
 const TAG_CONTAINER_ID = "__tagContainer";
 const TEXT_HEIGHT = 18;
 // let removeOpenImage = null;
@@ -1201,10 +1363,18 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
     tagWrapperNode.appendChild(tagUi);
     function renderTag() {
         ReactDOM.render(React.createElement(TokenTag_1.default, { isDisabled: record.disabled, caretActive: record.caretIsAtToken, selectedImage: record.imageUrl, images: record.imageUrls, token: token, position: record.position, modalIsOpen: record.modalIsOpen, onLogIn: () => {
+                analytics_1.sendEvent("action", "login", "begin", "inline");
                 chrome.runtime.sendMessage({ data: "login" }, success => {
-                    console.log("got success", success);
                     if (success) {
-                        window.location.reload();
+                        function reload() {
+                            window.location.reload();
+                        }
+                        analytics_1.sendEvent("action", "login", "success", "inline")
+                            .then(reload)
+                            .catch(reload);
+                    }
+                    else {
+                        analytics_1.sendEvent("action", "login", "fail", "inline");
                     }
                 });
             }, onSelectImage: (url) => {
@@ -1336,7 +1506,7 @@ exports.default = createTokenTag;
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* jshint browser: true */
@@ -1480,7 +1650,7 @@ if ( true && typeof module.exports != 'undefined') {
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1497,7 +1667,7 @@ if ( true && typeof module.exports != 'undefined') {
  Modernizr 3.0.0pre (Custom Build) | MIT
 */
 var aa=__webpack_require__(0),
-n=__webpack_require__(5),r=__webpack_require__(16);function ba(a,b,c,d,e,f,g,h){if(!a){a=void 0;if(void 0===b)a=Error("Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings.");else{var l=[c,d,e,f,g,h],k=0;a=Error(b.replace(/%s/g,function(){return l[k++]}));a.name="Invariant Violation"}a.framesToPop=1;throw a;}}
+n=__webpack_require__(5),r=__webpack_require__(17);function ba(a,b,c,d,e,f,g,h){if(!a){a=void 0;if(void 0===b)a=Error("Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings.");else{var l=[c,d,e,f,g,h],k=0;a=Error(b.replace(/%s/g,function(){return l[k++]}));a.name="Invariant Violation"}a.framesToPop=1;throw a;}}
 function x(a){for(var b=arguments.length-1,c="https://reactjs.org/docs/error-decoder.html?invariant="+a,d=0;d<b;d++)c+="&args[]="+encodeURIComponent(arguments[d+1]);ba(!1,"Minified React error #"+a+"; visit %s for the full message or use the non-minified dev environment for full errors and additional helpful warnings. ",c)}aa?void 0:x("227");function ca(a,b,c,d,e,f,g,h,l){var k=Array.prototype.slice.call(arguments,3);try{b.apply(c,k)}catch(m){this.onError(m)}}
 var da=!1,ea=null,fa=!1,ha=null,ia={onError:function(a){da=!0;ea=a}};function ja(a,b,c,d,e,f,g,h,l){da=!1;ea=null;ca.apply(ia,arguments)}function ka(a,b,c,d,e,f,g,h,l){ja.apply(this,arguments);if(da){if(da){var k=ea;da=!1;ea=null}else x("198"),k=void 0;fa||(fa=!0,ha=k)}}var la=null,ma={};
 function na(){if(la)for(var a in ma){var b=ma[a],c=la.indexOf(a);-1<c?void 0:x("96",a);if(!oa[c]){b.extractEvents?void 0:x("97",a);oa[c]=b;c=b.eventTypes;for(var d in c){var e=void 0;var f=c[d],g=b,h=d;pa.hasOwnProperty(h)?x("99",h):void 0;pa[h]=f;var l=f.phasedRegistrationNames;if(l){for(e in l)l.hasOwnProperty(e)&&qa(l[e],g,h);e=!0}else f.registrationName?(qa(f.registrationName,g,h),e=!0):e=!1;e?void 0:x("98",d,a)}}}}
@@ -1757,19 +1927,19 @@ X;X=!0;try{ki(a)}finally{(X=b)||W||Yh(1073741823,!1)}},__SECRET_INTERNALS_DO_NOT
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 if (true) {
-  module.exports = __webpack_require__(17);
+  module.exports = __webpack_require__(18);
 } else {}
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1795,10 +1965,10 @@ exports.unstable_scheduleCallback=function(a,b){var c=-1!==k?k:exports.unstable_
 b=c.previous;b.next=c.previous=a;a.next=c;a.previous=b}return a};exports.unstable_cancelCallback=function(a){var b=a.next;if(null!==b){if(b===a)d=null;else{a===d&&(d=b);var c=a.previous;c.next=b;b.previous=c}a.next=a.previous=null}};exports.unstable_wrapCallback=function(a){var b=g;return function(){var c=g,f=k;g=b;k=exports.unstable_now();try{return a.apply(this,arguments)}finally{g=c,k=f,v()}}};exports.unstable_getCurrentPriorityLevel=function(){return g};
 exports.unstable_shouldYield=function(){return!e&&(null!==d&&d.expirationTime<l||w())};exports.unstable_continueExecution=function(){null!==d&&p()};exports.unstable_pauseExecution=function(){};exports.unstable_getFirstCallbackNode=function(){return d};
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(18)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(19)))
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports) {
 
 var g;
@@ -1824,7 +1994,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1838,7 +2008,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fetch = __webpack_require__(20);
+const fetch = __webpack_require__(21);
 const consts_1 = __webpack_require__(1);
 const createAuthHeader_1 = __webpack_require__(6);
 const githubInfo_1 = __webpack_require__(2);
@@ -1987,7 +2157,7 @@ function searchGiphy(tokenValue) {
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2016,14 +2186,14 @@ exports.Request = global.Request;
 exports.Response = global.Response;
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
-const TokenModal_1 = __webpack_require__(22);
+const TokenModal_1 = __webpack_require__(23);
 function TokenTag(props) {
     const [arrowHovered, setArrowHovered] = React.useState(false);
     const classes = ["__tokenTag"];
@@ -2074,7 +2244,7 @@ exports.default = TokenTag;
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2089,8 +2259,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
-const TokenModalImage_1 = __webpack_require__(23);
-const isValidUrl_1 = __webpack_require__(24);
+const TokenModalImage_1 = __webpack_require__(24);
+const isValidUrl_1 = __webpack_require__(25);
 const { useState, useRef, useEffect } = React;
 var NewUrlSubmitState;
 (function (NewUrlSubmitState) {
@@ -2222,7 +2392,7 @@ exports.default = TokenModal;
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2354,7 +2524,7 @@ exports.default = TokenModalImage;
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2369,11 +2539,11 @@ exports.default = isValidUrl;
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var v1 = __webpack_require__(26);
-var v4 = __webpack_require__(27);
+var v1 = __webpack_require__(27);
+var v4 = __webpack_require__(28);
 
 var uuid = v4;
 uuid.v1 = v1;
@@ -2383,7 +2553,7 @@ module.exports = uuid;
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var rng = __webpack_require__(7);
@@ -2498,7 +2668,7 @@ module.exports = v1;
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var rng = __webpack_require__(7);
@@ -2533,7 +2703,7 @@ module.exports = v4;
 
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2579,7 +2749,7 @@ exports.default = throttle;
 
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2596,7 +2766,7 @@ exports.default = getParentByTagName;
 
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2639,7 +2809,6 @@ function validateListeners(listeners) {
         // A Node's offsetParent is null if it or any of its
         // parent nodes are hidden.  Handy!
         if (!listener.input.offsetParent) {
-            console.log("Cleaning up", listener.input);
             listener.remove();
             return false;
         }
