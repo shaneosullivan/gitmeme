@@ -12,7 +12,6 @@ interface TopTokenItem {
 
 export default async function apiTopTokens(req: AppRequest, res: AppResponse) {
   const authError = await checkUserIsUnauthorized(req);
-  console.log("top_tokens got authError", JSON.stringify(authError));
 
   const maxToReturn = parseInt(req.query.count || "5", 10);
 
@@ -23,6 +22,7 @@ export default async function apiTopTokens(req: AppRequest, res: AppResponse) {
   }
 
   const results = {
+    context: [] as Array<TopTokenItem>,
     user: [] as Array<TopTokenItem>,
     global: [] as Array<TopTokenItem>
   };
@@ -53,6 +53,24 @@ export default async function apiTopTokens(req: AppRequest, res: AppResponse) {
       results.user = userTokenDocs.docs.map(serialize);
     }
     promises.push(getUserTopTokens());
+  }
+
+  if (req.query.context) {
+    const context = req.query.context;
+
+    async function getContextTopTokens() {
+      const contextTokenDocs = await getFirestore()
+        .collection("context_tokens")
+        .where("context", "==", context)
+        .orderBy("count", "desc")
+        .limit(maxToReturn)
+        .get();
+
+      if (!contextTokenDocs.empty) {
+        results.context = contextTokenDocs.docs.map(serialize);
+      }
+    }
+    promises.push(getContextTopTokens());
   }
 
   async function getGlobalTopTokens() {

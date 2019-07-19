@@ -82,7 +82,7 @@ async function getContextResults(
   token: string
 ): Promise<SearchResult> {
   const collectionSnapshot = await getFirestore()
-    .collection("context_images")
+    .collection("context_tokens")
     .where("context", "==", context)
     .where("token", "==", token)
     .get();
