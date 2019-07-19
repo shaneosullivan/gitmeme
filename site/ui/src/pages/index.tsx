@@ -10,6 +10,8 @@ import {
   layout
 } from "react-stonecutter";
 
+import "./index.css";
+
 const Grid = makeResponsive(measureItems(SpringGrid, { measureImages: true }), {
   maxWidth: 1280,
   minPadding: 100
@@ -83,6 +85,16 @@ export default function IndexPage() {
   return (
     <Layout>
       <SEO title="Home" />
+      <div style={{ textAlign: "center" }}>
+        <a className="installButton" href="#">
+          Install Now
+        </a>
+      </div>
+      <p>
+        GitMeme brings lots of fun to Github by making it easy to include Gifs
+        in your comments. In any text box, just type a forward slash and some
+        text to insert an image, e.g <span className="token">/shipit</span>
+      </p>
       <h2>Trending Memes</h2>
       {loadError ? renderError() : renderImageList(topTokens)}
     </Layout>

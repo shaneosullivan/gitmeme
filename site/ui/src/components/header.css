@@ -14,4 +14,9 @@
   align-items: center;
   display: flex;
   flex-wrap: nowrap;
+  font-size: 14px;
+}
+
+.Header .Header-item h1 {
+  font-size: 14px;
 }
