@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 8);
+/******/ 	return __webpack_require__(__webpack_require__.s = 9);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -118,6 +118,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const getLoggedInUser_1 = __webpack_require__(3);
+const getGithubContext_1 = __webpack_require__(4);
 function getGithubInfo() {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise(resolve => {
@@ -126,7 +127,8 @@ function getGithubInfo() {
                     resolve({
                         token: results.github_token || null,
                         id: results.github_id || null,
-                        avatar: results.github_avatar || null
+                        avatar: results.github_avatar || null,
+                        context: getGithubContext_1.default()
                     });
                 }
                 else {
@@ -134,7 +136,8 @@ function getGithubInfo() {
                     resolve({
                         token: null,
                         id: loggedInUser ? loggedInUser.id : null,
-                        avatar: loggedInUser ? loggedInUser.avatar : null
+                        avatar: loggedInUser ? loggedInUser.avatar : null,
+                        context: getGithubContext_1.default()
                     });
                 }
             });
@@ -187,17 +190,39 @@ exports.default = getLoggedInUser;
 
 
 /***/ }),
-/* 4 */,
-/* 5 */,
-/* 6 */,
-/* 7 */,
-/* 8 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const getToken_1 = __webpack_require__(9);
+function getGithubContext() {
+    const url = typeof window !== undefined ? window.location.href : "";
+    if (!url) {
+        return null;
+    }
+    const domain = "github.com";
+    const idx = url.indexOf(domain);
+    if (idx < 0) {
+        return null;
+    }
+    return url.substring(idx + domain.length + 1).split("/")[0];
+}
+exports.default = getGithubContext;
+
+
+/***/ }),
+/* 5 */,
+/* 6 */,
+/* 7 */,
+/* 8 */,
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const getToken_1 = __webpack_require__(10);
 chrome.runtime.onMessage.addListener((message, _sender, callback) => {
     if (message.data === "login") {
         getToken_1.default(true, err => {
@@ -212,7 +237,7 @@ chrome.runtime.onMessage.addListener((message, _sender, callback) => {
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

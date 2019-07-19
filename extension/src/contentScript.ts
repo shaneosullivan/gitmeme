@@ -3,12 +3,13 @@ import createTokenTag, { TokenTagType } from "./createTokenTag";
 import throttle from "./util/throttle";
 import getParentByTagName from "./getParentByTagName";
 import findTextInputs from "./util/findTextInputs";
-import { getGithubInfo } from "./shared/auth/githubInfo";
+import { getGithubInfo, GithubInfo } from "./shared/auth/githubInfo";
 import { API_ROOT_URL } from "./shared/consts";
 import createAuthHeader from "./shared/auth/createAuthHeader";
 import getLoggedInUser from "./shared/auth/getLoggedInUser";
 
-let userInfo;
+let userInfo = null;
+let githubContext = null;
 
 // Get the logged in user from the DOM
 const loggedInUser = getLoggedInUser();
@@ -144,7 +145,8 @@ function listenToInput(
             : {},
           body: JSON.stringify({
             image_url: knownToken.imageUrl,
-            token: knownToken.token.value
+            token: knownToken.token.value,
+            context: githubContext
           })
         });
 
@@ -196,7 +198,8 @@ function listenToInput(
       },
       body: JSON.stringify({
         image_url: url,
-        token: tokenValue
+        token: tokenValue,
+        context: githubContext
       })
     });
     return result.status === 200;
@@ -323,13 +326,8 @@ function listenToInput(
   return ret;
 }
 
-getGithubInfo().then(
-  (localUserInfo: {
-    token: string | null;
-    id: string | null;
-    avatar: string | null;
-  }) => {
-    userInfo = localUserInfo;
-    findTextInputs(listenToInput);
-  }
-);
+getGithubInfo().then((localUserInfo: GithubInfo) => {
+  userInfo = localUserInfo;
+  githubContext = localUserInfo.context;
+  findTextInputs(listenToInput);
+});

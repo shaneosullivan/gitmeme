@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 10);
+/******/ 	return __webpack_require__(__webpack_require__.s = 11);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -99,7 +99,7 @@
  */
 
 
-var k = __webpack_require__(4),
+var k = __webpack_require__(5),
   n = "function" === typeof Symbol && Symbol.for,
   p = n ? Symbol.for("react.element") : 60103,
   q = n ? Symbol.for("react.portal") : 60106,
@@ -522,6 +522,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const getLoggedInUser_1 = __webpack_require__(3);
+const getGithubContext_1 = __webpack_require__(4);
 function getGithubInfo() {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise(resolve => {
@@ -530,7 +531,8 @@ function getGithubInfo() {
                     resolve({
                         token: results.github_token || null,
                         id: results.github_id || null,
-                        avatar: results.github_avatar || null
+                        avatar: results.github_avatar || null,
+                        context: getGithubContext_1.default()
                     });
                 }
                 else {
@@ -538,7 +540,8 @@ function getGithubInfo() {
                     resolve({
                         token: null,
                         id: loggedInUser ? loggedInUser.id : null,
-                        avatar: loggedInUser ? loggedInUser.avatar : null
+                        avatar: loggedInUser ? loggedInUser.avatar : null,
+                        context: getGithubContext_1.default()
                     });
                 }
             });
@@ -592,6 +595,28 @@ exports.default = getLoggedInUser;
 
 /***/ }),
 /* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function getGithubContext() {
+    const url = typeof window !== undefined ? window.location.href : "";
+    if (!url) {
+        return null;
+    }
+    const domain = "github.com";
+    const idx = url.indexOf(domain);
+    if (idx < 0) {
+        return null;
+    }
+    return url.substring(idx + domain.length + 1).split("/")[0];
+}
+exports.default = getGithubContext;
+
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -688,7 +713,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -704,7 +729,7 @@ exports.default = createAuthHeader;
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports) {
 
 // Unique ID creation requires a high quality random # generator.  In the
@@ -744,7 +769,7 @@ if (getRandomValues) {
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports) {
 
 /**
@@ -774,9 +799,9 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 8 */,
 /* 9 */,
-/* 10 */
+/* 10 */,
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -790,16 +815,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const parseTokens_1 = __webpack_require__(11);
-const createTokenTag_1 = __webpack_require__(12);
-const throttle_1 = __webpack_require__(27);
-const getParentByTagName_1 = __webpack_require__(28);
-const findTextInputs_1 = __webpack_require__(29);
+const parseTokens_1 = __webpack_require__(12);
+const createTokenTag_1 = __webpack_require__(13);
+const throttle_1 = __webpack_require__(28);
+const getParentByTagName_1 = __webpack_require__(29);
+const findTextInputs_1 = __webpack_require__(30);
 const githubInfo_1 = __webpack_require__(2);
 const consts_1 = __webpack_require__(1);
-const createAuthHeader_1 = __webpack_require__(5);
+const createAuthHeader_1 = __webpack_require__(6);
 const getLoggedInUser_1 = __webpack_require__(3);
-let userInfo;
+let userInfo = null;
+let githubContext = null;
 // Get the logged in user from the DOM
 const loggedInUser = getLoggedInUser_1.default();
 function listenToInput(input) {
@@ -896,7 +922,8 @@ function listenToInput(input) {
                         ? Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token)) : {},
                     body: JSON.stringify({
                         image_url: knownToken.imageUrl,
-                        token: knownToken.token.value
+                        token: knownToken.token.value,
+                        context: githubContext
                     })
                 });
                 if (loggedInUser) {
@@ -935,7 +962,8 @@ function listenToInput(input) {
                 headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token)),
                 body: JSON.stringify({
                     image_url: url,
-                    token: tokenValue
+                    token: tokenValue,
+                    context: githubContext
                 })
             });
             return result.status === 200;
@@ -945,7 +973,6 @@ function listenToInput(input) {
         const toolbarNode = form.querySelector("markdown-toolbar");
         if (toolbarNode) {
             if (toolbarNode.querySelector(".__toolbarButton")) {
-                console.log("already have a toolbar item for form ", form);
                 return;
             }
             const toolbarButton = document.createElement("div");
@@ -967,7 +994,6 @@ function listenToInput(input) {
         }
     }
     function closePopupIframe() {
-        console.log("closePopupIframe", popupIframe);
         if (popupIframe) {
             popupIframe.parentNode.removeChild(popupIframe);
             popupIframe = null;
@@ -975,11 +1001,9 @@ function listenToInput(input) {
     }
     function togglePopupIframe() {
         if (popupIframe) {
-            console.log("removing iframe");
             closePopupIframe();
         }
         else {
-            console.log("adding iframe");
             popupIframe = document.createElement("iframe");
             popupIframe.className = "__popupIframe";
             toolbarButtonItem.parentNode.appendChild(popupIframe);
@@ -1049,12 +1073,13 @@ function listenToInput(input) {
 }
 githubInfo_1.getGithubInfo().then((localUserInfo) => {
     userInfo = localUserInfo;
+    githubContext = localUserInfo.context;
     findTextInputs_1.default(listenToInput);
 });
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1118,7 +1143,7 @@ exports.default = parseTokens;
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1133,11 +1158,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
-const getCaretCoordinates = __webpack_require__(13);
-const ReactDOM = __webpack_require__(14);
-const searcher_1 = __webpack_require__(18);
-const TokenTag_1 = __webpack_require__(20);
-const uuid = __webpack_require__(24);
+const getCaretCoordinates = __webpack_require__(14);
+const ReactDOM = __webpack_require__(15);
+const searcher_1 = __webpack_require__(19);
+const TokenTag_1 = __webpack_require__(21);
+const uuid = __webpack_require__(25);
 const TAG_CONTAINER_ID = "__tagContainer";
 const TEXT_HEIGHT = 18;
 // let removeOpenImage = null;
@@ -1311,7 +1336,7 @@ exports.default = createTokenTag;
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* jshint browser: true */
@@ -1455,7 +1480,7 @@ if ( true && typeof module.exports != 'undefined') {
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1472,7 +1497,7 @@ if ( true && typeof module.exports != 'undefined') {
  Modernizr 3.0.0pre (Custom Build) | MIT
 */
 var aa=__webpack_require__(0),
-n=__webpack_require__(4),r=__webpack_require__(15);function ba(a,b,c,d,e,f,g,h){if(!a){a=void 0;if(void 0===b)a=Error("Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings.");else{var l=[c,d,e,f,g,h],k=0;a=Error(b.replace(/%s/g,function(){return l[k++]}));a.name="Invariant Violation"}a.framesToPop=1;throw a;}}
+n=__webpack_require__(5),r=__webpack_require__(16);function ba(a,b,c,d,e,f,g,h){if(!a){a=void 0;if(void 0===b)a=Error("Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings.");else{var l=[c,d,e,f,g,h],k=0;a=Error(b.replace(/%s/g,function(){return l[k++]}));a.name="Invariant Violation"}a.framesToPop=1;throw a;}}
 function x(a){for(var b=arguments.length-1,c="https://reactjs.org/docs/error-decoder.html?invariant="+a,d=0;d<b;d++)c+="&args[]="+encodeURIComponent(arguments[d+1]);ba(!1,"Minified React error #"+a+"; visit %s for the full message or use the non-minified dev environment for full errors and additional helpful warnings. ",c)}aa?void 0:x("227");function ca(a,b,c,d,e,f,g,h,l){var k=Array.prototype.slice.call(arguments,3);try{b.apply(c,k)}catch(m){this.onError(m)}}
 var da=!1,ea=null,fa=!1,ha=null,ia={onError:function(a){da=!0;ea=a}};function ja(a,b,c,d,e,f,g,h,l){da=!1;ea=null;ca.apply(ia,arguments)}function ka(a,b,c,d,e,f,g,h,l){ja.apply(this,arguments);if(da){if(da){var k=ea;da=!1;ea=null}else x("198"),k=void 0;fa||(fa=!0,ha=k)}}var la=null,ma={};
 function na(){if(la)for(var a in ma){var b=ma[a],c=la.indexOf(a);-1<c?void 0:x("96",a);if(!oa[c]){b.extractEvents?void 0:x("97",a);oa[c]=b;c=b.eventTypes;for(var d in c){var e=void 0;var f=c[d],g=b,h=d;pa.hasOwnProperty(h)?x("99",h):void 0;pa[h]=f;var l=f.phasedRegistrationNames;if(l){for(e in l)l.hasOwnProperty(e)&&qa(l[e],g,h);e=!0}else f.registrationName?(qa(f.registrationName,g,h),e=!0):e=!1;e?void 0:x("98",d,a)}}}}
@@ -1732,19 +1757,19 @@ X;X=!0;try{ki(a)}finally{(X=b)||W||Yh(1073741823,!1)}},__SECRET_INTERNALS_DO_NOT
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 if (true) {
-  module.exports = __webpack_require__(16);
+  module.exports = __webpack_require__(17);
 } else {}
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1770,10 +1795,10 @@ exports.unstable_scheduleCallback=function(a,b){var c=-1!==k?k:exports.unstable_
 b=c.previous;b.next=c.previous=a;a.next=c;a.previous=b}return a};exports.unstable_cancelCallback=function(a){var b=a.next;if(null!==b){if(b===a)d=null;else{a===d&&(d=b);var c=a.previous;c.next=b;b.previous=c}a.next=a.previous=null}};exports.unstable_wrapCallback=function(a){var b=g;return function(){var c=g,f=k;g=b;k=exports.unstable_now();try{return a.apply(this,arguments)}finally{g=c,k=f,v()}}};exports.unstable_getCurrentPriorityLevel=function(){return g};
 exports.unstable_shouldYield=function(){return!e&&(null!==d&&d.expirationTime<l||w())};exports.unstable_continueExecution=function(){null!==d&&p()};exports.unstable_pauseExecution=function(){};exports.unstable_getFirstCallbackNode=function(){return d};
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(17)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(18)))
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports) {
 
 var g;
@@ -1799,7 +1824,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1813,9 +1838,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fetch = __webpack_require__(19);
+const fetch = __webpack_require__(20);
 const consts_1 = __webpack_require__(1);
-const createAuthHeader_1 = __webpack_require__(5);
+const createAuthHeader_1 = __webpack_require__(6);
 const githubInfo_1 = __webpack_require__(2);
 const GIPHY_API_KEY = "I5ysXzZG4OIoiMD99Tz7v6AGN9uzGWpr";
 const allResults = {};
@@ -1839,7 +1864,6 @@ function searcher(tokenValue) {
             return null;
         }
         if (allResults[tokenValue]) {
-            console.log("Returning cached values", allResults[tokenValue]);
             return allResults[tokenValue];
         }
         return new Promise((resolve, _reject) => __awaiter(this, void 0, void 0, function* () {
@@ -1872,7 +1896,7 @@ function searcher(tokenValue) {
                 localComplete = true;
             }
             // Search Gitmeme for previously used images
-            const gitmemeUrl = `${consts_1.API_ROOT_URL}/search?t=${encodeURIComponent(tokenValue)}`;
+            const gitmemeUrl = `${consts_1.API_ROOT_URL}/search?t=${encodeURIComponent(tokenValue)}&context=${encodeURIComponent(userInfo.context || "")}`;
             fetch(gitmemeUrl, {
                 headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token))
             })
@@ -1963,7 +1987,7 @@ function searchGiphy(tokenValue) {
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1992,14 +2016,14 @@ exports.Request = global.Request;
 exports.Response = global.Response;
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
-const TokenModal_1 = __webpack_require__(21);
+const TokenModal_1 = __webpack_require__(22);
 function TokenTag(props) {
     const [arrowHovered, setArrowHovered] = React.useState(false);
     const classes = ["__tokenTag"];
@@ -2050,7 +2074,7 @@ exports.default = TokenTag;
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2065,8 +2089,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
-const TokenModalImage_1 = __webpack_require__(22);
-const isValidUrl_1 = __webpack_require__(23);
+const TokenModalImage_1 = __webpack_require__(23);
+const isValidUrl_1 = __webpack_require__(24);
 const { useState, useRef, useEffect } = React;
 var NewUrlSubmitState;
 (function (NewUrlSubmitState) {
@@ -2198,7 +2222,7 @@ exports.default = TokenModal;
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2330,7 +2354,7 @@ exports.default = TokenModalImage;
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2345,11 +2369,11 @@ exports.default = isValidUrl;
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var v1 = __webpack_require__(25);
-var v4 = __webpack_require__(26);
+var v1 = __webpack_require__(26);
+var v4 = __webpack_require__(27);
 
 var uuid = v4;
 uuid.v1 = v1;
@@ -2359,11 +2383,11 @@ module.exports = uuid;
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(6);
-var bytesToUuid = __webpack_require__(7);
+var rng = __webpack_require__(7);
+var bytesToUuid = __webpack_require__(8);
 
 // **`v1()` - Generate time-based UUID**
 //
@@ -2474,11 +2498,11 @@ module.exports = v1;
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(6);
-var bytesToUuid = __webpack_require__(7);
+var rng = __webpack_require__(7);
+var bytesToUuid = __webpack_require__(8);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -2509,7 +2533,7 @@ module.exports = v4;
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2555,7 +2579,7 @@ exports.default = throttle;
 
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2572,7 +2596,7 @@ exports.default = getParentByTagName;
 
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2593,7 +2617,6 @@ function findTextInputs(listenToInput) {
     // Listen to any lazily created text areas too
     document.body.addEventListener("focusin", (evt) => {
         const node = evt.target;
-        console.log("focusin", node);
         const tagName = node.tagName;
         if (tagName &&
             tagName.toLowerCase() === "textarea" &&

@@ -29,7 +29,6 @@ export default function findTextInputs(
   // Listen to any lazily created text areas too
   document.body.addEventListener("focusin", (evt: Event) => {
     const node = evt.target as HTMLElement;
-    console.log("focusin", node);
     const tagName = node.tagName;
     if (
       tagName &&

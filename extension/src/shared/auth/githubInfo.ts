@@ -1,11 +1,13 @@
 import getLoggedInUser from "./getLoggedInUser";
+import getGithubContext from "./getGithubContext";
 
 declare const chrome: any;
 
 export interface GithubInfo {
-  token: string | null;
-  id: string | null;
   avatar: string | null;
+  context: string | null;
+  id: string | null;
+  token: string | null;
 }
 
 export async function getGithubInfo(): Promise<GithubInfo> {
@@ -17,14 +19,16 @@ export async function getGithubInfo(): Promise<GithubInfo> {
           resolve({
             token: results.github_token || null,
             id: results.github_id || null,
-            avatar: results.github_avatar || null
+            avatar: results.github_avatar || null,
+            context: getGithubContext()
           });
         } else {
           const loggedInUser = getLoggedInUser();
           resolve({
             token: null,
             id: loggedInUser ? loggedInUser.id : null,
-            avatar: loggedInUser ? loggedInUser.avatar : null
+            avatar: loggedInUser ? loggedInUser.avatar : null,
+            context: getGithubContext()
           });
         }
       }

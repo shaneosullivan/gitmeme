@@ -29,7 +29,6 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
   }
 
   if (allResults[tokenValue]) {
-    console.log("Returning cached values", allResults[tokenValue]);
     return allResults[tokenValue];
   }
 
@@ -68,7 +67,7 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
     // Search Gitmeme for previously used images
     const gitmemeUrl = `${API_ROOT_URL}/search?t=${encodeURIComponent(
       tokenValue
-    )}`;
+    )}&context=${encodeURIComponent(userInfo.context || "")}`;
 
     fetch(gitmemeUrl, {
       headers: {
