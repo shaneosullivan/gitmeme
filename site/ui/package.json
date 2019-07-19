@@ -21,6 +21,7 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-helmet": "^5.2.1",
+    "react-stonecutter": "^0.3.10",
     "typescript": "^3.5.2"
   },
   "devDependencies": {
@@ -31,10 +32,10 @@
   ],
   "license": "MIT",
   "scripts": {
-    "build": "gatsby build",
-    "develop": "gatsby develop",
+    "build": "../../scripts/copy_shared_files.sh && gatsby build",
+    "develop": "../../scripts/copy_shared_files.sh && gatsby develop",
     "format": "prettier --write src/**/*.{js,jsx}",
-    "start": "gatsby develop",
+    "start": "../../scripts/copy_shared_files.sh && gatsby develop",
     "serve": "gatsby serve",
     "test": "echo \"Write tests! -> https://gatsby.dev/unit-testing\""
   },

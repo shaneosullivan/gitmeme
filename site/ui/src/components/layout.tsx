@@ -6,7 +6,6 @@
  */
 
 import * as React from "react";
-import * as PropTypes from "prop-types";
 import { useStaticQuery, graphql } from "gatsby";
 
 import Header from "./header";
@@ -42,8 +41,12 @@ const Layout = ({ children }: Props) => {
         <footer>
           © {new Date().getFullYear()}, Built by
           {` `}
-          <a href="https://www.chofter.com" target="_blank d">
+          <a href="https://www.chofter.com" target="_blank">
             Shane O'Sullivan
+          </a>{" "}
+          and{" "}
+          <a href="karoliskosas.com" target="_blank">
+            Karolis Kosas
           </a>
         </footer>
       </div>

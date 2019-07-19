@@ -14,6 +14,14 @@ export default async function apiTopTokens(req: AppRequest, res: AppResponse) {
   const authError = await checkUserIsUnauthorized(req);
   console.log("top_tokens got authError", JSON.stringify(authError));
 
+  const maxToReturn = parseInt(req.query.count || "5", 10);
+
+  if (isNaN(maxToReturn)) {
+    res.sendStatus(400);
+    res.send({ error: `Invalid "count" parameter ${req.query.count}` });
+    return;
+  }
+
   const results = {
     user: [] as Array<TopTokenItem>,
     global: [] as Array<TopTokenItem>
@@ -39,7 +47,7 @@ export default async function apiTopTokens(req: AppRequest, res: AppResponse) {
       const userTokenDocs = await getFirestore()
         .collection("user_tokens")
         .where("user", "==", userDocRef)
-        .limit(5)
+        .limit(maxToReturn)
         .orderBy("count", "desc")
         .get();
       results.user = userTokenDocs.docs.map(serialize);
@@ -50,7 +58,7 @@ export default async function apiTopTokens(req: AppRequest, res: AppResponse) {
   async function getGlobalTopTokens() {
     const globalTokenDocs = await getFirestore()
       .collection("all_tokens")
-      .limit(5)
+      .limit(maxToReturn)
       .orderBy("count", "desc")
       .get();
     results.global = globalTokenDocs.docs.map(serialize);
