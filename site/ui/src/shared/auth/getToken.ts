@@ -9,6 +9,7 @@ export default function getToken(interactive: boolean, callback: Function) {
   const localRedirectUri = (chrome as any).identity.getRedirectURL(
     "provider_cb"
   );
+
   const redirectUri =
     "https://us-central1-git-meme-prod.cloudfunctions.net/oauth";
   const redirectRe = new RegExp(localRedirectUri + "[#?](.*)");
@@ -73,7 +74,7 @@ export default function getToken(interactive: boolean, callback: Function) {
       // If response does not have an access_token, it might have the code,
       // which can be used in exchange for token.
     } else {
-      callback(new Error("Neither access_token nor code avialable."));
+      callback(new Error("Neither access_token nor code available."));
     }
   }
 

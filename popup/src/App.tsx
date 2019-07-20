@@ -13,6 +13,8 @@ const App = () => {
   } as GithubInfo);
   const [authComplete, setAuthComplete] = useState(false);
 
+  console.log("App has auth ", auth);
+
   useEffect(() => {
     // Run on mount
     getGithubInfo().then(authInfo => {
@@ -28,7 +30,10 @@ const App = () => {
       {authComplete ? (
         <TopTokensList
           userInfo={auth}
-          onAuth={(authInfo: GithubInfo) => setAuth(authInfo)}
+          onAuth={(authInfo: GithubInfo) => {
+            console.log("Using authInfo ", authInfo);
+            setAuth(authInfo);
+          }}
         />
       ) : null}
     </div>

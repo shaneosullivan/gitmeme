@@ -25,6 +25,7 @@ export default async function handleOauthRedirect(
       firestore,
       req.query.access_token
     );
+
     redirectWithToken(
       res,
       req.query.access_token,
@@ -39,8 +40,10 @@ export default async function handleOauthRedirect(
     );
     const token = await exchangeCodeForToken(req.query.code);
     console.log("Exchanged code for the token: ", token);
+
     if (token) {
       const userInfo = await createOrUpdateUser(firestore, token);
+
       redirectWithToken(res, token, userInfo.uid, userInfo.avatar);
       return;
     }
@@ -94,7 +97,7 @@ async function createOrUpdateUser(
     console.log("creating a user with ", data);
     await docRef.set(data);
   }
-  return (await docRef.get()).data();
+  return (await docRef.get()).data() || {};
 }
 
 function redirectWithToken(

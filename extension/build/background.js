@@ -311,7 +311,7 @@ function getToken(interactive, callback) {
                 // which can be used in exchange for token.
             }
             else {
-                callback(new Error("Neither access_token nor code avialable."));
+                callback(new Error("Neither access_token nor code available."));
             }
         });
     }

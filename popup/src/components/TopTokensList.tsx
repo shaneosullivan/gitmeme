@@ -74,7 +74,7 @@ export default function TopTokensList(props: Props) {
           });
       }
     );
-  }, []);
+  }, [props.userInfo.id, props.userInfo.context]);
 
   if (isLoading) {
     return null;
