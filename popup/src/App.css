@@ -1,6 +1,14 @@
+html,
 body {
   height: 470px;
   width: 273px;
+}
+
+html {
+  overflow: hidden;
+}
+body {
+  overflow-y: auto;
 }
 
 @keyframes fadeInPopup {

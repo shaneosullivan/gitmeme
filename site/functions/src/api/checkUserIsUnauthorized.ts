@@ -31,7 +31,6 @@ const checkUserIsUnauthorized = async (req: AppRequest) => {
 
       if (userDoc.exists) {
         const data = userDoc.data();
-        console.log("got user data", data);
 
         if (
           data &&
