@@ -154,7 +154,7 @@ export default async function apiAddTokenByUrl(
         updated_at: now
       });
     } else {
-      collection.doc().set({
+      await collection.doc().set({
         image_url: imageUrl,
         context,
         count: 1,
