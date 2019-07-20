@@ -274,16 +274,27 @@
   opacity: 0.5;
 }
 
-.__tokenTagModalButtons button {
+.__tokenTagModalButtons button,
+.__tokenTagModal .loginButton {
   border: 0px;
   background: none;
   color: #0066d6;
-  float: right;
+  padding: 0;
+}
+
+.__tokenTagModalButtons button {
   margin-top: 6px;
+  margin-right: 6px;
+  float: right;
 }
 
 .__tokenTagModalButtons button:disabled {
   opacity: 0.6;
+}
+
+.loginMessage {
+  font-size: 14px;
+  padding: 8px;
 }
 
 .__imageSelector {

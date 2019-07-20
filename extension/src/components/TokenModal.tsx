@@ -1,6 +1,7 @@
 import * as React from "../lib/react";
 import TokenModalImage from "./TokenModalImage";
 import isValidUrl from "../util/isValidUrl";
+import getGithubContext from "../shared/auth/getGithubContext";
 const { useState, useRef, useEffect } = React;
 
 interface Props {
@@ -56,6 +57,7 @@ export default function TokenModal(props: Props) {
 
   const canAddNewImage = !!props.onAddNewImage;
   const modalImagesRef = useRef();
+  const pageContext = getGithubContext();
 
   function handleAddNew() {
     setIsAddingNew(true);
@@ -99,6 +101,25 @@ export default function TokenModal(props: Props) {
           );
         })}
         {props.images.length % 2 !== 0 ? <div className="__image" /> : null}) }
+        {!canAddNewImage ? (
+          <div className="loginMessage">
+            <button
+              className="loginButton"
+              onClick={() => {
+                props.onLogIn();
+              }}
+            >
+              Log In
+            </button>{" "}
+            with Github to remember your selection
+            {pageContext ? (
+              <>
+                <span> and see memes from others in </span>
+                <strong>{pageContext}</strong>
+              </>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     );
   }

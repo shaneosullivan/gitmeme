@@ -2258,6 +2258,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
 const TokenModalImage_1 = __webpack_require__(24);
 const isValidUrl_1 = __webpack_require__(25);
+const getGithubContext_1 = __webpack_require__(4);
 const { useState, useRef, useEffect } = React;
 var NewUrlSubmitState;
 (function (NewUrlSubmitState) {
@@ -2292,6 +2293,7 @@ function TokenModal(props) {
     const [expandedImageHeight, setExpandedImageHeight] = useState(-1);
     const canAddNewImage = !!props.onAddNewImage;
     const modalImagesRef = useRef();
+    const pageContext = getGithubContext_1.default();
     function handleAddNew() {
         setIsAddingNew(true);
     }
@@ -2316,7 +2318,16 @@ function TokenModal(props) {
                     } }));
             }),
             props.images.length % 2 !== 0 ? React.createElement("div", { className: "__image" }) : null,
-            ") }"));
+            ") }",
+            !canAddNewImage ? (React.createElement("div", { className: "loginMessage" },
+                React.createElement("button", { className: "loginButton", onClick: () => {
+                        props.onLogIn();
+                    } }, "Log In"),
+                " ",
+                "with Github to remember your selection",
+                pageContext ? (React.createElement(React.Fragment, null,
+                    React.createElement("span", null, " and see memes from others in "),
+                    React.createElement("strong", null, pageContext))) : null)) : null));
     }
     function renderEmpty() {
         return (React.createElement("div", { className: "__tokenModalEmpty" },
