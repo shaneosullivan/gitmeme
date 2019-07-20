@@ -138,11 +138,39 @@ export default async function apiAddTokenByUrl(
     }
   }
 
+  async function storeContextImage() {
+    const collection = getFirestore().collection("context_images");
+    const collectionSnapshot = await collection
+      .where("image_url", "==", imageUrl)
+      .where("token", "==", token)
+      .where("context", "==", context)
+      .get();
+
+    if (!collectionSnapshot.empty) {
+      // There should only be one doc
+      const existingDoc = collectionSnapshot.docs[0];
+      await existingDoc.ref.update({
+        count: existingDoc.get("count") + 1,
+        updated_at: now
+      });
+    } else {
+      collection.doc().set({
+        image_url: imageUrl,
+        context,
+        count: 1,
+        token,
+        created_at: now,
+        updated_at: now
+      });
+    }
+  }
+
   promises.push(storeGlobalToken());
   promises.push(storeGlobalImage());
 
   if (context) {
     promises.push(storeContextToken());
+    promises.push(storeContextImage());
   }
 
   await Promise.all(promises);

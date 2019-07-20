@@ -9,6 +9,16 @@ type SearchResult = Array<{
   url: string;
 }>;
 
+function serializeDate(date: any): string {
+  if (date instanceof String) {
+    return date as string;
+  }
+  if (typeof date.toDate === "function") {
+    return date.toDate().toISOString();
+  }
+  return date.toISOString();
+}
+
 export default async function apiSearch(req: AppRequest, res: AppResponse) {
   const authError = await checkUserIsUnauthorized(req);
 
@@ -33,7 +43,13 @@ export default async function apiSearch(req: AppRequest, res: AppResponse) {
   const searchResults = await Promise.all(promises);
 
   searchResults.forEach(
-    searchResult => (results = results.concat(searchResult))
+    searchResult =>
+      (results = results.concat(
+        searchResult.map(result => {
+          result.last_used_at = serializeDate(result.last_used_at);
+          return result;
+        })
+      ))
   );
   results.sort((a, b) => {
     if (a.priority < b.priority) {
@@ -82,7 +98,7 @@ async function getContextResults(
   token: string
 ): Promise<SearchResult> {
   const collectionSnapshot = await getFirestore()
-    .collection("context_tokens")
+    .collection("context_images")
     .where("context", "==", context)
     .where("token", "==", token)
     .get();
