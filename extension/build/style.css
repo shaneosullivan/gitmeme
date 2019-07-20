@@ -29,8 +29,9 @@
   position: absolute;
   text-align: center;
   pointer-events: none;
-  transition-property: padding-right;
-  transition-duration: 250ms;
+  transition-property: padding-right, top;
+  transition-duration: 250ms, 25ms;
+  transition-timing-function: linear, cubic-bezier(0, 1.65, 0, 1.65);
   z-index: 1000;
 }
 

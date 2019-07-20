@@ -13,7 +13,7 @@ export default function Help() {
       </strong>{" "}
       brings lots of fun to Github by making it easy to include Gifs in your
       comments. In any text box, just type a forward slash and some text to
-      search for an image, e.g <span className="token">/shipit</span>
+      insert a meme, e.g <span className="token">/shipit</span>
     </div>
   );
 }

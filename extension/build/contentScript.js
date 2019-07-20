@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 12);
+/******/ 	return __webpack_require__(__webpack_require__.s = 13);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -948,9 +948,55 @@ exports.sendPageHit = sendPageHit;
 
 
 /***/ }),
-/* 10 */,
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function throttle(func, wait, options) {
+    var context, args, result;
+    var timeout = null;
+    var previous = 0;
+    if (!options)
+        options = {};
+    var later = function () {
+        previous = options.leading === false ? 0 : Date.now();
+        timeout = null;
+        result = func.apply(context, args);
+        if (!timeout)
+            context = args = null;
+    };
+    return function () {
+        var now = Date.now();
+        if (!previous && options.leading === false)
+            previous = now;
+        var remaining = wait - (now - previous);
+        context = this;
+        args = arguments;
+        if (remaining <= 0 || remaining > wait) {
+            if (timeout) {
+                clearTimeout(timeout);
+                timeout = null;
+            }
+            previous = now;
+            result = func.apply(context, args);
+            if (!timeout)
+                context = args = null;
+        }
+        else if (!timeout && options.trailing !== false) {
+            timeout = setTimeout(later, remaining);
+        }
+        return result;
+    };
+}
+exports.default = throttle;
+
+
+/***/ }),
 /* 11 */,
-/* 12 */
+/* 12 */,
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -964,9 +1010,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const parseTokens_1 = __webpack_require__(13);
-const createTokenTag_1 = __webpack_require__(14);
-const throttle_1 = __webpack_require__(29);
+const parseTokens_1 = __webpack_require__(14);
+const createTokenTag_1 = __webpack_require__(15);
+const throttle_1 = __webpack_require__(10);
 const getParentByTagName_1 = __webpack_require__(30);
 const findTextInputs_1 = __webpack_require__(31);
 const githubInfo_1 = __webpack_require__(2);
@@ -1237,7 +1283,7 @@ analytics_1.sendPageHit("inline");
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1301,7 +1347,7 @@ exports.default = parseTokens;
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1316,12 +1362,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
-const getCaretCoordinates = __webpack_require__(15);
-const ReactDOM = __webpack_require__(16);
-const searcher_1 = __webpack_require__(20);
-const TokenTag_1 = __webpack_require__(22);
-const uuid = __webpack_require__(26);
+const getCaretCoordinates = __webpack_require__(16);
+const ReactDOM = __webpack_require__(17);
+const searcher_1 = __webpack_require__(21);
+const TokenTag_1 = __webpack_require__(23);
+const uuid = __webpack_require__(27);
 const analytics_1 = __webpack_require__(9);
+const throttle_1 = __webpack_require__(10);
 const TAG_CONTAINER_ID = "__tagContainer";
 const TEXT_HEIGHT = 18;
 // let removeOpenImage = null;
@@ -1414,20 +1461,34 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
         renderTag();
     }
     function reposition() {
-        let top, left;
+        let top = -textInput.scrollTop, left;
         const rect = textInput.getBoundingClientRect();
+        let hideTag = false;
         if (!customContainerNode) {
             // If the text input is not inside a modal, position
             // the tag relative to the window.
-            top = TEXT_HEIGHT + window.scrollY + rect.top + startCoords.top;
+            top += TEXT_HEIGHT + window.scrollY + rect.top + startCoords.top;
             left = window.scrollX + rect.left + startCoords.left;
+            // If the tag is above the top or below the bottom of the text input,
+            // then hide it
+            hideTag =
+                top - window.scrollY - 2 - TEXT_HEIGHT < rect.top ||
+                    top - window.scrollY + 4 > rect.bottom;
         }
         else {
             // If the text input is in a modal, position the tag
             // relative to the modal position
             const containerRect = customContainerNode.getBoundingClientRect();
-            top = TEXT_HEIGHT + rect.top - containerRect.top + startCoords.top;
+            top += TEXT_HEIGHT + rect.top - containerRect.top + startCoords.top;
             left = rect.left - containerRect.left + startCoords.left;
+            // If the tag is above the top or below the bottom of the text input,
+            // then hide it
+            hideTag =
+                top - TEXT_HEIGHT < rect.top - containerRect.top ||
+                    top + 4 > rect.top - containerRect.top + rect.height;
+        }
+        if (hideTag) {
+            left = 10000;
         }
         record.position = {
             top,
@@ -1442,6 +1503,7 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
         textInput.removeEventListener("keyup", checkCaretPosition);
         textInput.removeEventListener("keydown", handleInputKey, true);
         textInput.removeEventListener("click", handleInputClick);
+        textInput.removeEventListener("scroll", handleScroll);
     }
     function handleInputKey(evt) {
         // Up arrow
@@ -1469,6 +1531,9 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
             renderTag();
         }
     }
+    const handleScroll = throttle_1.default(() => {
+        reposition();
+    }, 25);
     const existingPreferredImageUrl = preferredTagUrls[token.value] || null;
     const record = {
         caretIsAtToken: false,
@@ -1489,6 +1554,7 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
     textInput.addEventListener("keyup", checkCaretPosition);
     textInput.addEventListener("keydown", handleInputKey, true);
     textInput.addEventListener("click", handleInputClick);
+    textInput.addEventListener("scroll", handleScroll);
     renderTag();
     searcher_1.default(token.value).then((urls) => {
         const url = urls.length > 0 ? urls[0] : null;
@@ -1503,7 +1569,7 @@ exports.default = createTokenTag;
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* jshint browser: true */
@@ -1647,7 +1713,7 @@ if ( true && typeof module.exports != 'undefined') {
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1664,7 +1730,7 @@ if ( true && typeof module.exports != 'undefined') {
  Modernizr 3.0.0pre (Custom Build) | MIT
 */
 var aa=__webpack_require__(0),
-n=__webpack_require__(5),r=__webpack_require__(17);function ba(a,b,c,d,e,f,g,h){if(!a){a=void 0;if(void 0===b)a=Error("Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings.");else{var l=[c,d,e,f,g,h],k=0;a=Error(b.replace(/%s/g,function(){return l[k++]}));a.name="Invariant Violation"}a.framesToPop=1;throw a;}}
+n=__webpack_require__(5),r=__webpack_require__(18);function ba(a,b,c,d,e,f,g,h){if(!a){a=void 0;if(void 0===b)a=Error("Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings.");else{var l=[c,d,e,f,g,h],k=0;a=Error(b.replace(/%s/g,function(){return l[k++]}));a.name="Invariant Violation"}a.framesToPop=1;throw a;}}
 function x(a){for(var b=arguments.length-1,c="https://reactjs.org/docs/error-decoder.html?invariant="+a,d=0;d<b;d++)c+="&args[]="+encodeURIComponent(arguments[d+1]);ba(!1,"Minified React error #"+a+"; visit %s for the full message or use the non-minified dev environment for full errors and additional helpful warnings. ",c)}aa?void 0:x("227");function ca(a,b,c,d,e,f,g,h,l){var k=Array.prototype.slice.call(arguments,3);try{b.apply(c,k)}catch(m){this.onError(m)}}
 var da=!1,ea=null,fa=!1,ha=null,ia={onError:function(a){da=!0;ea=a}};function ja(a,b,c,d,e,f,g,h,l){da=!1;ea=null;ca.apply(ia,arguments)}function ka(a,b,c,d,e,f,g,h,l){ja.apply(this,arguments);if(da){if(da){var k=ea;da=!1;ea=null}else x("198"),k=void 0;fa||(fa=!0,ha=k)}}var la=null,ma={};
 function na(){if(la)for(var a in ma){var b=ma[a],c=la.indexOf(a);-1<c?void 0:x("96",a);if(!oa[c]){b.extractEvents?void 0:x("97",a);oa[c]=b;c=b.eventTypes;for(var d in c){var e=void 0;var f=c[d],g=b,h=d;pa.hasOwnProperty(h)?x("99",h):void 0;pa[h]=f;var l=f.phasedRegistrationNames;if(l){for(e in l)l.hasOwnProperty(e)&&qa(l[e],g,h);e=!0}else f.registrationName?(qa(f.registrationName,g,h),e=!0):e=!1;e?void 0:x("98",d,a)}}}}
@@ -1924,19 +1990,19 @@ X;X=!0;try{ki(a)}finally{(X=b)||W||Yh(1073741823,!1)}},__SECRET_INTERNALS_DO_NOT
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 if (true) {
-  module.exports = __webpack_require__(18);
+  module.exports = __webpack_require__(19);
 } else {}
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1962,10 +2028,10 @@ exports.unstable_scheduleCallback=function(a,b){var c=-1!==k?k:exports.unstable_
 b=c.previous;b.next=c.previous=a;a.next=c;a.previous=b}return a};exports.unstable_cancelCallback=function(a){var b=a.next;if(null!==b){if(b===a)d=null;else{a===d&&(d=b);var c=a.previous;c.next=b;b.previous=c}a.next=a.previous=null}};exports.unstable_wrapCallback=function(a){var b=g;return function(){var c=g,f=k;g=b;k=exports.unstable_now();try{return a.apply(this,arguments)}finally{g=c,k=f,v()}}};exports.unstable_getCurrentPriorityLevel=function(){return g};
 exports.unstable_shouldYield=function(){return!e&&(null!==d&&d.expirationTime<l||w())};exports.unstable_continueExecution=function(){null!==d&&p()};exports.unstable_pauseExecution=function(){};exports.unstable_getFirstCallbackNode=function(){return d};
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(19)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(20)))
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports) {
 
 var g;
@@ -1991,7 +2057,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2005,7 +2071,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fetch = __webpack_require__(21);
+const fetch = __webpack_require__(22);
 const consts_1 = __webpack_require__(1);
 const createAuthHeader_1 = __webpack_require__(6);
 const githubInfo_1 = __webpack_require__(2);
@@ -2154,7 +2220,7 @@ function searchGiphy(tokenValue) {
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2183,14 +2249,14 @@ exports.Request = global.Request;
 exports.Response = global.Response;
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
-const TokenModal_1 = __webpack_require__(23);
+const TokenModal_1 = __webpack_require__(24);
 function TokenTag(props) {
     const [arrowHovered, setArrowHovered] = React.useState(false);
     const classes = ["__tokenTag"];
@@ -2241,7 +2307,7 @@ exports.default = TokenTag;
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2256,8 +2322,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
-const TokenModalImage_1 = __webpack_require__(24);
-const isValidUrl_1 = __webpack_require__(25);
+const TokenModalImage_1 = __webpack_require__(25);
+const isValidUrl_1 = __webpack_require__(26);
 const getGithubContext_1 = __webpack_require__(4);
 const { useState, useRef, useEffect } = React;
 var NewUrlSubmitState;
@@ -2352,7 +2418,7 @@ function TokenModal(props) {
                         React.createElement("div", { className: "thirdPartySiteLinks" }, AddNewLinks.map(linkInfo => {
                             return (React.createElement("a", { href: linkInfo.url, target: "_blank" }, linkInfo.label));
                         })),
-                        React.createElement("input", { type: "text", placeholder: "Enter image URL", value: newUrl, onChange: evt => {
+                        React.createElement("input", { type: "text", placeholder: "Enter image URL", value: newUrl, style: { marginTop: "6px", width: "100%" }, onChange: evt => {
                                 setNewUrl(evt.target.value);
                             } }),
                         newUrlSubmitState === NewUrlSubmitState.FAILED ? (React.createElement("div", null, "Failed to save image. Please check the URL and try again")) : null));
@@ -2400,7 +2466,7 @@ exports.default = TokenModal;
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2532,7 +2598,7 @@ exports.default = TokenModalImage;
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2547,11 +2613,11 @@ exports.default = isValidUrl;
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var v1 = __webpack_require__(27);
-var v4 = __webpack_require__(28);
+var v1 = __webpack_require__(28);
+var v4 = __webpack_require__(29);
 
 var uuid = v4;
 uuid.v1 = v1;
@@ -2561,7 +2627,7 @@ module.exports = uuid;
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var rng = __webpack_require__(7);
@@ -2676,7 +2742,7 @@ module.exports = v1;
 
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var rng = __webpack_require__(7);
@@ -2708,52 +2774,6 @@ function v4(options, buf, offset) {
 }
 
 module.exports = v4;
-
-
-/***/ }),
-/* 29 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-function throttle(func, wait, options) {
-    var context, args, result;
-    var timeout = null;
-    var previous = 0;
-    if (!options)
-        options = {};
-    var later = function () {
-        previous = options.leading === false ? 0 : Date.now();
-        timeout = null;
-        result = func.apply(context, args);
-        if (!timeout)
-            context = args = null;
-    };
-    return function () {
-        var now = Date.now();
-        if (!previous && options.leading === false)
-            previous = now;
-        var remaining = wait - (now - previous);
-        context = this;
-        args = arguments;
-        if (remaining <= 0 || remaining > wait) {
-            if (timeout) {
-                clearTimeout(timeout);
-                timeout = null;
-            }
-            previous = now;
-            result = func.apply(context, args);
-            if (!timeout)
-                context = args = null;
-        }
-        else if (!timeout && options.trailing !== false) {
-            timeout = setTimeout(later, remaining);
-        }
-        return result;
-    };
-}
-exports.default = throttle;
 
 
 /***/ }),

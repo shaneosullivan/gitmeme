@@ -159,6 +159,7 @@ export default function TokenModal(props: Props) {
                 type="text"
                 placeholder="Enter image URL"
                 value={newUrl}
+                style={{ marginTop: "6px", width: "100%" }}
                 onChange={evt => {
                   setNewUrl(evt.target.value);
                 }}

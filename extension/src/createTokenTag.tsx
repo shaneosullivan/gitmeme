@@ -8,6 +8,7 @@ import * as uuid from "uuid";
 import getToken from "./shared/auth/getToken";
 import { GithubInfo } from "./shared/auth/githubInfo";
 import { sendEvent } from "./shared/analytics";
+import throttle from "./util/throttle";
 
 const TAG_CONTAINER_ID = "__tagContainer";
 const TEXT_HEIGHT = 18;
@@ -163,21 +164,39 @@ export default function createTokenTag(
   }
 
   function reposition() {
-    let top, left;
+    let top = -textInput.scrollTop,
+      left;
     const rect = textInput.getBoundingClientRect();
+    let hideTag = false;
 
     if (!customContainerNode) {
       // If the text input is not inside a modal, position
       // the tag relative to the window.
-      top = TEXT_HEIGHT + window.scrollY + rect.top + startCoords.top;
+      top += TEXT_HEIGHT + window.scrollY + rect.top + startCoords.top;
       left = window.scrollX + rect.left + startCoords.left;
+
+      // If the tag is above the top or below the bottom of the text input,
+      // then hide it
+      hideTag =
+        top - window.scrollY - 2 - TEXT_HEIGHT < rect.top ||
+        top - window.scrollY + 4 > rect.bottom;
     } else {
       // If the text input is in a modal, position the tag
       // relative to the modal position
       const containerRect = customContainerNode.getBoundingClientRect();
 
-      top = TEXT_HEIGHT + rect.top - containerRect.top + startCoords.top;
+      top += TEXT_HEIGHT + rect.top - containerRect.top + startCoords.top;
       left = rect.left - containerRect.left + startCoords.left;
+
+      // If the tag is above the top or below the bottom of the text input,
+      // then hide it
+      hideTag =
+        top - TEXT_HEIGHT < rect.top - containerRect.top ||
+        top + 4 > rect.top - containerRect.top + rect.height;
+    }
+
+    if (hideTag) {
+      left = 10000;
     }
 
     record.position = {
@@ -195,6 +214,7 @@ export default function createTokenTag(
     textInput.removeEventListener("keyup", checkCaretPosition);
     textInput.removeEventListener("keydown", handleInputKey, true);
     textInput.removeEventListener("click", handleInputClick);
+    textInput.removeEventListener("scroll", handleScroll);
   }
 
   function handleInputKey(evt) {
@@ -226,6 +246,10 @@ export default function createTokenTag(
     }
   }
 
+  const handleScroll = throttle(() => {
+    reposition();
+  }, 25);
+
   const existingPreferredImageUrl = preferredTagUrls[token.value] || null;
 
   const record = {
@@ -248,6 +272,7 @@ export default function createTokenTag(
   textInput.addEventListener("keyup", checkCaretPosition);
   textInput.addEventListener("keydown", handleInputKey, true);
   textInput.addEventListener("click", handleInputClick);
+  textInput.addEventListener("scroll", handleScroll);
 
   renderTag();
 

@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 10);
+/******/ 	return __webpack_require__(__webpack_require__.s = 11);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -217,13 +217,14 @@ exports.default = getGithubContext;
 /* 7 */,
 /* 8 */,
 /* 9 */,
-/* 10 */
+/* 10 */,
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const getToken_1 = __webpack_require__(11);
+const getToken_1 = __webpack_require__(12);
 chrome.runtime.onMessage.addListener((message, _sender, callback) => {
     if (message.data === "login") {
         getToken_1.default(true, err => {
@@ -238,7 +239,7 @@ chrome.runtime.onMessage.addListener((message, _sender, callback) => {
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
