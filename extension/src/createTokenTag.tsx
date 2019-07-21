@@ -92,6 +92,8 @@ export default function createTokenTag(
         token={token}
         position={record.position}
         modalIsOpen={record.modalIsOpen}
+        trimTop={record.trimTop}
+        trimBottom={record.trimBottom}
         onLogIn={() => {
           sendEvent("action", "login", "begin", "inline");
           chrome.runtime.sendMessage({ data: "login" }, success => {
@@ -169,6 +171,9 @@ export default function createTokenTag(
     const rect = textInput.getBoundingClientRect();
     let hideTag = false;
 
+    let aboveTopOfInputPx;
+    let belowBottomOfInputPx;
+
     if (!customContainerNode) {
       // If the text input is not inside a modal, position
       // the tag relative to the window.
@@ -177,9 +182,8 @@ export default function createTokenTag(
 
       // If the tag is above the top or below the bottom of the text input,
       // then hide it
-      hideTag =
-        top - window.scrollY - 2 - TEXT_HEIGHT < rect.top ||
-        top - window.scrollY + 4 > rect.bottom;
+      aboveTopOfInputPx = -(top - window.scrollY - 2 - TEXT_HEIGHT - rect.top);
+      belowBottomOfInputPx = top - window.scrollY + 4 - rect.bottom;
     } else {
       // If the text input is in a modal, position the tag
       // relative to the modal position
@@ -188,11 +192,32 @@ export default function createTokenTag(
       top += TEXT_HEIGHT + rect.top - containerRect.top + startCoords.top;
       left = rect.left - containerRect.left + startCoords.left;
 
-      // If the tag is above the top or below the bottom of the text input,
-      // then hide it
-      hideTag =
-        top - TEXT_HEIGHT < rect.top - containerRect.top ||
-        top + 4 > rect.top - containerRect.top + rect.height;
+      aboveTopOfInputPx = -(
+        top -
+        1 -
+        TEXT_HEIGHT +
+        containerRect.top -
+        rect.top
+      );
+      belowBottomOfInputPx =
+        top + 3 + containerRect.top - rect.height - rect.top;
+    }
+
+    const completelyAboveTopOfInput = aboveTopOfInputPx > TEXT_HEIGHT + 4;
+
+    const completelyBelowBottomOfInput = belowBottomOfInputPx > TEXT_HEIGHT + 4;
+
+    if (completelyAboveTopOfInput || completelyBelowBottomOfInput) {
+      hideTag = true;
+    } else if (aboveTopOfInputPx > 0) {
+      record.trimBottom = 0;
+      record.trimTop = aboveTopOfInputPx;
+    } else if (belowBottomOfInputPx > 0) {
+      record.trimBottom = belowBottomOfInputPx;
+      record.trimTop = 0;
+    } else {
+      record.trimBottom = 0;
+      record.trimTop = 0;
     }
 
     if (hideTag) {
@@ -264,7 +289,9 @@ export default function createTokenTag(
     imageUrl: existingPreferredImageUrl,
     imageUrls: [],
     disabled: false,
-    position: { top: 0, left: 0, width: 0 }
+    position: { top: 0, left: 0, width: 0 },
+    trimTop: 0,
+    trimBottom: 0
   };
 
   reposition();

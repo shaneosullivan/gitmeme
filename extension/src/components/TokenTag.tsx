@@ -10,12 +10,16 @@ interface Props {
   modalIsOpen: boolean;
   position: { top: number; left: number; width: number };
   token: Token;
+  trimBottom: number;
+  trimTop: number;
   onLogIn: Function;
   onSelectImage: (url: string) => void;
   onAddNewImage?: (url: string) => Promise<boolean>;
   onToggleDisabled: Function;
   onToggleModal: Function;
 }
+
+const DEFAULT_HEIGHT = 21;
 
 export default function TokenTag(props: Props) {
   const [arrowHovered, setArrowHovered] = React.useState(false);
@@ -34,6 +38,25 @@ export default function TokenTag(props: Props) {
   if (arrowHovered) {
     classes.push("__arrowHovered");
   }
+
+  let top = props.position.top - DEFAULT_HEIGHT + 2;
+
+  const style: { [key: string]: string } = {
+    top: top + "px",
+    left: props.position.left - 4 + "px",
+    width: props.position.width + 5 + "px"
+  };
+
+  if (props.trimTop) {
+    style.height = DEFAULT_HEIGHT - props.trimTop + "px";
+    top += props.trimTop;
+    style.top = top + "px";
+    classes.push("__topTrimmed");
+  } else if (props.trimBottom) {
+    style.height = DEFAULT_HEIGHT - props.trimBottom + "px";
+    classes.push("__bottomTrimmed");
+  }
+
   let title;
   if (!props.modalIsOpen) {
     if (props.isDisabled) {
@@ -52,11 +75,7 @@ export default function TokenTag(props: Props) {
     <div
       className={classes.join(" ")}
       data-token={props.token.value}
-      style={{
-        top: props.position.top - 19 + "px",
-        left: props.position.left - 4 + "px",
-        width: props.position.width + 5 + "px"
-      }}
+      style={style}
       title={title}
     >
       <div

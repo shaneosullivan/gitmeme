@@ -1406,7 +1406,7 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
     const tagUi = document.createElement("div");
     tagWrapperNode.appendChild(tagUi);
     function renderTag() {
-        ReactDOM.render(React.createElement(TokenTag_1.default, { isDisabled: record.disabled, caretActive: record.caretIsAtToken, selectedImage: record.imageUrl, images: record.imageUrls, token: token, position: record.position, modalIsOpen: record.modalIsOpen, onLogIn: () => {
+        ReactDOM.render(React.createElement(TokenTag_1.default, { isDisabled: record.disabled, caretActive: record.caretIsAtToken, selectedImage: record.imageUrl, images: record.imageUrls, token: token, position: record.position, modalIsOpen: record.modalIsOpen, trimTop: record.trimTop, trimBottom: record.trimBottom, onLogIn: () => {
                 analytics_1.sendEvent("action", "login", "begin", "inline");
                 chrome.runtime.sendMessage({ data: "login" }, success => {
                     if (success) {
@@ -1464,6 +1464,8 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
         let top = -textInput.scrollTop, left;
         const rect = textInput.getBoundingClientRect();
         let hideTag = false;
+        let aboveTopOfInputPx;
+        let belowBottomOfInputPx;
         if (!customContainerNode) {
             // If the text input is not inside a modal, position
             // the tag relative to the window.
@@ -1471,9 +1473,8 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
             left = window.scrollX + rect.left + startCoords.left;
             // If the tag is above the top or below the bottom of the text input,
             // then hide it
-            hideTag =
-                top - window.scrollY - 2 - TEXT_HEIGHT < rect.top ||
-                    top - window.scrollY + 4 > rect.bottom;
+            aboveTopOfInputPx = -(top - window.scrollY - 2 - TEXT_HEIGHT - rect.top);
+            belowBottomOfInputPx = top - window.scrollY + 4 - rect.bottom;
         }
         else {
             // If the text input is in a modal, position the tag
@@ -1481,11 +1482,30 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
             const containerRect = customContainerNode.getBoundingClientRect();
             top += TEXT_HEIGHT + rect.top - containerRect.top + startCoords.top;
             left = rect.left - containerRect.left + startCoords.left;
-            // If the tag is above the top or below the bottom of the text input,
-            // then hide it
-            hideTag =
-                top - TEXT_HEIGHT < rect.top - containerRect.top ||
-                    top + 4 > rect.top - containerRect.top + rect.height;
+            aboveTopOfInputPx = -(top -
+                1 -
+                TEXT_HEIGHT +
+                containerRect.top -
+                rect.top);
+            belowBottomOfInputPx =
+                top + 3 + containerRect.top - rect.height - rect.top;
+        }
+        const completelyAboveTopOfInput = aboveTopOfInputPx > TEXT_HEIGHT + 4;
+        const completelyBelowBottomOfInput = belowBottomOfInputPx > TEXT_HEIGHT + 4;
+        if (completelyAboveTopOfInput || completelyBelowBottomOfInput) {
+            hideTag = true;
+        }
+        else if (aboveTopOfInputPx > 0) {
+            record.trimBottom = 0;
+            record.trimTop = aboveTopOfInputPx;
+        }
+        else if (belowBottomOfInputPx > 0) {
+            record.trimBottom = belowBottomOfInputPx;
+            record.trimTop = 0;
+        }
+        else {
+            record.trimBottom = 0;
+            record.trimTop = 0;
         }
         if (hideTag) {
             left = 10000;
@@ -1547,7 +1567,9 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
         imageUrl: existingPreferredImageUrl,
         imageUrls: [],
         disabled: false,
-        position: { top: 0, left: 0, width: 0 }
+        position: { top: 0, left: 0, width: 0 },
+        trimTop: 0,
+        trimBottom: 0
     };
     reposition();
     checkCaretPosition();
@@ -2257,6 +2279,7 @@ exports.Response = global.Response;
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(0);
 const TokenModal_1 = __webpack_require__(24);
+const DEFAULT_HEIGHT = 21;
 function TokenTag(props) {
     const [arrowHovered, setArrowHovered] = React.useState(false);
     const classes = ["__tokenTag"];
@@ -2273,6 +2296,22 @@ function TokenTag(props) {
     if (arrowHovered) {
         classes.push("__arrowHovered");
     }
+    let top = props.position.top - DEFAULT_HEIGHT + 2;
+    const style = {
+        top: top + "px",
+        left: props.position.left - 4 + "px",
+        width: props.position.width + 5 + "px"
+    };
+    if (props.trimTop) {
+        style.height = DEFAULT_HEIGHT - props.trimTop + "px";
+        top += props.trimTop;
+        style.top = top + "px";
+        classes.push("__topTrimmed");
+    }
+    else if (props.trimBottom) {
+        style.height = DEFAULT_HEIGHT - props.trimBottom + "px";
+        classes.push("__bottomTrimmed");
+    }
     let title;
     if (!props.modalIsOpen) {
         if (props.isDisabled) {
@@ -2288,11 +2327,7 @@ function TokenTag(props) {
             title = `GitMeme for "${props.token.value}" not found`;
         }
     }
-    return (React.createElement("div", { className: classes.join(" "), "data-token": props.token.value, style: {
-            top: props.position.top - 19 + "px",
-            left: props.position.left - 4 + "px",
-            width: props.position.width + 5 + "px"
-        }, title: title },
+    return (React.createElement("div", { className: classes.join(" "), "data-token": props.token.value, style: style, title: title },
         React.createElement("div", { className: "__tokenTagArrow", onClick: () => {
                 props.onToggleModal();
             }, onMouseEnter: () => {

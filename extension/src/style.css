@@ -35,11 +35,33 @@
   z-index: 1000;
 }
 
+.__tokenTag.__topTrimmed {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.__tokenTag.__bottomTrimmed {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
 .__tokenWrapperActive .__tokenTag,
 .__tokenTag.__selected,
 .__tokenTag.__arrowHovered,
 .__tokenTag.__isOpen {
   padding-right: 20px;
+}
+
+.__tokenTag.__topTrimmed {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  padding-right: 0;
+}
+
+.__tokenTag.__bottomTrimmed {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  padding-right: 0;
 }
 
 .__tokenTag.imageNotFound,
@@ -82,6 +104,24 @@
 
 .__tokenTag.__arrowHovered .__tokenTagArrow {
   display: block;
+}
+
+.__tokenTag.__topTrimmed,
+.__tokenTag.__bottomTrimmed {
+  padding-right: 0;
+}
+
+.__tokenTag.__topTrimmed {
+  border-top: 0px;
+}
+
+.__tokenTag.__bottomTrimmed {
+  border-bottom: 0;
+}
+
+.__tokenTag.__topTrimmed .__tokenTagArrow,
+.__tokenTag.__bottomTrimmed .__tokenTagArrow {
+  display: none;
 }
 
 .__tokenTagArrow:hover {
