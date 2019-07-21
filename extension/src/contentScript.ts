@@ -126,7 +126,7 @@ function listenToInput(
       if (knownToken.isValid && !knownToken.disabled) {
         const tagInsert = `<a href="https://gitme.me/image?url=${encodeURIComponent(
           knownToken.imageUrl
-        )}"><img src="${
+        )}&token=${encodeURIComponent(knownToken.token.value)}"><img src="${
           knownToken.imageUrl
         }" title="Created by gitme.me with /${knownToken.token.value}"/></a>`;
         value =
