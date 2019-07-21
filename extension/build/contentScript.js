@@ -1488,12 +1488,13 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
                 containerRect.top -
                 rect.top);
             belowBottomOfInputPx =
-                top + 3 + containerRect.top - rect.height - rect.top;
+                top + 5 + containerRect.top - rect.height - rect.top;
         }
         const completelyAboveTopOfInput = aboveTopOfInputPx > TEXT_HEIGHT + 4;
         const completelyBelowBottomOfInput = belowBottomOfInputPx > TEXT_HEIGHT + 4;
         if (completelyAboveTopOfInput || completelyBelowBottomOfInput) {
             hideTag = true;
+            record.modalIsOpen = false;
         }
         else if (aboveTopOfInputPx > 0) {
             record.trimBottom = 0;

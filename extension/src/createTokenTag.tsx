@@ -200,7 +200,7 @@ export default function createTokenTag(
         rect.top
       );
       belowBottomOfInputPx =
-        top + 3 + containerRect.top - rect.height - rect.top;
+        top + 5 + containerRect.top - rect.height - rect.top;
     }
 
     const completelyAboveTopOfInput = aboveTopOfInputPx > TEXT_HEIGHT + 4;
@@ -209,6 +209,7 @@ export default function createTokenTag(
 
     if (completelyAboveTopOfInput || completelyBelowBottomOfInput) {
       hideTag = true;
+      record.modalIsOpen = false;
     } else if (aboveTopOfInputPx > 0) {
       record.trimBottom = 0;
       record.trimTop = aboveTopOfInputPx;
