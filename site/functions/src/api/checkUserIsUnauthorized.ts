@@ -20,7 +20,7 @@ const checkUserIsUnauthorized = async (req: AppRequest) => {
 
     const parts = authHeaderContents.split("___");
 
-    const userId = parts[0].trim();
+    const userId = parts[0].trim().toLowerCase();
     const authToken = parts[1].trim();
 
     if (userId && authToken) {

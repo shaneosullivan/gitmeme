@@ -74,7 +74,7 @@ async function createOrUpdateUser(
     return resp.json();
   });
 
-  const userId = result.login;
+  const userId = (result.login || "").toLowerCase();
   const avatar = result.avatar_url || "";
 
   const docRef = firestore.collection("users").doc(userId);
