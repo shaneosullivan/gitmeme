@@ -13,7 +13,10 @@ ls  | grep -v contentScript.js | grep -v style.css | grep -v background.js | xar
 rm -rf util
 rmdir util
 
-cd ../..
+cd ..
+rm -f popup/static/js/*.map
+
+cd ..
 zip Gitmeme.zip -r Gitmeme
 
 mv Gitmeme.zip "$DIR/.."
