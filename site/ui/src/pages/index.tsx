@@ -11,6 +11,7 @@ import {
 } from "react-stonecutter";
 
 import "./index.css";
+import InstallButton from "../components/install_button";
 
 const Grid = makeResponsive(measureItems(SpringGrid, { measureImages: true }), {
   maxWidth: 1280,
@@ -86,9 +87,7 @@ export default function IndexPage() {
     <Layout>
       <SEO title="Home" />
       <div style={{ textAlign: "center" }}>
-        <a className="installButton" href="#">
-          Install Now
-        </a>
+        <InstallButton />
       </div>
       <p>
         GitMeme brings lots of fun to Github by making it easy to include Gifs

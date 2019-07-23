@@ -14,7 +14,7 @@ const selectedButtonImage = chrome.runtime.getURL("assets/selectedButton.png");
 // @ts-ignore: In extension
 const expandButtonImage = chrome.runtime.getURL("assets/expandButton.png");
 // @ts-ignore: In extension
-const unexpandButtonImage = chrome.runtime.getURL("assets/expandButton.png");
+const unexpandButtonImage = chrome.runtime.getURL("assets/collapseButton.png");
 
 export default function TokenModalImage(props: Props) {
   const [style, setStyle] = useState({

@@ -1106,7 +1106,7 @@ function listenToInput(input) {
         let value = input.value;
         knownTokens.forEach(knownToken => {
             if (knownToken.isValid && !knownToken.disabled) {
-                const tagInsert = `<a href="https://gitme.me/image?url=${encodeURIComponent(knownToken.imageUrl)}"><img src="${knownToken.imageUrl}" title="Created by gitme.me with /${knownToken.token.value}"/></a>`;
+                const tagInsert = `<a href="https://gitme.me/image?url=${encodeURIComponent(knownToken.imageUrl)}&token=${encodeURIComponent(knownToken.token.value)}"><img src="${knownToken.imageUrl}" title="Created by gitme.me with /${knownToken.token.value}"/></a>`;
                 value =
                     value.substring(0, knownToken.token.index) +
                         tagInsert +
@@ -2515,7 +2515,7 @@ const selectedButtonImage = chrome.runtime.getURL("assets/selectedButton.png");
 // @ts-ignore: In extension
 const expandButtonImage = chrome.runtime.getURL("assets/expandButton.png");
 // @ts-ignore: In extension
-const unexpandButtonImage = chrome.runtime.getURL("assets/expandButton.png");
+const unexpandButtonImage = chrome.runtime.getURL("assets/collapseButton.png");
 function TokenModalImage(props) {
     const [style, setStyle] = useState({
         height: "inherit",

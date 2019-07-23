@@ -3,6 +3,7 @@ import * as React from "react";
 
 import Layout from "../components/layout";
 import SEO from "../components/seo";
+import InstallButton from "../components/install_button";
 
 export default function ImagePage() {
   let imageUrl = null;
@@ -26,9 +27,7 @@ function renderImage(imageUrl: string): React.ReactNode {
         your Github issues and pull requests
       </div>
       <div>
-        <a className="downloadButton" href="">
-          Install Now
-        </a>
+        <InstallButton />
       </div>
       <img src={imageUrl} />
     </div>
