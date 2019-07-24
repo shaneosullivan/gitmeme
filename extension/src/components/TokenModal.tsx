@@ -9,7 +9,9 @@ interface Props {
   isDisabled: boolean;
   selectedIndex: number;
   tokenValue: string;
-  onAddNewImage?: (url: string) => Promise<boolean>;
+  onAddNewImage?: (
+    url: string
+  ) => Promise<{ status: boolean; image_url: string }>;
   onLogIn: Function;
   onToggleDisabled: Function;
   onSelectImage: (url: string) => void;
@@ -173,7 +175,7 @@ export default function TokenModal(props: Props) {
           );
           break;
         case NewUrlSubmitState.SUBMITTING:
-          content = <div>Submitting</div>;
+          content = <div>Submitting new image, please wait</div>;
           break;
       }
     } else {
@@ -192,13 +194,24 @@ export default function TokenModal(props: Props) {
     <button
       onClick={async () => {
         setNewUrlSubmitState(NewUrlSubmitState.SUBMITTING);
-        const success = await props.onAddNewImage(newUrl);
+
+        let urlToAdd = newUrl.toLowerCase();
+        if (urlToAdd.indexOf("http://") === 0) {
+          urlToAdd = urlToAdd.replace("http://", "https://");
+        }
+
+        const { status: success } = await props.onAddNewImage(urlToAdd);
 
         setNewUrlSubmitState(
           success ? NewUrlSubmitState.NOT_SUBMITTING : NewUrlSubmitState.FAILED
         );
         if (success) {
           setIsAddingNew(false);
+        } else {
+          alert(
+            "Failed to add the new image. The hosting site may be preventing it from loading on Github.com." +
+              " Please try to find the image on another web host."
+          );
         }
       }}
       title={
@@ -206,7 +219,10 @@ export default function TokenModal(props: Props) {
           ? "Click to submit your awesome new meme"
           : "Cannot submit, the url you entered is not valid"
       }
-      disabled={!isValidUrl(newUrl)}
+      disabled={
+        !isValidUrl(newUrl) ||
+        newUrlSubmitState === NewUrlSubmitState.SUBMITTING
+      }
     >
       Submit
     </button>

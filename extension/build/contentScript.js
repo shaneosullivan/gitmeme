@@ -1160,16 +1160,27 @@ function listenToInput(input) {
             if (!isLoggedIn) {
                 throw new Error("Cannot add a new image unless logged in");
             }
-            const result = yield fetch(`${consts_1.API_ROOT_URL}/add_token_by_url`, {
-                method: "POST",
-                headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token)),
-                body: JSON.stringify({
-                    image_url: url,
-                    token: tokenValue,
-                    context: githubContext
-                })
-            });
-            return result.status === 200;
+            url = url.trim();
+            console.log("adding new url ", url);
+            if (url.indexOf("http://") === 0) {
+                url = url.replace("http://", "https://");
+                console.log("url is now", url);
+            }
+            return new Promise((resolve, _reject) => __awaiter(this, void 0, void 0, function* () {
+                const result = yield fetch(`${consts_1.API_ROOT_URL}/add_token_by_url`, {
+                    method: "POST",
+                    headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token)),
+                    body: JSON.stringify({
+                        image_url: url,
+                        token: tokenValue,
+                        context: githubContext
+                    })
+                });
+                resolve({
+                    status: result.status === 200,
+                    image_url: result["image_url"] || ""
+                });
+            }));
         });
     }
     function addToolbarButton(form) {
@@ -1437,14 +1448,14 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
             }, onAddNewImage: onAddNewImage
                 ? (url) => __awaiter(this, void 0, void 0, function* () {
                     // If the onAddNewImage function is null, set this to null too
-                    const addSucceeded = yield onAddNewImage(token.value, url);
+                    const { status: addSucceeded, image_url } = yield onAddNewImage(token.value, url);
                     if (addSucceeded) {
                         record.imageUrl = url;
                         record.imageUrls.unshift(url);
                         record.isValid = true;
                         renderTag();
                     }
-                    return addSucceeded;
+                    return { status: addSucceeded, image_url };
                 })
                 : null }), tagUi);
     }
@@ -2460,7 +2471,7 @@ function TokenModal(props) {
                         newUrlSubmitState === NewUrlSubmitState.FAILED ? (React.createElement("div", null, "Failed to save image. Please check the URL and try again")) : null));
                     break;
                 case NewUrlSubmitState.SUBMITTING:
-                    content = React.createElement("div", null, "Submitting");
+                    content = React.createElement("div", null, "Submitting new image, please wait");
                     break;
             }
         }
@@ -2473,14 +2484,23 @@ function TokenModal(props) {
     }
     const actionButton = canAddNewImage ? (React.createElement("button", { onClick: () => __awaiter(this, void 0, void 0, function* () {
             setNewUrlSubmitState(NewUrlSubmitState.SUBMITTING);
-            const success = yield props.onAddNewImage(newUrl);
+            let urlToAdd = newUrl.toLowerCase();
+            if (urlToAdd.indexOf("http://") === 0) {
+                urlToAdd = urlToAdd.replace("http://", "https://");
+            }
+            const { status: success } = yield props.onAddNewImage(urlToAdd);
             setNewUrlSubmitState(success ? NewUrlSubmitState.NOT_SUBMITTING : NewUrlSubmitState.FAILED);
             if (success) {
                 setIsAddingNew(false);
             }
+            else {
+                alert("Failed to add the new image. The hosting site may be preventing it from loading on Github.com." +
+                    " Please try to find the image on another web host.");
+            }
         }), title: isValidUrl_1.default(newUrl)
             ? "Click to submit your awesome new meme"
-            : "Cannot submit, the url you entered is not valid", disabled: !isValidUrl_1.default(newUrl) }, "Submit")) : (React.createElement("button", { onClick: () => {
+            : "Cannot submit, the url you entered is not valid", disabled: !isValidUrl_1.default(newUrl) ||
+            newUrlSubmitState === NewUrlSubmitState.SUBMITTING }, "Submit")) : (React.createElement("button", { onClick: () => {
             props.onLogIn();
         } }, "Log In"));
     return (React.createElement("div", { className: "__tokenTagModal" },

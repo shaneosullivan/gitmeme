@@ -12,3 +12,11 @@ let firebaseApp: admin.app.App = admin.initializeApp({
 export default function getFirestore() {
   return firebaseApp.firestore();
 }
+
+export function getFirebase() {
+  return firebaseApp;
+}
+
+export function getStorage() {
+  return admin.storage();
+}

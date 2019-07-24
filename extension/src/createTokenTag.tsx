@@ -39,7 +39,10 @@ export default function createTokenTag(
   textInput: HTMLInputElement,
   token: Token,
   onTokenActive: (isActive: boolean, tokenTag: TokenTagType) => void,
-  onAddNewImage?: (tokenValue: string, url: string) => Promise<boolean>
+  onAddNewImage?: (
+    tokenValue: string,
+    url: string
+  ) => Promise<{ status: boolean; image_url: string }>
 ): TokenTagType {
   const endOfTokenIdx = token.index + token.value.length + 1;
   const startCoords = getCaretCoordinates(textInput, token.index);
@@ -127,9 +130,14 @@ export default function createTokenTag(
         }}
         onAddNewImage={
           onAddNewImage
-            ? async (url: string): Promise<boolean> => {
+            ? async (
+                url: string
+              ): Promise<{ status: boolean; image_url: string }> => {
                 // If the onAddNewImage function is null, set this to null too
-                const addSucceeded = await onAddNewImage(token.value, url);
+                const { status: addSucceeded, image_url } = await onAddNewImage(
+                  token.value,
+                  url
+                );
 
                 if (addSucceeded) {
                   record.imageUrl = url;
@@ -139,7 +147,7 @@ export default function createTokenTag(
                   renderTag();
                 }
 
-                return addSucceeded;
+                return { status: addSucceeded, image_url };
               }
             : null
         }

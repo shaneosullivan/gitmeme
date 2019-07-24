@@ -14,7 +14,9 @@ interface Props {
   trimTop: number;
   onLogIn: Function;
   onSelectImage: (url: string) => void;
-  onAddNewImage?: (url: string) => Promise<boolean>;
+  onAddNewImage?: (
+    url: string
+  ) => Promise<{ status: boolean; image_url: string }>;
   onToggleDisabled: Function;
   onToggleModal: Function;
 }

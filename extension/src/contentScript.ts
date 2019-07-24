@@ -196,22 +196,36 @@ function listenToInput(
   async function onAddNewImage(
     tokenValue: string,
     url: string
-  ): Promise<boolean> {
+  ): Promise<{ status: boolean; image_url: string }> {
     if (!isLoggedIn) {
       throw new Error("Cannot add a new image unless logged in");
     }
-    const result = await fetch(`${API_ROOT_URL}/add_token_by_url`, {
-      method: "POST",
-      headers: {
-        ...createAuthHeader(userInfo.id, userInfo.token)
-      },
-      body: JSON.stringify({
-        image_url: url,
-        token: tokenValue,
-        context: githubContext
-      })
+    url = url.trim();
+
+    console.log("adding new url ", url);
+    if (url.indexOf("http://") === 0) {
+      url = url.replace("http://", "https://");
+      console.log("url is now", url);
+    }
+
+    return new Promise(async (resolve, _reject) => {
+      const result = await fetch(`${API_ROOT_URL}/add_token_by_url`, {
+        method: "POST",
+        headers: {
+          ...createAuthHeader(userInfo.id, userInfo.token)
+        },
+        body: JSON.stringify({
+          image_url: url,
+          token: tokenValue,
+          context: githubContext
+        })
+      });
+
+      resolve({
+        status: result.status === 200,
+        image_url: result["image_url"] || ""
+      });
     });
-    return result.status === 200;
   }
 
   function addToolbarButton(form: HTMLFormElement) {

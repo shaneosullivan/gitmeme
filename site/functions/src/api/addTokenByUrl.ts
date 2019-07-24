@@ -5,12 +5,23 @@ import checkUserIsUnauthorized from "./checkUserIsUnauthorized";
 import sendError from "../util/sendError";
 
 import getFirestore from "../util/getFirestore";
+import { saveFileFromUrl } from "../storage/saveFileFromUrl";
 
 export default async function apiAddTokenByUrl(
   req: AppRequest,
   res: AppResponse
 ) {
   const authError = await checkUserIsUnauthorized(req);
+
+  if (authError) {
+    sendError(res, {
+      status: 401,
+      body: {
+        error: "User must be logged in to add a new image"
+      }
+    });
+    return;
+  }
 
   const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
 
@@ -30,6 +41,48 @@ export default async function apiAddTokenByUrl(
 
   const now = new Date();
 
+  const collection = getFirestore().collection("all_images");
+  const existingGlobalImageDocCollectionSnapshot = await collection
+    .where("image_url_original", "==", imageUrl)
+    .get();
+
+  let localUrl: string;
+  let storagePath: string;
+  if (
+    existingGlobalImageDocCollectionSnapshot.empty ||
+    !existingGlobalImageDocCollectionSnapshot.docs[0].get("image_url_original")
+  ) {
+    // If we haven't already uploaded this image, then upload it to storage
+    try {
+      const {
+        url: newLocalUrl,
+        storagePath: newStoragePath
+      } = await saveFileFromUrl(
+        imageUrl,
+        token,
+        req["_user"] ? req["_user"].uid : ""
+      );
+      localUrl = newLocalUrl;
+      storagePath = newStoragePath;
+    } catch (err) {
+      console.error("Failed to download image and store it", imageUrl, err);
+      sendError(res, {
+        status: 415,
+        body: {
+          error: "Invalid url is not an image: " + imageUrl
+        }
+      });
+      return;
+    }
+
+    await storeGlobalImage(true);
+  } else {
+    localUrl = existingGlobalImageDocCollectionSnapshot.docs[0].get(
+      "image_url"
+    );
+    await storeGlobalImage(false);
+  }
+
   const promises: Array<Promise<void>> = [];
 
   if (!authError) {
@@ -46,7 +99,7 @@ export default async function apiAddTokenByUrl(
       if (existingDoc.exists) {
         await existingDoc.ref.update({
           count: existingDoc.get("count") + 1,
-          image_url: imageUrl,
+          image_url: localUrl,
           updated_at: new Date()
         });
       } else {
@@ -57,7 +110,7 @@ export default async function apiAddTokenByUrl(
           count: 1,
           group: null,
           token,
-          image_url: imageUrl,
+          image_url: localUrl,
           updated_at: now,
           created_at: now
         });
@@ -80,12 +133,12 @@ export default async function apiAddTokenByUrl(
     if (existingDoc.exists) {
       await existingDoc.ref.update({
         count: existingDoc.get("count") + 1,
-        image_url: imageUrl,
+        image_url: localUrl,
         updated_at: now
       });
     } else {
       await existingDoc.ref.set({
-        image_url: imageUrl,
+        image_url: localUrl,
         count: 1,
         token,
         updated_at: now,
@@ -94,19 +147,22 @@ export default async function apiAddTokenByUrl(
     }
   }
 
-  async function storeGlobalImage() {
+  async function storeGlobalImage(createNew: boolean) {
     const collection = getFirestore().collection("all_images");
-    const existingDoc = await collection.doc(getImageId(imageUrl)).get();
 
-    if (existingDoc.exists) {
+    if (!createNew) {
+      const existingDoc = existingGlobalImageDocCollectionSnapshot.docs[0];
       await existingDoc.ref.update({
         count: existingDoc.get("count") + 1,
         token,
         updated_at: now
       });
     } else {
-      await existingDoc.ref.set({
-        image_url: imageUrl,
+      const docRef = collection.doc(getImageId(localUrl));
+      await docRef.set({
+        image_url: localUrl,
+        image_url_original: imageUrl,
+        storage_path: storagePath,
         count: 1,
         token,
         updated_at: now,
@@ -123,12 +179,13 @@ export default async function apiAddTokenByUrl(
     if (existingDoc.exists) {
       await existingDoc.ref.update({
         count: existingDoc.get("count") + 1,
-        image_url: imageUrl,
+        image_url: localUrl,
         updated_at: now
       });
     } else {
       await existingDoc.ref.set({
-        image_url: imageUrl,
+        image_url_original: imageUrl,
+        image_url: localUrl,
         context,
         count: 1,
         token,
@@ -141,7 +198,7 @@ export default async function apiAddTokenByUrl(
   async function storeContextImage() {
     const collection = getFirestore().collection("context_images");
     const collectionSnapshot = await collection
-      .where("image_url", "==", imageUrl)
+      .where("image_url_original", "==", imageUrl)
       .where("token", "==", token)
       .where("context", "==", context)
       .get();
@@ -155,7 +212,8 @@ export default async function apiAddTokenByUrl(
       });
     } else {
       await collection.doc().set({
-        image_url: imageUrl,
+        image_url_original: imageUrl,
+        image_url: localUrl,
         context,
         count: 1,
         token,
@@ -166,7 +224,6 @@ export default async function apiAddTokenByUrl(
   }
 
   promises.push(storeGlobalToken());
-  promises.push(storeGlobalImage());
 
   if (context) {
     promises.push(storeContextToken());
@@ -175,5 +232,5 @@ export default async function apiAddTokenByUrl(
 
   await Promise.all(promises);
 
-  res.json({ status: "success" });
+  res.json({ status: "success", image_url: localUrl });
 }
