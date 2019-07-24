@@ -15,6 +15,7 @@ rmdir util
 
 cd ..
 rm -f popup/static/js/*.map
+rm -f popup/manifest.json
 
 cd ..
 zip Gitmeme.zip -r Gitmeme
@@ -23,4 +24,4 @@ mv Gitmeme.zip "$DIR/.."
 
 cd $DIR/..
 
-echo "Packaged Gitmeme in ~/.gitmeme"
+echo "Packaged Gitmeme in $DIR/../Gitmeme.zip"

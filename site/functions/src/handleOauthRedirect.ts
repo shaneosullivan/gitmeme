@@ -5,6 +5,8 @@ import { firestore as firestoreType } from "firebase-admin";
 const GITHUB_CLIENT_ID = "9b9e17e168e82438cfb6";
 const GITHUB_CLIENT_SECRET = "e8044d451e532da217fd3045bb5817bd8d40e5e1";
 
+const EXTENSION_ID = "bjpibkoafohcjghgpbiinhfoobmbijcc";
+
 const thisRedirectUri =
   "https://us-central1-git-meme-prod.cloudfunctions.net/oauth";
 
@@ -55,8 +57,7 @@ export default async function handleOauthRedirect(
   const idx = req.originalUrl.indexOf("?");
   const queryString = req.originalUrl.substring(idx + 1);
   res.redirect(
-    "https://mfbdjighmkbflpaeibcojoppcgkjefgf.chromiumapp.org/provider_cb?" +
-      queryString
+    `https://${EXTENSION_ID}.chromiumapp.org/provider_cb?` + queryString
   );
 }
 
@@ -106,15 +107,18 @@ function redirectWithToken(
   userId: string,
   avatar: string
 ) {
+  let nextRedirectUrl = `https://${EXTENSION_ID}.chromiumapp.org/provider_cb?access_token=${token}&user_id=${userId}&avatar=${avatar}`;
+
   console.log(
     "Doing redirectWithToken, using token ",
     token,
     " userId",
     userId,
     "avatar",
-    avatar
+    avatar,
+    " to ",
+    nextRedirectUrl
   );
-  let nextRedirectUrl = `https://mfbdjighmkbflpaeibcojoppcgkjefgf.chromiumapp.org/provider_cb?access_token=${token}&user_id=${userId}&avatar=${avatar}`;
 
   res.redirect(nextRedirectUrl);
 }

@@ -1,7 +1,7 @@
 {
   "name": "GitMeme",
   "version": "1.0",
-  "description": "Easyily add memes to your Github comments. Simply type a word after a forward slash, like /shipit, to add an inspirational or friendly comment for your colleagues to enjoy.",
+  "description": "Easily add memes to your Github comments by simply typing a word after a forward slash, like /shipit",
   "manifest_version": 2,
   "permissions": [
     "activeTab",
