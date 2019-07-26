@@ -6,7 +6,8 @@ let firebaseApp: admin.app.App = admin.initializeApp({
     projectId: serviceAccount.project_id,
     clientEmail: serviceAccount.client_email,
     privateKey: serviceAccount.private_key
-  })
+  }),
+  storageBucket: "git-meme-prod.appspot.com"
 });
 
 export default function getFirestore() {

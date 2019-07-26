@@ -1025,6 +1025,7 @@ let githubContext = null;
 // Get the logged in user from the DOM
 const loggedInUser = getLoggedInUser_1.default();
 function listenToInput(input) {
+    console.log("listenToInput", input);
     let knownTokens = [];
     let toolbarButtonItem;
     let activeTag = null;

@@ -71,9 +71,9 @@ export default function IndexPage() {
         duration={800}
         easing="ease-out"
       >
-        {tokens.map(token => {
+        {tokens.map((token, idx: number) => {
           return (
-            <div>
+            <div key={idx}>
               <h3>/{token.token}</h3>
               <img src={token.image_url} style={{ width: "200px" }} />
             </div>
@@ -94,6 +94,15 @@ export default function IndexPage() {
         in your comments. In any text box, just type a forward slash and some
         text to insert an image, e.g <span className="token">/shipit</span>
       </p>
+      <div style={{ textAlign: "center" }}>
+        <iframe
+          width="480"
+          height="315"
+          src="https://www.youtube.com/embed/KDVVJR2qmcA?rel=0&amp;controls=0&amp;showinfo=0&autoplay=1"
+          frameBorder="0"
+          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+        ></iframe>
+      </div>
       <h2>Trending Memes</h2>
       {loadError ? renderError() : renderImageList(topTokens)}
     </Layout>
