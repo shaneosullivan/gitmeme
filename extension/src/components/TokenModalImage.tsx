@@ -152,6 +152,9 @@ export default function TokenModalImage(props: Props) {
           "__selectButton" +
           (props.isSelected ? " __selected" : " __unselected")
         }
+        onClick={() => {
+          props.onSelectImage(props.src);
+        }}
       >
         {props.isSelected ? <img src={selectedButtonImage} /> : null}
       </div>

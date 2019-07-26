@@ -324,9 +324,13 @@
 }
 
 .__tokenTagModalButtons button {
-  margin-top: 6px;
   margin-right: 6px;
+  margin-top: 6px;
   float: right;
+}
+
+.__tokenTagModalButtons button + button {
+  margin-right: 10px;
 }
 
 .__tokenTagModalButtons button:disabled {

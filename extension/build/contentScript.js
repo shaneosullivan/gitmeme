@@ -1025,6 +1025,7 @@ let githubContext = null;
 // Get the logged in user from the DOM
 const loggedInUser = getLoggedInUser_1.default();
 function listenToInput(input) {
+    console.log("listenToInput", input);
     let knownTokens = [];
     let toolbarButtonItem;
     let activeTag = null;
@@ -2686,7 +2687,9 @@ function TokenModalImage(props) {
                 props.onSelectImage(props.src);
             } }),
         React.createElement("div", { className: "__selectButton" +
-                (props.isSelected ? " __selected" : " __unselected") }, props.isSelected ? React.createElement("img", { src: selectedButtonImage }) : null),
+                (props.isSelected ? " __selected" : " __unselected"), onClick: () => {
+                props.onSelectImage(props.src);
+            } }, props.isSelected ? React.createElement("img", { src: selectedButtonImage }) : null),
         React.createElement("button", { className: "__toggleExpandButton" +
                 (props.isExpanded ? " __expanded" : " __notexpanded"), onClick: () => {
                 // Calculate the height of the image
