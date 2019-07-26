@@ -195,37 +195,61 @@ function listenToInput(
 
   async function onAddNewImage(
     tokenValue: string,
-    url: string
+    url: string | null,
+    file: File | null
   ): Promise<{ status: boolean; image_url: string }> {
     if (!isLoggedIn) {
       throw new Error("Cannot add a new image unless logged in");
     }
-    url = url.trim();
 
-    console.log("adding new url ", url);
-    if (url.indexOf("http://") === 0) {
-      url = url.replace("http://", "https://");
-      console.log("url is now", url);
+    if (url) {
+      url = url.trim();
+
+      console.log("adding new url ", url);
+      if (url.indexOf("http://") === 0) {
+        url = url.replace("http://", "https://");
+        console.log("url is now", url);
+      }
+
+      return new Promise(async (resolve, _reject) => {
+        const result = await fetch(`${API_ROOT_URL}/add_token_by_url`, {
+          method: "POST",
+          headers: {
+            ...createAuthHeader(userInfo.id, userInfo.token)
+          },
+          body: JSON.stringify({
+            image_url: url,
+            token: tokenValue,
+            context: githubContext
+          })
+        });
+
+        resolve({
+          status: result.status === 200,
+          image_url: result["image_url"] || ""
+        });
+      });
+    } else {
+      return new Promise(async (resolve, _reject) => {
+        const formData = new FormData();
+        formData.append("image_file", file);
+        formData.append("token", tokenValue);
+        formData.append("context", githubContext);
+
+        const result = await fetch(`${API_ROOT_URL}/add_token_by_url`, {
+          method: "POST",
+          headers: {
+            ...createAuthHeader(userInfo.id, userInfo.token)
+          },
+          body: formData
+        });
+
+        resolve({
+          status: result.status === 200,
+          image_url: result["image_url"] || ""
+        });
+      });
     }
-
-    return new Promise(async (resolve, _reject) => {
-      const result = await fetch(`${API_ROOT_URL}/add_token_by_url`, {
-        method: "POST",
-        headers: {
-          ...createAuthHeader(userInfo.id, userInfo.token)
-        },
-        body: JSON.stringify({
-          image_url: url,
-          token: tokenValue,
-          context: githubContext
-        })
-      });
-
-      resolve({
-        status: result.status === 200,
-        image_url: result["image_url"] || ""
-      });
-    });
   }
 
   function addToolbarButton(form: HTMLFormElement) {

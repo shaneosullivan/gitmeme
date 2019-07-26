@@ -5,8 +5,8 @@ import * as ReactDOM from "./lib/react-dom";
 import searcher from "./searcher";
 import TokenTag from "./components/TokenTag";
 import * as uuid from "uuid";
-import getToken from "./shared/auth/getToken";
-import { GithubInfo } from "./shared/auth/githubInfo";
+// import getToken from "./shared/auth/getToken";
+// import { GithubInfo } from "./shared/auth/githubInfo";
 import { sendEvent } from "./shared/analytics";
 import throttle from "./util/throttle";
 
@@ -41,7 +41,8 @@ export default function createTokenTag(
   onTokenActive: (isActive: boolean, tokenTag: TokenTagType) => void,
   onAddNewImage?: (
     tokenValue: string,
-    url: string
+    url: string | null,
+    file: File | null
   ) => Promise<{ status: boolean; image_url: string }>
 ): TokenTagType {
   const endOfTokenIdx = token.index + token.value.length + 1;
@@ -131,12 +132,14 @@ export default function createTokenTag(
         onAddNewImage={
           onAddNewImage
             ? async (
-                url: string
+                url: string | null,
+                file: any | null
               ): Promise<{ status: boolean; image_url: string }> => {
                 // If the onAddNewImage function is null, set this to null too
                 const { status: addSucceeded, image_url } = await onAddNewImage(
                   token.value,
-                  url
+                  url,
+                  file
                 );
 
                 if (addSucceeded) {
