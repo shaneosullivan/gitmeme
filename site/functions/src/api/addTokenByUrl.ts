@@ -40,9 +40,10 @@ export default async function apiAddTokenByUrl(
   }
 
   const now = new Date();
+  const userId = req._user ? req._user.uid : "";
 
-  const collection = getFirestore().collection("all_images");
-  const existingGlobalImageDocCollectionSnapshot = await collection
+  const allImagesCollection = getFirestore().collection("all_images");
+  const existingGlobalImageDocCollectionSnapshot = await allImagesCollection
     .where("image_url_original", "==", imageUrl)
     .get();
 
@@ -85,42 +86,41 @@ export default async function apiAddTokenByUrl(
 
   const promises: Array<Promise<void>> = [];
 
-  if (!authError) {
-    const userId = req._user ? req._user.uid : "";
+  // if (!authError) {
 
-    async function storeForUser() {
-      const docId = `${userId}_${token}`;
+  async function storeForUser() {
+    const docId = `${userId}_${token}`;
 
-      const existingDoc = await getFirestore()
-        .collection("user_tokens")
-        .doc(docId)
-        .get();
+    const existingDoc = await getFirestore()
+      .collection("user_tokens")
+      .doc(docId)
+      .get();
 
-      if (existingDoc.exists) {
-        await existingDoc.ref.update({
-          count: existingDoc.get("count") + 1,
-          image_url: localUrl,
-          updated_at: new Date()
-        });
-      } else {
-        await existingDoc.ref.set({
-          user: getFirestore()
-            .collection("users")
-            .doc(userId),
-          count: 1,
-          group: null,
-          token,
-          image_url: localUrl,
-          updated_at: now,
-          created_at: now
-        });
-      }
+    if (existingDoc.exists) {
+      await existingDoc.ref.update({
+        count: existingDoc.get("count") + 1,
+        image_url: localUrl,
+        updated_at: new Date()
+      });
+    } else {
+      await existingDoc.ref.set({
+        user: getFirestore()
+          .collection("users")
+          .doc(userId),
+        count: 1,
+        group: null,
+        token,
+        image_url: localUrl,
+        updated_at: now,
+        created_at: now
+      });
     }
-
-    // If the user is logged in, store the message in their
-    // private data
-    promises.push(storeForUser());
   }
+
+  // If the user is logged in, store the message in their
+  // private data
+  promises.push(storeForUser());
+  // }
 
   function getImageId(url: string) {
     return url.split("/").join("_");
@@ -166,7 +166,8 @@ export default async function apiAddTokenByUrl(
         count: 1,
         token,
         updated_at: now,
-        created_at: now
+        created_at: now,
+        uploaded_by: userId
       });
     }
   }
