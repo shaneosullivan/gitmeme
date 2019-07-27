@@ -3,6 +3,7 @@ import * as https from "https";
 
 // @ts-ignore
 import * as requestImageSize from "request-image-size";
+import getMimeType from "../util/getMimeType";
 
 export async function saveFileFromUrl(
   url: string,
@@ -28,25 +29,12 @@ export async function saveFileFromUrl(
     const periodIdx = url.lastIndexOf(".");
     const slashIdx = url.lastIndexOf("/");
 
-    let mimeType = "image/jpeg";
+    let mimeType = getMimeType(url) || "image/jpeg";
 
     let fileExtension = "jpg";
 
     if (periodIdx > slashIdx) {
       fileExtension = url.substring(periodIdx + 1).toLowerCase();
-
-      switch (fileExtension) {
-        case "jpg":
-        case "jpeg":
-          mimeType = "image/jpeg";
-          break;
-        case "png":
-          mimeType = "image/png";
-          break;
-        case "gif":
-          mimeType = "image/gif";
-          break;
-      }
     }
 
     const fileName =

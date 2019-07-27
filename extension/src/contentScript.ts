@@ -203,6 +203,7 @@ function listenToInput(
     }
 
     if (url) {
+      console.log("creating form data with a url");
       url = url.trim();
 
       console.log("adding new url ", url);
@@ -212,7 +213,8 @@ function listenToInput(
       }
 
       return new Promise(async (resolve, _reject) => {
-        const result = await fetch(`${API_ROOT_URL}/add_token_by_url`, {
+        const url = API_ROOT_URL; //substring(0, API_ROOT_URL.length - 4);
+        const result = await fetch(`${url}/add_token_by_url`, {
           method: "POST",
           headers: {
             ...createAuthHeader(userInfo.id, userInfo.token)
@@ -223,31 +225,77 @@ function listenToInput(
             context: githubContext
           })
         });
-
         resolve({
           status: result.status === 200,
           image_url: result["image_url"] || ""
         });
       });
     } else {
-      return new Promise(async (resolve, _reject) => {
-        const formData = new FormData();
-        formData.append("image_file", file);
-        formData.append("token", tokenValue);
-        formData.append("context", githubContext);
+      return new Promise(async (resolve, reject) => {
+        console.log("Got file", file);
 
-        const result = await fetch(`${API_ROOT_URL}/add_token_by_url`, {
-          method: "POST",
-          headers: {
-            ...createAuthHeader(userInfo.id, userInfo.token)
-          },
-          body: formData
+        // Generate a new url to upload to Cloud Storage first
+        const urlResult: { image_url: string } = await (await fetch(
+          `${API_ROOT_URL}/create_file_upload_url`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              file_name: file.name
+            })
+          }
+        )).json();
+
+        console.log("storage url result", urlResult);
+        console.log("sending file", file);
+
+        chrome.runtime.sendMessage({
+          file: JSON.stringify(file),
+          data: "upload",
+          url: urlResult.image_url
         });
 
-        resolve({
-          status: result.status === 200,
-          image_url: result["image_url"] || ""
-        });
+        // const xhr = new XMLHttpRequest();
+        // xhr.open("POST", urlResult.image_url, true);
+        // xhr.onload = async data => {
+        //   console.log("xhr onload");
+        //   const status = xhr.status;
+        //   console.log("upload status", status);
+        //   if (status === 200) {
+        //     console.log("xhr data", data);
+        //     // const result = await fetch(`${url}/add_token_by_url`, {
+        //     //   method: "POST",
+        //     //   headers: {
+        //     //     ...createAuthHeader(userInfo.id, userInfo.token)
+        //     //   },
+        //     //   body: JSON.stringify({
+        //     //     image_url: url,
+        //     //     token: tokenValue,
+        //     //     context: githubContext
+        //     //   })
+        //     // });
+        //     // resolve({
+        //     //   status: result.status === 200,
+        //     //   image_url: result["image_url"] || ""
+        //     // });
+
+        //     // resolve({
+        //     //   status: true,
+        //     //   image_url: result["image_url"] || ""
+        //     // });
+        //     resolve({ status: false, image_url: null });
+        //   } else {
+        //     reject();
+        //   }
+        // };
+
+        // xhr.onerror = () => {
+        //   alert("Something went wrong");
+        //   reject();
+        // };
+        // xhr.setRequestHeader("Content-Type", file.type);
+        // xhr.send(file);
+
+        console.log("creating form data with a file");
       });
     }
   }
@@ -296,7 +344,9 @@ function listenToInput(
       popupIframe = document.createElement("iframe");
       popupIframe.className = "__popupIframe";
       toolbarButtonItem.parentNode.appendChild(popupIframe);
-      popupIframe.src = chrome.runtime.getURL("popup/index.html");
+      popupIframe.src = chrome.runtime.getURL(
+        "popup/index.html?currentUrl=" + window.location.href
+      );
 
       sendEvent("action", "open_popup", "iframe");
     }

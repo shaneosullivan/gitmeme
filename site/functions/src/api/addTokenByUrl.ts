@@ -6,48 +6,63 @@ import sendError from "../util/sendError";
 
 import getFirestore from "../util/getFirestore";
 import { saveFileFromUrl } from "../storage/saveFileFromUrl";
+import multipartRequest from "../util/multipartRequest";
 
 export default async function apiAddTokenByUrl(
   req: AppRequest,
   res: AppResponse
 ) {
+  console.log("in apiAddTokenByUrl and files:", (req as any)["files"]);
   const authError = await checkUserIsUnauthorized(req);
 
-  const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+  const userId = req._user ? req._user.uid : "";
+  const formInfo = await multipartRequest(req, userId, !authError);
 
-  const imageUrl = body.image_url;
+  const body = formInfo.fields;
+
+  let imageUrl = body.image_url;
   const token = body.token;
   const context = body.context;
+  const imageFile = body.image_file;
 
-  if (!token || !imageUrl) {
+  if (!token || (!imageUrl && !imageFile)) {
     sendError(res, {
       status: 400,
       body: {
-        error: `Both the 'token' and the 'image_url' parameters are required, got token "${token}" and image_url "${imageUrl}"`
+        error: `Both the 'token' and either the 'image_url' or 'image_file' parameters are required, got token "${token}" and image_url "${imageUrl}"`
       }
     });
     return;
   }
 
   const now = new Date();
-  const userId = req._user ? req._user.uid : "";
+  let existingImageDocSnapshot: FirebaseFirestore.QueryDocumentSnapshot | null = null;
 
-  const allImagesCollection = getFirestore().collection("all_images");
-  let existingGlobalImageDocCollectionSnapshot = await allImagesCollection
-    .where("image_url_original", "==", imageUrl)
-    .get();
-
-  if (existingGlobalImageDocCollectionSnapshot.empty) {
-    existingGlobalImageDocCollectionSnapshot = await allImagesCollection
-      .where("image_url", "==", imageUrl)
+  if (!imageFile) {
+    const allImagesCollection = getFirestore().collection("all_images");
+    let existingGlobalImageDocCollectionSnapshot = await allImagesCollection
+      .where("image_url_original", "==", imageUrl)
       .get();
+
+    if (existingGlobalImageDocCollectionSnapshot.empty) {
+      existingGlobalImageDocCollectionSnapshot = await allImagesCollection
+        .where("image_url", "==", imageUrl)
+        .get();
+    }
+    existingImageDocSnapshot = !existingGlobalImageDocCollectionSnapshot.empty
+      ? existingGlobalImageDocCollectionSnapshot.docs[0]
+      : null;
   }
 
   let localUrl: string;
   let storagePath: string;
-  if (existingGlobalImageDocCollectionSnapshot.empty) {
-    // If it's a Giphy.com url, don't save it
-    if (imageUrl.indexOf("giphy.com/") > 0) {
+  if (!existingImageDocSnapshot) {
+    if (imageFile) {
+      // If the user uploaded an image, it's already in storage
+      localUrl = imageFile;
+      imageUrl = imageFile;
+    } else if (imageUrl.indexOf("giphy.com/") > 0) {
+      // If it's a Giphy.com url, don't save it to storage
       localUrl = imageUrl;
     } else {
       // If we haven't already uploaded this image, then upload it to storage
@@ -76,9 +91,7 @@ export default async function apiAddTokenByUrl(
 
     await storeGlobalImage(true);
   } else {
-    localUrl = existingGlobalImageDocCollectionSnapshot.docs[0].get(
-      "image_url"
-    );
+    localUrl = existingImageDocSnapshot.get("image_url");
     await storeGlobalImage(false);
   }
 
@@ -148,13 +161,14 @@ export default async function apiAddTokenByUrl(
     const collection = getFirestore().collection("all_images");
 
     if (!createNew) {
-      const existingDoc = existingGlobalImageDocCollectionSnapshot.docs[0];
-      await existingDoc.ref.update({
-        count: existingDoc.get("count") + 1,
-        image_url_original: imageUrl,
-        token,
-        updated_at: now
-      });
+      const existingDoc = existingImageDocSnapshot;
+      existingDoc &&
+        (await existingDoc.ref.update({
+          count: existingDoc.get("count") + 1,
+          image_url_original: imageUrl,
+          token,
+          updated_at: now
+        }));
     } else {
       const docRef = collection.doc(getImageId(localUrl));
       await docRef.set({

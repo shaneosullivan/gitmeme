@@ -226,6 +226,7 @@ exports.default = getGithubContext;
 Object.defineProperty(exports, "__esModule", { value: true });
 const getToken_1 = __webpack_require__(12);
 chrome.runtime.onMessage.addListener((message, _sender, callback) => {
+    console.log("background got message", message);
     if (message.data === "login") {
         getToken_1.default(true, err => {
             callback(!err);
@@ -258,7 +259,8 @@ const githubInfo_1 = __webpack_require__(2);
 function getToken(interactive, callback) {
     console.log("getToken");
     const localRedirectUri = chrome.identity.getRedirectURL("provider_cb");
-    const redirectUri = "https://us-central1-git-meme-prod.cloudfunctions.net/oauth";
+    const redirectUri = "https://us-central1-git-meme-prod.cloudfunctions.net/oauth/" +
+        chrome.runtime.id;
     const redirectRe = new RegExp(localRedirectUri + "[#?](.*)");
     const options = {
         interactive: interactive,

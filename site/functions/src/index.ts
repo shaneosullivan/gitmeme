@@ -6,6 +6,8 @@ import getFirestore from "./util/getFirestore";
 import apiSearch from "./api/search";
 import apiAddTokenByUrl from "./api/addTokenByUrl";
 import apiTopTokens from "./api/topTokens";
+import filesUploadMiddleware from "./util/filesUploadMiddleware";
+import createFileUploadUrl from "./api/createFileUploadUrl";
 
 const app = express();
 
@@ -21,9 +23,11 @@ app.use(cors());
 
 app.get("/search", apiSearch);
 
-app.post("/add_token_by_url", apiAddTokenByUrl);
+app.post("/add_token_by_url", filesUploadMiddleware, apiAddTokenByUrl);
 
 app.get("/top_tokens", apiTopTokens);
+
+app.post("/create_file_upload_url", createFileUploadUrl);
 
 export const api = functions.https.onRequest(app);
 

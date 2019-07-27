@@ -44,7 +44,18 @@ export default function TopTokensList(props: Props) {
 
         let tabContext = "";
         if (currentTab) {
-          const url: string = currentTab.url;
+          let url: string = currentTab.url;
+
+          if (!url) {
+            // When running in an iframe, the url in the 'currentTab'
+            // is undefined for some reason. In this case, we will have
+            // passed through a single parameter, 'currentUrl' with the
+            // window's url, so use that instead
+            if (window.location.search.indexOf("currentUrl=") > -1) {
+              url = window.location.search.split("=")[1];
+            }
+          }
+
           const urlParts = url.split("/");
           if (
             urlParts[2] === "github.com" ||

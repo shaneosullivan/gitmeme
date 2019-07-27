@@ -11,7 +11,8 @@ export default function getToken(interactive: boolean, callback: Function) {
   );
 
   const redirectUri =
-    "https://us-central1-git-meme-prod.cloudfunctions.net/oauth";
+    "https://us-central1-git-meme-prod.cloudfunctions.net/oauth/" +
+    chrome.runtime.id;
   const redirectRe = new RegExp(localRedirectUri + "[#?](.*)");
 
   const options = {

@@ -1025,7 +1025,6 @@ let githubContext = null;
 // Get the logged in user from the DOM
 const loggedInUser = getLoggedInUser_1.default();
 function listenToInput(input) {
-    console.log("listenToInput", input);
     let knownTokens = [];
     let toolbarButtonItem;
     let activeTag = null;
@@ -1162,6 +1161,7 @@ function listenToInput(input) {
                 throw new Error("Cannot add a new image unless logged in");
             }
             if (url) {
+                console.log("creating form data with a url");
                 url = url.trim();
                 console.log("adding new url ", url);
                 if (url.indexOf("http://") === 0) {
@@ -1169,7 +1169,8 @@ function listenToInput(input) {
                     console.log("url is now", url);
                 }
                 return new Promise((resolve, _reject) => __awaiter(this, void 0, void 0, function* () {
-                    const result = yield fetch(`${consts_1.API_ROOT_URL}/add_token_by_url`, {
+                    const url = consts_1.API_ROOT_URL; //substring(0, API_ROOT_URL.length - 4);
+                    const result = yield fetch(`${url}/add_token_by_url`, {
                         method: "POST",
                         headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token)),
                         body: JSON.stringify({
@@ -1185,20 +1186,61 @@ function listenToInput(input) {
                 }));
             }
             else {
-                return new Promise((resolve, _reject) => __awaiter(this, void 0, void 0, function* () {
-                    const formData = new FormData();
-                    formData.append("image_file", file);
-                    formData.append("token", tokenValue);
-                    formData.append("context", githubContext);
-                    const result = yield fetch(`${consts_1.API_ROOT_URL}/add_token_by_url`, {
+                return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                    console.log("Got file", file);
+                    // Generate a new url to upload to Cloud Storage first
+                    const urlResult = yield (yield fetch(`${consts_1.API_ROOT_URL}/create_file_upload_url`, {
                         method: "POST",
-                        headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token)),
-                        body: formData
+                        body: JSON.stringify({
+                            file_name: file.name
+                        })
+                    })).json();
+                    console.log("storage url result", urlResult);
+                    console.log("sending file", file);
+                    chrome.runtime.sendMessage({
+                        file: JSON.stringify(file),
+                        data: "upload",
+                        url: urlResult.image_url
                     });
-                    resolve({
-                        status: result.status === 200,
-                        image_url: result["image_url"] || ""
-                    });
+                    // const xhr = new XMLHttpRequest();
+                    // xhr.open("POST", urlResult.image_url, true);
+                    // xhr.onload = async data => {
+                    //   console.log("xhr onload");
+                    //   const status = xhr.status;
+                    //   console.log("upload status", status);
+                    //   if (status === 200) {
+                    //     console.log("xhr data", data);
+                    //     // const result = await fetch(`${url}/add_token_by_url`, {
+                    //     //   method: "POST",
+                    //     //   headers: {
+                    //     //     ...createAuthHeader(userInfo.id, userInfo.token)
+                    //     //   },
+                    //     //   body: JSON.stringify({
+                    //     //     image_url: url,
+                    //     //     token: tokenValue,
+                    //     //     context: githubContext
+                    //     //   })
+                    //     // });
+                    //     // resolve({
+                    //     //   status: result.status === 200,
+                    //     //   image_url: result["image_url"] || ""
+                    //     // });
+                    //     // resolve({
+                    //     //   status: true,
+                    //     //   image_url: result["image_url"] || ""
+                    //     // });
+                    //     resolve({ status: false, image_url: null });
+                    //   } else {
+                    //     reject();
+                    //   }
+                    // };
+                    // xhr.onerror = () => {
+                    //   alert("Something went wrong");
+                    //   reject();
+                    // };
+                    // xhr.setRequestHeader("Content-Type", file.type);
+                    // xhr.send(file);
+                    console.log("creating form data with a file");
                 }));
             }
         });
@@ -1241,7 +1283,7 @@ function listenToInput(input) {
             popupIframe = document.createElement("iframe");
             popupIframe.className = "__popupIframe";
             toolbarButtonItem.parentNode.appendChild(popupIframe);
-            popupIframe.src = chrome.runtime.getURL("popup/index.html");
+            popupIframe.src = chrome.runtime.getURL("popup/index.html?currentUrl=" + window.location.href);
             analytics_1.sendEvent("action", "open_popup", "iframe");
         }
     }
