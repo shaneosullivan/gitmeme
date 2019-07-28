@@ -179,7 +179,7 @@ function listenToInput(
     cleanUp();
   }
 
-  const TOOLBAR_BUTTON_LABEL = "GM";
+  // const TOOLBAR_BUTTON_LABEL = "GM";
 
   function onTokenActive(isActive: boolean, tokenTag: TokenTagType) {
     if (toolbarButtonItem) {
@@ -264,7 +264,10 @@ function listenToInput(
 
       toolbarButtonItem = document.createElement("button");
       toolbarButtonItem.className = "toolbar-item __toolbarButtonItem";
-      toolbarButtonItem.textContent = TOOLBAR_BUTTON_LABEL;
+      toolbarButtonItem.style.backgroundImage = `url(${chrome.extension.getURL(
+        "assets/icon-48x48.png"
+      )})`;
+      // toolbarButtonItem.textContent = TOOLBAR_BUTTON_LABEL;
 
       toolbarButton.appendChild(toolbarButtonItem);
 

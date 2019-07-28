@@ -24,3 +24,9 @@
 .Header .tokenTitle {
   padding-left: 16px;
 }
+
+.Header .header-icon {
+  float: left;
+  margin-top: -16px;
+  margin-right: 12px;
+}

@@ -1025,7 +1025,6 @@ let githubContext = null;
 // Get the logged in user from the DOM
 const loggedInUser = getLoggedInUser_1.default();
 function listenToInput(input) {
-    console.log("listenToInput", input);
     let knownTokens = [];
     let toolbarButtonItem;
     let activeTag = null;
@@ -1144,7 +1143,7 @@ function listenToInput(input) {
         closePopupIframe();
         cleanUp();
     }
-    const TOOLBAR_BUTTON_LABEL = "GM";
+    // const TOOLBAR_BUTTON_LABEL = "GM";
     function onTokenActive(isActive, tokenTag) {
         if (toolbarButtonItem) {
             if (!isActive && activeTag !== tokenTag) {
@@ -1213,7 +1212,8 @@ function listenToInput(input) {
             toolbarButton.className = "d-inline-block mr-3 __toolbarButton";
             toolbarButtonItem = document.createElement("button");
             toolbarButtonItem.className = "toolbar-item __toolbarButtonItem";
-            toolbarButtonItem.textContent = TOOLBAR_BUTTON_LABEL;
+            toolbarButtonItem.style.backgroundImage = `url(${chrome.extension.getURL("assets/icon-48x48.png")})`;
+            // toolbarButtonItem.textContent = TOOLBAR_BUTTON_LABEL;
             toolbarButton.appendChild(toolbarButtonItem);
             toolbarButton.addEventListener("click", (evt) => {
                 evt.preventDefault();

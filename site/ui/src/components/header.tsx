@@ -18,6 +18,9 @@ const Header = ({ siteTitle }: Props) => {
   }
   return (
     <header className="Header">
+      <a href="/" className="header-icon">
+        <img src="/icons/icon-48x48.png" />
+      </a>
       <div className="Header-item">
         <h1 style={{ margin: 0 }}>
           <Link
