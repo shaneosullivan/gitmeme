@@ -1241,7 +1241,7 @@ function listenToInput(input) {
             popupIframe = document.createElement("iframe");
             popupIframe.className = "__popupIframe";
             toolbarButtonItem.parentNode.appendChild(popupIframe);
-            popupIframe.src = chrome.runtime.getURL("popup/index.html");
+            popupIframe.src = chrome.runtime.getURL("popup/index.html?currentUrl=" + window.location.href);
             analytics_1.sendEvent("action", "open_popup", "iframe");
         }
     }

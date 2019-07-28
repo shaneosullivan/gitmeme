@@ -299,7 +299,9 @@ function listenToInput(
       popupIframe = document.createElement("iframe");
       popupIframe.className = "__popupIframe";
       toolbarButtonItem.parentNode.appendChild(popupIframe);
-      popupIframe.src = chrome.runtime.getURL("popup/index.html");
+      popupIframe.src = chrome.runtime.getURL(
+        "popup/index.html?currentUrl=" + window.location.href
+      );
 
       sendEvent("action", "open_popup", "iframe");
     }
