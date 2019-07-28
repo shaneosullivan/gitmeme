@@ -1210,6 +1210,7 @@ function listenToInput(input) {
             }
             const toolbarButton = document.createElement("div");
             toolbarButton.className = "d-inline-block mr-3 __toolbarButton";
+            toolbarButton.title = "Gitmeme";
             toolbarButtonItem = document.createElement("button");
             toolbarButtonItem.className = "toolbar-item __toolbarButtonItem";
             toolbarButtonItem.style.backgroundImage = `url(${chrome.extension.getURL("assets/icon-48x48.png")})`;
