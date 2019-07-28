@@ -15,6 +15,7 @@
   display: flex;
   flex-wrap: nowrap;
   font-size: 14px;
+  position: relative;
 }
 
 .Header .Header-item h1 {

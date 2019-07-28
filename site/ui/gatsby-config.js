@@ -33,6 +33,12 @@ module.exports = {
       options: {
         trackingId: "UA-11032269-7"
       }
+    },
+    {
+      resolve: `gatsby-plugin-facebook-pixel`,
+      options: {
+        pixelId: "635439776516812"
+      }
     }
     // this (optional) plugin enables Progressive Web App + Offline functionality
     // To learn more, visit: https://gatsby.dev/offline

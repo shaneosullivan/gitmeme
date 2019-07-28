@@ -2,6 +2,7 @@ import { Link } from "gatsby";
 import * as React from "react";
 
 import "./header.css";
+import TwitterButton from "./twitter_button";
 
 interface Props {
   siteTitle: string;
@@ -34,6 +35,7 @@ const Header = ({ siteTitle }: Props) => {
             {extraTitle}
           </Link>
         </h1>
+        <TwitterButton />
       </div>
     </header>
   );
