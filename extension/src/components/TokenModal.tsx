@@ -10,8 +10,7 @@ interface Props {
   selectedIndex: number;
   tokenValue: string;
   onAddNewImage?: (
-    url: string | null,
-    file: File | null
+    url: string
   ) => Promise<{ status: boolean; image_url: string }>;
   onLogIn: Function;
   onToggleDisabled: Function;
@@ -29,8 +28,6 @@ interface ExternalLink {
   url: string;
   label: string;
 }
-
-const FILESIZE_LIMIT = 1024000; // 1MB
 
 const AddNewLinks: Array<ExternalLink> = [
   {
@@ -59,8 +56,6 @@ export default function TokenModal(props: Props) {
   );
   const [expandedImageUrl, setExpandedImageUrl] = useState(null);
   const [expandedImageHeight, setExpandedImageHeight] = useState(-1);
-  const [imageFile, setImageFile] = useState(null);
-  const [imageFileError, setImageFileError] = useState("");
 
   const canAddNewImage = !!props.onAddNewImage;
   const modalImagesRef = useRef();
@@ -171,36 +166,7 @@ export default function TokenModal(props: Props) {
                   setNewUrl(evt.target.value);
                 }}
               />
-              <div>OR</div>
-              <input
-                type="file"
-                name="newimage"
-                onChange={evt => {
-                  console.log("file change event ", evt.target.files);
-                  const file: File = evt.target.files[0];
-                  if (
-                    file.type !== "image/png" &&
-                    file.type !== "image/jpeg" &&
-                    file.type !== "image/gif"
-                  ) {
-                    setImageFileError("Image must be either a PNG, JPG or GIF");
-                    setImageFile(null);
-                  } else if (file.size > FILESIZE_LIMIT) {
-                    setImageFileError(
-                      "Image is too large, choose one less than " +
-                        FILESIZE_LIMIT / 1000 +
-                        "KB"
-                    );
-                    setImageFile(null);
-                  } else {
-                    setImageFileError("");
-                    setImageFile(evt.target.files[0]);
-                  }
-                }}
-              />
-              {imageFileError ? (
-                <div style={{ color: "red" }}>{imageFileError}</div>
-              ) : null}
+
               {newUrlSubmitState === NewUrlSubmitState.FAILED ? (
                 <div>
                   Failed to save image. Please check the URL and try again
@@ -235,10 +201,7 @@ export default function TokenModal(props: Props) {
           urlToAdd = urlToAdd.replace("http://", "https://");
         }
 
-        const { status: success } = await props.onAddNewImage(
-          urlToAdd,
-          imageFile
-        );
+        const { status: success } = await props.onAddNewImage(urlToAdd);
 
         setNewUrlSubmitState(
           success ? NewUrlSubmitState.NOT_SUBMITTING : NewUrlSubmitState.FAILED
@@ -258,7 +221,7 @@ export default function TokenModal(props: Props) {
           : "Cannot submit, the url you entered is not valid"
       }
       disabled={
-        (!isValidUrl(newUrl) && !imageFile) ||
+        !isValidUrl(newUrl) ||
         newUrlSubmitState === NewUrlSubmitState.SUBMITTING
       }
     >

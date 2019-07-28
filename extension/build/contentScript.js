@@ -1155,51 +1155,31 @@ function listenToInput(input) {
         }
         activeTag = tokenTag;
     }
-    function onAddNewImage(tokenValue, url, file) {
+    function onAddNewImage(tokenValue, url) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!isLoggedIn) {
                 throw new Error("Cannot add a new image unless logged in");
             }
-            if (url) {
-                url = url.trim();
-                console.log("adding new url ", url);
-                if (url.indexOf("http://") === 0) {
-                    url = url.replace("http://", "https://");
-                    console.log("url is now", url);
-                }
-                return new Promise((resolve, _reject) => __awaiter(this, void 0, void 0, function* () {
-                    const result = yield fetch(`${consts_1.API_ROOT_URL}/add_token_by_url`, {
-                        method: "POST",
-                        headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token)),
-                        body: JSON.stringify({
-                            image_url: url,
-                            token: tokenValue,
-                            context: githubContext
-                        })
-                    });
-                    resolve({
-                        status: result.status === 200,
-                        image_url: result["image_url"] || ""
-                    });
-                }));
+            url = url.trim();
+            if (url.indexOf("http://") === 0) {
+                url = url.replace("http://", "https://");
+                console.log("url is now", url);
             }
-            else {
-                return new Promise((resolve, _reject) => __awaiter(this, void 0, void 0, function* () {
-                    const formData = new FormData();
-                    formData.append("image_file", file);
-                    formData.append("token", tokenValue);
-                    formData.append("context", githubContext);
-                    const result = yield fetch(`${consts_1.API_ROOT_URL}/add_token_by_url`, {
-                        method: "POST",
-                        headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token)),
-                        body: formData
-                    });
-                    resolve({
-                        status: result.status === 200,
-                        image_url: result["image_url"] || ""
-                    });
-                }));
-            }
+            return new Promise((resolve, _reject) => __awaiter(this, void 0, void 0, function* () {
+                const result = yield fetch(`${consts_1.API_ROOT_URL}/add_token_by_url`, {
+                    method: "POST",
+                    headers: Object.assign({}, createAuthHeader_1.default(userInfo.id, userInfo.token)),
+                    body: JSON.stringify({
+                        image_url: url,
+                        token: tokenValue,
+                        context: githubContext
+                    })
+                });
+                resolve({
+                    status: result.status === 200,
+                    image_url: result["image_url"] || ""
+                });
+            }));
         });
     }
     function addToolbarButton(form) {
@@ -1469,9 +1449,9 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
                 record.modalIsOpen = !record.modalIsOpen;
                 renderTag();
             }, onAddNewImage: onAddNewImage
-                ? (url, file) => __awaiter(this, void 0, void 0, function* () {
+                ? (url) => __awaiter(this, void 0, void 0, function* () {
                     // If the onAddNewImage function is null, set this to null too
-                    const { status: addSucceeded, image_url } = yield onAddNewImage(token.value, url, file);
+                    const { status: addSucceeded, image_url } = yield onAddNewImage(token.value, url);
                     if (addSucceeded) {
                         record.imageUrl = url;
                         record.imageUrls.unshift(url);
@@ -2403,7 +2383,6 @@ var NewUrlSubmitState;
     NewUrlSubmitState[NewUrlSubmitState["FAILED"] = 2] = "FAILED";
     NewUrlSubmitState[NewUrlSubmitState["SUCCEEDED"] = 3] = "SUCCEEDED";
 })(NewUrlSubmitState || (NewUrlSubmitState = {}));
-const FILESIZE_LIMIT = 1024000; // 1MB
 const AddNewLinks = [
     {
         url: "https://images.google.com",
@@ -2428,8 +2407,6 @@ function TokenModal(props) {
     const [newUrlSubmitState, setNewUrlSubmitState] = useState(NewUrlSubmitState.NOT_SUBMITTING);
     const [expandedImageUrl, setExpandedImageUrl] = useState(null);
     const [expandedImageHeight, setExpandedImageHeight] = useState(-1);
-    const [imageFile, setImageFile] = useState(null);
-    const [imageFileError, setImageFileError] = useState("");
     const canAddNewImage = !!props.onAddNewImage;
     const modalImagesRef = useRef();
     const pageContext = getGithubContext_1.default();
@@ -2494,28 +2471,6 @@ function TokenModal(props) {
                         React.createElement("input", { type: "text", placeholder: "Enter image URL", value: newUrl, style: { marginTop: "6px", width: "100%" }, onChange: evt => {
                                 setNewUrl(evt.target.value);
                             } }),
-                        React.createElement("div", null, "OR"),
-                        React.createElement("input", { type: "file", name: "newimage", onChange: evt => {
-                                console.log("file change event ", evt.target.files);
-                                const file = evt.target.files[0];
-                                if (file.type !== "image/png" &&
-                                    file.type !== "image/jpeg" &&
-                                    file.type !== "image/gif") {
-                                    setImageFileError("Image must be either a PNG, JPG or GIF");
-                                    setImageFile(null);
-                                }
-                                else if (file.size > FILESIZE_LIMIT) {
-                                    setImageFileError("Image is too large, choose one less than " +
-                                        FILESIZE_LIMIT / 1000 +
-                                        "KB");
-                                    setImageFile(null);
-                                }
-                                else {
-                                    setImageFileError("");
-                                    setImageFile(evt.target.files[0]);
-                                }
-                            } }),
-                        imageFileError ? (React.createElement("div", { style: { color: "red" } }, imageFileError)) : null,
                         newUrlSubmitState === NewUrlSubmitState.FAILED ? (React.createElement("div", null, "Failed to save image. Please check the URL and try again")) : null));
                     break;
                 case NewUrlSubmitState.SUBMITTING:
@@ -2536,7 +2491,7 @@ function TokenModal(props) {
             if (urlToAdd.indexOf("http://") === 0) {
                 urlToAdd = urlToAdd.replace("http://", "https://");
             }
-            const { status: success } = yield props.onAddNewImage(urlToAdd, imageFile);
+            const { status: success } = yield props.onAddNewImage(urlToAdd);
             setNewUrlSubmitState(success ? NewUrlSubmitState.NOT_SUBMITTING : NewUrlSubmitState.FAILED);
             if (success) {
                 setIsAddingNew(false);
@@ -2547,7 +2502,7 @@ function TokenModal(props) {
             }
         }), title: isValidUrl_1.default(newUrl)
             ? "Click to submit your awesome new meme"
-            : "Cannot submit, the url you entered is not valid", disabled: (!isValidUrl_1.default(newUrl) && !imageFile) ||
+            : "Cannot submit, the url you entered is not valid", disabled: !isValidUrl_1.default(newUrl) ||
             newUrlSubmitState === NewUrlSubmitState.SUBMITTING }, "Submit")) : (React.createElement("button", { onClick: () => {
             props.onLogIn();
         } }, "Log In"));

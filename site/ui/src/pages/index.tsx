@@ -96,9 +96,9 @@ export default function IndexPage() {
       </p>
       <div style={{ textAlign: "center" }}>
         <iframe
-          width="480"
+          width="472"
           height="315"
-          src="https://www.youtube.com/embed/KDVVJR2qmcA?rel=0&amp;controls=0&amp;showinfo=0&autoplay=1"
+          src="https://www.youtube.com/embed/dvNS_MB3CFE?rel=0&amp;controls=0&amp;showinfo=0&autoplay=1"
           frameBorder="0"
           allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
         ></iframe>

@@ -41,8 +41,7 @@ export default function createTokenTag(
   onTokenActive: (isActive: boolean, tokenTag: TokenTagType) => void,
   onAddNewImage?: (
     tokenValue: string,
-    url: string | null,
-    file: File | null
+    url: string
   ) => Promise<{ status: boolean; image_url: string }>
 ): TokenTagType {
   const endOfTokenIdx = token.index + token.value.length + 1;
@@ -132,14 +131,12 @@ export default function createTokenTag(
         onAddNewImage={
           onAddNewImage
             ? async (
-                url: string | null,
-                file: any | null
+                url: string | null
               ): Promise<{ status: boolean; image_url: string }> => {
                 // If the onAddNewImage function is null, set this to null too
                 const { status: addSucceeded, image_url } = await onAddNewImage(
                   token.value,
-                  url,
-                  file
+                  url
                 );
 
                 if (addSucceeded) {

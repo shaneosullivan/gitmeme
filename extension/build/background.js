@@ -258,7 +258,8 @@ const githubInfo_1 = __webpack_require__(2);
 function getToken(interactive, callback) {
     console.log("getToken");
     const localRedirectUri = chrome.identity.getRedirectURL("provider_cb");
-    const redirectUri = "https://us-central1-git-meme-prod.cloudfunctions.net/oauth";
+    const redirectUri = "https://us-central1-git-meme-prod.cloudfunctions.net/oauth/" +
+        chrome.runtime.id;
     const redirectRe = new RegExp(localRedirectUri + "[#?](.*)");
     const options = {
         interactive: interactive,

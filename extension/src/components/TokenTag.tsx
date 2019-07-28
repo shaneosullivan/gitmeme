@@ -15,8 +15,7 @@ interface Props {
   onLogIn: Function;
   onSelectImage: (url: string) => void;
   onAddNewImage?: (
-    url: string | null,
-    file: File | null
+    url: string
   ) => Promise<{ status: boolean; image_url: string }>;
   onToggleDisabled: Function;
   onToggleModal: Function;

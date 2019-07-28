@@ -17,6 +17,11 @@ export default async function handleOauthRedirect(
 ) {
   console.log("Oauth called with query ", req.query);
 
+  let extensionId = EXTENSION_ID;
+  if (req.path && req.path.length > 1) {
+    extensionId = req.path.substring(1);
+  }
+
   if (req.query.access_token) {
     console.log(
       "Oauth got an access token ",
@@ -32,7 +37,8 @@ export default async function handleOauthRedirect(
       res,
       req.query.access_token,
       userInfo.uid,
-      userInfo.avatar
+      userInfo.avatar,
+      extensionId
     );
   } else if (req.query.code) {
     console.log(
@@ -46,7 +52,7 @@ export default async function handleOauthRedirect(
     if (token) {
       const userInfo = await createOrUpdateUser(firestore, token);
 
-      redirectWithToken(res, token, userInfo.uid, userInfo.avatar);
+      redirectWithToken(res, token, userInfo.uid, userInfo.avatar, extensionId);
       return;
     }
   }
@@ -105,9 +111,10 @@ function redirectWithToken(
   res: express.Response,
   token: string,
   userId: string,
-  avatar: string
+  avatar: string,
+  extensionId: string
 ) {
-  let nextRedirectUrl = `https://${EXTENSION_ID}.chromiumapp.org/provider_cb?access_token=${token}&user_id=${userId}&avatar=${avatar}`;
+  let nextRedirectUrl = `https://${extensionId}.chromiumapp.org/provider_cb?access_token=${token}&user_id=${userId}&avatar=${avatar}`;
 
   console.log(
     "Doing redirectWithToken, using token ",

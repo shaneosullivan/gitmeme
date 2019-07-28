@@ -44,11 +44,6 @@ function SEO({ description, lang, meta, title }: Props) {
       }}
       title={title}
       titleTemplate={`%s | ${site.siteMetadata.title}`}
-      // link={[
-      //   { rel: "icon", type: "image/png", sizes: "16x16", href: `${favicon16}` },
-      //   { rel: "icon", type: "image/png", sizes: "32x32", href: `${favicon32}` },
-      //   { rel: "shortcut icon", type: "image/png", href: `${favicon64}` },
-      // ]}
       meta={[
         {
           name: `description`,
@@ -56,7 +51,11 @@ function SEO({ description, lang, meta, title }: Props) {
         },
         {
           property: `og:title`,
-          content: title
+          content: "Gitmeme - Easily add memes to Github"
+        },
+        {
+          property: `og:url`,
+          content: "https://gitme.me"
         },
         {
           property: `og:description`,
@@ -65,6 +64,10 @@ function SEO({ description, lang, meta, title }: Props) {
         {
           property: `og:type`,
           content: `website`
+        },
+        {
+          property: `og:image`,
+          content: `https://gitme.me/icons/icon-512x512.png`
         },
         {
           name: `twitter:card`,
