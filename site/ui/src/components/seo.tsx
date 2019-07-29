@@ -67,7 +67,7 @@ function SEO({ description, lang, meta, title }: Props) {
         },
         {
           property: `og:image`,
-          content: `https://gitme.me/icons/icon-512x512.png`
+          content: `https://gitme.me/icon-wide.png`
         },
         {
           name: `twitter:card`,

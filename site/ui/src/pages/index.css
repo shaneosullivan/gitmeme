@@ -15,3 +15,9 @@ p {
   color: #24292e;
   font-size: 16px;
 }
+
+.video_frame {
+  width: 473px;
+  max-width: 90%;
+  height: 315px;
+}

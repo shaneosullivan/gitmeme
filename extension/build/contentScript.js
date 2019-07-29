@@ -1286,12 +1286,22 @@ function listenToInput(input) {
     };
     return ret;
 }
-githubInfo_1.getGithubInfo().then((localUserInfo) => {
-    userInfo = localUserInfo;
-    githubContext = localUserInfo.context;
-    findTextInputs_1.default(listenToInput);
-});
-analytics_1.sendPageHit("inline");
+const metaTag = document.head.querySelector('meta[property="og:site_name"]');
+// Need to support Github Enterprise too, so check that the page is in fact Github
+if (metaTag &&
+    metaTag["content"] &&
+    metaTag["content"].toLowerCase() === "github") {
+    console.log("is github");
+    githubInfo_1.getGithubInfo().then((localUserInfo) => {
+        userInfo = localUserInfo;
+        githubContext = localUserInfo.context;
+        findTextInputs_1.default(listenToInput);
+    });
+    analytics_1.sendPageHit("inline");
+}
+else {
+    console.log("Not github");
+}
 
 
 /***/ }),

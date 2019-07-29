@@ -356,10 +356,18 @@ function listenToInput(
   return ret;
 }
 
-getGithubInfo().then((localUserInfo: GithubInfo) => {
-  userInfo = localUserInfo;
-  githubContext = localUserInfo.context;
-  findTextInputs(listenToInput);
-});
+const metaTag = document.head.querySelector('meta[property="og:site_name"]');
+// Need to support Github Enterprise too, so check that the page is in fact Github
+if (
+  metaTag &&
+  metaTag["content"] &&
+  metaTag["content"].toLowerCase() === "github"
+) {
+  getGithubInfo().then((localUserInfo: GithubInfo) => {
+    userInfo = localUserInfo;
+    githubContext = localUserInfo.context;
+    findTextInputs(listenToInput);
+  });
 
-sendPageHit("inline");
+  sendPageHit("inline");
+}
