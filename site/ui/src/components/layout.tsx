@@ -45,7 +45,7 @@ const Layout = ({ children }: Props) => {
             Shane O'Sullivan
           </a>{" "}
           and{" "}
-          <a href="karoliskosas.com" target="_blank">
+          <a href="//karoliskosas.com" target="_blank">
             Karolis Kosas
           </a>
         </footer>
