@@ -4,6 +4,7 @@ import { getGithubInfo, GithubInfo } from "./shared/auth/githubInfo";
 import TopTokensList from "./components/TopTokensList";
 import Help from "./components/Help";
 import { sendPageHit } from "./shared/analytics";
+import Feedback from "./components/Feedback";
 
 const App = () => {
   const [auth, setAuth] = useState({
@@ -36,6 +37,7 @@ const App = () => {
           }}
         />
       ) : null}
+      <Feedback />
     </div>
   );
 };

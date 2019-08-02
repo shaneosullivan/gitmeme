@@ -12,7 +12,11 @@
   ],
   "content_scripts": [
     {
-      "matches": ["https://*.github.com/*", "https://github.com/*"],
+      "matches": [
+        "https://*.github.com/*",
+        "https://github.com/*",
+        "https://git.musta.ch/*"
+      ],
       "css": ["build/style.css"],
       "js": ["build/contentScript.js"]
     }
