@@ -2584,7 +2584,8 @@ function TokenModalImage(props) {
     const currentStyle = Object.assign({}, style, (props.isExpanded ? expandedStyle : transformStyle));
     return (React.createElement("div", { className: "__image" +
             (props.isExpanded ? " __expanded" : "") +
-            (isLoaded ? " __loaded" : ""), ref: root, onMouseEnter: () => {
+            (isLoaded ? " __loaded" : "") +
+            (props.isSelected ? " __selected" : ""), ref: root, onMouseEnter: () => {
             setIsHovered(true);
         }, onMouseLeave: () => {
             setIsHovered(false);

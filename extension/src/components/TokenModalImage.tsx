@@ -65,7 +65,8 @@ export default function TokenModalImage(props: Props) {
       className={
         "__image" +
         (props.isExpanded ? " __expanded" : "") +
-        (isLoaded ? " __loaded" : "")
+        (isLoaded ? " __loaded" : "") +
+        (props.isSelected ? " __selected" : "")
       }
       ref={root}
       onMouseEnter={() => {
