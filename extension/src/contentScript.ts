@@ -80,6 +80,8 @@ function listenToInput(
   );
 
   let formNode = getParentByTagName(input, "form") as HTMLFormElement;
+  let writeTabButton = formNode.querySelector("button.write-tab");
+  let previewTabButton = formNode.querySelector("button.preview-tab");
 
   function handleInputKeyup() {
     closePopupIframe();
@@ -105,6 +107,7 @@ function listenToInput(
     window.removeEventListener("resize", updatePosition);
     formNode.removeEventListener("submit", processPreSubmit, true);
     document.body.removeEventListener("keyup", handleBodyKeys);
+    previewTabButton.removeEventListener("click", processPreSubmit, true);
   }
 
   // Replace all the tokens with image tags
@@ -126,7 +129,11 @@ function listenToInput(
       if (knownToken.isValid && !knownToken.disabled) {
         const tagInsert = `<a href="https://gitme.me/image?url=${encodeURIComponent(
           knownToken.imageUrl
-        )}&token=${encodeURIComponent(knownToken.token.value)}"><img src="${
+        )}&token=${encodeURIComponent(
+          knownToken.token.value
+        )}" data-gitmeme-token="${encodeURIComponent(
+          knownToken.token.value
+        )}"><img src="${
           knownToken.imageUrl
         }" title="Created by gitme.me with /${knownToken.token.value}"/></a>`;
         value =
@@ -163,6 +170,13 @@ function listenToInput(
       }
     });
 
+    if (input.value !== value) {
+      // Hide the text
+      input.classList.add("__textareaHiddenText");
+      setTimeout(() => {
+        input.classList.remove("__textareaHiddenText");
+      }, 1000);
+    }
     input.value = value;
 
     // Log to Google Analytics
@@ -321,6 +335,46 @@ function listenToInput(
     });
   }, 100);
 
+  // Change the HTML code back into a token string for
+  // when you edit a previously inserted token
+  function revertTagToToken() {
+    let text = input.value;
+    const marker = 'data-gitmeme-token="';
+    let idx = text.indexOf(marker);
+    while (idx > -1) {
+      // Find the <a before this
+      const tagStart = text.substring(0, idx).lastIndexOf("<a ");
+      const tagEnd = text.substring(idx).indexOf("</a>") + idx;
+      const markerEnd =
+        text.substring(idx + marker.length + 1).indexOf('"') +
+        idx +
+        marker.length +
+        1;
+      const tagOpeningEnd =
+        text.substring(idx + marker.length).indexOf(">") + idx + marker.length;
+
+      if (
+        tagStart > -1 &&
+        tagEnd > tagStart &&
+        markerEnd > tagStart &&
+        markerEnd < tagOpeningEnd &&
+        tagOpeningEnd < tagEnd
+      ) {
+        const token = text.substring(idx + marker.length, markerEnd);
+        text =
+          text.substring(0, tagStart) +
+          `/${token}` +
+          text.substring(tagEnd + 4);
+        input.value = text;
+      } else {
+        // something went wrong, the human has edited the code, give up
+        break;
+      }
+
+      idx = text.indexOf(marker);
+    }
+  }
+
   input.addEventListener("keyup", handleInputKeyup);
   input.addEventListener("change", updateTokensForInput);
   input.addEventListener("focus", handleInputFocus);
@@ -329,6 +383,7 @@ function listenToInput(
   window.addEventListener("resize", updatePosition);
   formNode.addEventListener("submit", processPreSubmit, true);
   document.body.addEventListener("keyup", handleBodyKeys);
+  previewTabButton.addEventListener("click", processPreSubmit, true);
 
   addToolbarButton(formNode);
 
@@ -347,6 +402,7 @@ function listenToInput(
 
   mutationObserver.observe(formNode, { childList: true });
 
+  revertTagToToken();
   updateTokensForInput();
 
   const ret = {

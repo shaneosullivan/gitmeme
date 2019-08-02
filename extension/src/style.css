@@ -414,3 +414,7 @@
   z-index: 100;
   animation: fadeIn 0.6s ease-in-out;
 }
+
+textarea.__textareaHiddenText {
+  font-size: 0;
+}

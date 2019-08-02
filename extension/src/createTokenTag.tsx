@@ -61,6 +61,12 @@ export default function createTokenTag(
     !customContainerNode.classList.contains("position-absolute")
   ) {
     customContainerNode = customContainerNode.parentElement;
+  }
+
+  if (
+    customContainerNode &&
+    customContainerNode.classList.contains("position-absolute")
+  ) {
     formIsAbsolutelyPositioned = true;
   }
 
