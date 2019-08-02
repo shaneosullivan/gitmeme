@@ -47,6 +47,7 @@ export default function createTokenTag(
   const endOfTokenIdx = token.index + token.value.length + 1;
   const startCoords = getCaretCoordinates(textInput, token.index);
   const endCoords = getCaretCoordinates(textInput, endOfTokenIdx);
+  let formIsAbsolutelyPositioned = false;
 
   let caretIsAtToken = false;
 
@@ -60,6 +61,7 @@ export default function createTokenTag(
     !customContainerNode.classList.contains("position-absolute")
   ) {
     customContainerNode = customContainerNode.parentElement;
+    formIsAbsolutelyPositioned = true;
   }
 
   let tagContainer =
@@ -90,6 +92,7 @@ export default function createTokenTag(
       <TokenTag
         isDisabled={record.disabled}
         caretActive={record.caretIsAtToken}
+        formIsAbsolutelyPositioned={record.formIsAbsolutelyPositioned}
         selectedImage={record.imageUrl}
         images={record.imageUrls}
         token={token}
@@ -300,7 +303,8 @@ export default function createTokenTag(
     disabled: false,
     position: { top: 0, left: 0, width: 0 },
     trimTop: 0,
-    trimBottom: 0
+    trimBottom: 0,
+    formIsAbsolutelyPositioned
   };
 
   reposition();

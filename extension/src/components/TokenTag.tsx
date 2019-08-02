@@ -4,6 +4,7 @@ import TokenModal from "./TokenModal";
 
 interface Props {
   caretActive: boolean;
+  formIsAbsolutelyPositioned: boolean;
   selectedImage: string;
   images: Array<string>;
   isDisabled: boolean;
@@ -96,6 +97,7 @@ export default function TokenTag(props: Props) {
       </div>
       {props.modalIsOpen ? (
         <TokenModal
+          formIsAbsolutelyPositioned={props.formIsAbsolutelyPositioned}
           images={props.images}
           isDisabled={props.isDisabled}
           selectedIndex={props.images.indexOf(props.selectedImage)}

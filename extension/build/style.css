@@ -159,6 +159,13 @@
   width: 324px;
 }
 
+.__tokenTagModal.__fixed {
+  transform-origin: top right;
+  bottom: auto;
+  top: -73px;
+  left: -340px;
+}
+
 .__tokenTagModal .__image {
   display: inline-block;
   height: 109px;

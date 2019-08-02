@@ -1291,16 +1291,12 @@ const metaTag = document.head.querySelector('meta[property="og:site_name"]');
 if (metaTag &&
     metaTag["content"] &&
     metaTag["content"].toLowerCase() === "github") {
-    console.log("is github");
     githubInfo_1.getGithubInfo().then((localUserInfo) => {
         userInfo = localUserInfo;
         githubContext = localUserInfo.context;
         findTextInputs_1.default(listenToInput);
     });
     analytics_1.sendPageHit("inline");
-}
-else {
-    console.log("Not github");
 }
 
 
@@ -1401,6 +1397,7 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
     const endOfTokenIdx = token.index + token.value.length + 1;
     const startCoords = getCaretCoordinates(textInput, token.index);
     const endCoords = getCaretCoordinates(textInput, endOfTokenIdx);
+    let formIsAbsolutelyPositioned = false;
     let caretIsAtToken = false;
     // Check if a parent of the form is absolutely positions, such as
     // when reviewing a PR.  If so, but the tag into that DIV, so the
@@ -1410,6 +1407,7 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
     while (customContainerNode &&
         !customContainerNode.classList.contains("position-absolute")) {
         customContainerNode = customContainerNode.parentElement;
+        formIsAbsolutelyPositioned = true;
     }
     let tagContainer = customContainerNode || document.getElementById(TAG_CONTAINER_ID);
     if (!tagContainer) {
@@ -1430,7 +1428,7 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
     const tagUi = document.createElement("div");
     tagWrapperNode.appendChild(tagUi);
     function renderTag() {
-        ReactDOM.render(React.createElement(TokenTag_1.default, { isDisabled: record.disabled, caretActive: record.caretIsAtToken, selectedImage: record.imageUrl, images: record.imageUrls, token: token, position: record.position, modalIsOpen: record.modalIsOpen, trimTop: record.trimTop, trimBottom: record.trimBottom, onLogIn: () => {
+        ReactDOM.render(React.createElement(TokenTag_1.default, { isDisabled: record.disabled, caretActive: record.caretIsAtToken, formIsAbsolutelyPositioned: record.formIsAbsolutelyPositioned, selectedImage: record.imageUrl, images: record.imageUrls, token: token, position: record.position, modalIsOpen: record.modalIsOpen, trimTop: record.trimTop, trimBottom: record.trimBottom, onLogIn: () => {
                 analytics_1.sendEvent("action", "login", "begin", "inline");
                 chrome.runtime.sendMessage({ data: "login" }, success => {
                     if (success) {
@@ -1594,7 +1592,8 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
         disabled: false,
         position: { top: 0, left: 0, width: 0 },
         trimTop: 0,
-        trimBottom: 0
+        trimBottom: 0,
+        formIsAbsolutelyPositioned
     };
     reposition();
     checkCaretPosition();
@@ -2361,7 +2360,7 @@ function TokenTag(props) {
                 setArrowHovered(false);
             } },
             React.createElement("div", { className: "__inner" })),
-        props.modalIsOpen ? (React.createElement(TokenModal_1.default, { images: props.images, isDisabled: props.isDisabled, selectedIndex: props.images.indexOf(props.selectedImage), tokenValue: props.token.value, onAddNewImage: props.onAddNewImage, onLogIn: props.onLogIn, onToggleDisabled: props.onToggleDisabled, onSelectImage: props.onSelectImage })) : null));
+        props.modalIsOpen ? (React.createElement(TokenModal_1.default, { formIsAbsolutelyPositioned: props.formIsAbsolutelyPositioned, images: props.images, isDisabled: props.isDisabled, selectedIndex: props.images.indexOf(props.selectedImage), tokenValue: props.token.value, onAddNewImage: props.onAddNewImage, onLogIn: props.onLogIn, onToggleDisabled: props.onToggleDisabled, onSelectImage: props.onSelectImage })) : null));
 }
 exports.default = TokenTag;
 
@@ -2516,7 +2515,7 @@ function TokenModal(props) {
             newUrlSubmitState === NewUrlSubmitState.SUBMITTING }, "Submit")) : (React.createElement("button", { onClick: () => {
             props.onLogIn();
         } }, "Log In"));
-    return (React.createElement("div", { className: "__tokenTagModal" },
+    return (React.createElement("div", { className: "__tokenTagModal" + (props.formIsAbsolutelyPositioned ? " __fixed" : "") },
         isAddingNew
             ? renderAddNew()
             : props.images.length > 0

@@ -5,6 +5,7 @@ import getGithubContext from "../shared/auth/getGithubContext";
 const { useState, useRef, useEffect } = React;
 
 interface Props {
+  formIsAbsolutelyPositioned: boolean;
   images: Array<string>;
   isDisabled: boolean;
   selectedIndex: number;
@@ -238,7 +239,11 @@ export default function TokenModal(props: Props) {
   );
 
   return (
-    <div className="__tokenTagModal">
+    <div
+      className={
+        "__tokenTagModal" + (props.formIsAbsolutelyPositioned ? " __fixed" : "")
+      }
+    >
       {isAddingNew
         ? renderAddNew()
         : props.images.length > 0

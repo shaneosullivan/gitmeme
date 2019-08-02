@@ -8,12 +8,11 @@
     "identity",
     "storage",
     "https://us-central1-git-meme-prod.cloudfunctions.net/",
-    "https://api.giphy.com/",
-    "http://localhost:5000/"
+    "https://api.giphy.com/"
   ],
   "content_scripts": [
     {
-      "matches": ["https://*/*"],
+      "matches": ["https://*.github.com/*", "https://github.com/*"],
       "css": ["build/style.css"],
       "js": ["build/contentScript.js"]
     }
