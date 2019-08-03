@@ -14,8 +14,6 @@ const App = () => {
   } as GithubInfo);
   const [authComplete, setAuthComplete] = useState(false);
 
-  console.log("App has auth ", auth);
-
   useEffect(() => {
     // Run on mount
     getGithubInfo().then(authInfo => {

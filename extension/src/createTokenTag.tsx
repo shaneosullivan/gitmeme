@@ -124,6 +124,7 @@ export default function createTokenTag(
         onSelectImage={(url: string) => {
           record.imageUrl = url;
           preferredTagUrls[token.value] = url;
+          record.modalIsOpen = false;
           renderTag();
         }}
         onToggleDisabled={() => {

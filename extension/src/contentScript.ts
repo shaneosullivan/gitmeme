@@ -80,7 +80,6 @@ function listenToInput(
   );
 
   let formNode = getParentByTagName(input, "form") as HTMLFormElement;
-  let writeTabButton = formNode.querySelector("button.write-tab");
   let previewTabButton = formNode.querySelector("button.preview-tab");
 
   function handleInputKeyup() {
@@ -91,6 +90,12 @@ function listenToInput(
   function handleInputFocus() {
     closePopupIframe();
     updateTokensForInput();
+  }
+
+  function handleBodyClick() {
+    if (popupIframe) {
+      closePopupIframe();
+    }
   }
 
   function cleanUp() {
@@ -108,6 +113,7 @@ function listenToInput(
     formNode.removeEventListener("submit", processPreSubmit, true);
     document.body.removeEventListener("keyup", handleBodyKeys);
     previewTabButton.removeEventListener("click", processPreSubmit, true);
+    document.body.removeEventListener("click", handleBodyClick);
   }
 
   // Replace all the tokens with image tags
@@ -384,6 +390,7 @@ function listenToInput(
   formNode.addEventListener("submit", processPreSubmit, true);
   document.body.addEventListener("keyup", handleBodyKeys);
   previewTabButton.addEventListener("click", processPreSubmit, true);
+  document.body.addEventListener("click", handleBodyClick);
 
   addToolbarButton(formNode);
 

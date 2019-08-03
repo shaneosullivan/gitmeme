@@ -1067,7 +1067,6 @@ function listenToInput(input) {
         });
     }, 250, { leading: false });
     let formNode = getParentByTagName_1.default(input, "form");
-    let writeTabButton = formNode.querySelector("button.write-tab");
     let previewTabButton = formNode.querySelector("button.preview-tab");
     function handleInputKeyup() {
         closePopupIframe();
@@ -1076,6 +1075,11 @@ function listenToInput(input) {
     function handleInputFocus() {
         closePopupIframe();
         updateTokensForInput();
+    }
+    function handleBodyClick() {
+        if (popupIframe) {
+            closePopupIframe();
+        }
     }
     function cleanUp() {
         knownTokens.forEach(knownToken => {
@@ -1091,6 +1095,7 @@ function listenToInput(input) {
         formNode.removeEventListener("submit", processPreSubmit, true);
         document.body.removeEventListener("keyup", handleBodyKeys);
         previewTabButton.removeEventListener("click", processPreSubmit, true);
+        document.body.removeEventListener("click", handleBodyClick);
     }
     // Replace all the tokens with image tags
     function processPreSubmit(_evt) {
@@ -1311,6 +1316,7 @@ function listenToInput(input) {
     formNode.addEventListener("submit", processPreSubmit, true);
     document.body.addEventListener("keyup", handleBodyKeys);
     previewTabButton.addEventListener("click", processPreSubmit, true);
+    document.body.addEventListener("click", handleBodyClick);
     addToolbarButton(formNode);
     // In case the input is simply removed from the DOM without
     // being submitted, clean up too
@@ -1495,6 +1501,7 @@ function createTokenTag(textInput, token, onTokenActive, onAddNewImage) {
             }, onSelectImage: (url) => {
                 record.imageUrl = url;
                 preferredTagUrls[token.value] = url;
+                record.modalIsOpen = false;
                 renderTag();
             }, onToggleDisabled: () => {
                 record.disabled = !record.disabled;
