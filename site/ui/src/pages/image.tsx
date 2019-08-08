@@ -9,7 +9,7 @@ export default function ImagePage() {
   let imageUrl = null;
   if (typeof window !== "undefined") {
     const urlParams = new URLSearchParams(window.location.search);
-    imageUrl = decodeURIComponent(urlParams.get("url") || "") || null;
+    imageUrl = urlParams.get("url") || "";
   }
   return (
     <Layout>
