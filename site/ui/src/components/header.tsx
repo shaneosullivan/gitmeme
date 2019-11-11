@@ -35,6 +35,19 @@ const Header = ({ siteTitle }: Props) => {
             {extraTitle}
           </Link>
         </h1>
+        <a
+          href="https://spectrum.chat/gitmeme"
+          target="_blank"
+          style={{
+            color: "white",
+            textDecoration: "none",
+            position: "absolute",
+            top: "-4px",
+            right: "140px"
+          }}
+        >
+          Feedback
+        </a>
         <TwitterButton />
       </div>
     </header>

@@ -9,7 +9,7 @@ export default function TwitterButton() {
         color: "white",
         textDecoration: "none",
         position: "absolute",
-        top: 0,
+        top: "-4px",
         right: "10px"
       }}
     >

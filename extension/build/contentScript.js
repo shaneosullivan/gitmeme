@@ -1144,7 +1144,7 @@ function listenToInput(input) {
             input.classList.add("__textareaHiddenText");
             setTimeout(() => {
                 input.classList.remove("__textareaHiddenText");
-            }, 1000);
+            }, 5000);
         }
         input.value = value;
         // Log to Google Analytics

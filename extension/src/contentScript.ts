@@ -166,9 +166,7 @@ function listenToInput(
         if (loggedInUser) {
           // Also store the used tokens locally, so they work even when
           // not authorized with the extension.
-          const tokenStorageKey = `image:${loggedInUser.id}_${
-            knownToken.token.value
-          }`;
+          const tokenStorageKey = `image:${loggedInUser.id}_${knownToken.token.value}`;
           chrome.storage.local.set({
             [tokenStorageKey]: knownToken.imageUrl
           });
@@ -181,7 +179,7 @@ function listenToInput(
       input.classList.add("__textareaHiddenText");
       setTimeout(() => {
         input.classList.remove("__textareaHiddenText");
-      }, 1000);
+      }, 5000);
     }
     input.value = value;
 
