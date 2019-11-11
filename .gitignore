@@ -66,6 +66,8 @@ typings/
 
 .DS_Store
 
+site/functions/src/service_account.ts
+
 ChromeGitmeme.zip
 FirefoxExtension.zip
 FirefoxSource.zip

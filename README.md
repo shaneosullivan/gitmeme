@@ -39,8 +39,24 @@ refresh the Github page you were testing on.
 ## API
 
 Gitmeme has an API is used to record the most popular images, and to fetch
-lists of them. It uses Google Firebase as a host. If you're not Shane you likely
-won't need to touch it.
+lists of them. It uses Google Firebase as a host. If you're not Shane you likely won't need to touch it.
+
+If you want to develop on your own Firebase project, you'll need to create
+a Service Account file in your Firebase project, and put it in the
+`site/functions/src/service_account.ts` file, see the
+`site/functions/src/service_account_example.ts` file for an example of how
+to format the file.
+
+To run the API locally for testing, do
+
+`cd site/functions`
+`yarn serve`
+`
+
+To use the local development version of the API from the extension, uncomment the `getFakeUrl()` function in the `shared/consts.ts` file. Note that this code should
+be commented out again before committing. You'll also need to temporarily add the line
+`"http://localhost:5000/*"` to the `permissions` in `extension/manifest.json`. This
+also should not be checked in
 
 ## Public Website
 
@@ -59,3 +75,8 @@ extension being used.
 The `image` page is linked to from every image that we insert, and shows the
 image passed through in the url, as well as some upsell that we can design
 to get more virality in the app.
+
+To run the site locally for development, do
+
+`cd site/ui`
+`yarn serve`

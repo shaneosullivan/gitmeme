@@ -1,4 +1,4 @@
-import serviceAccount from "../auth/service_account";
+import serviceAccount from "../service_account";
 import * as admin from "firebase-admin";
 
 let firebaseApp: admin.app.App = admin.initializeApp({
