@@ -422,7 +422,7 @@ const metaTag = document.head.querySelector('meta[property="og:site_name"]');
 if (
   metaTag &&
   metaTag["content"] &&
-  metaTag["content"].toLowerCase() === "github"
+  metaTag["content"].toLowerCase().startsWith("github")
 ) {
   getGithubInfo().then((localUserInfo: GithubInfo) => {
     userInfo = localUserInfo;
