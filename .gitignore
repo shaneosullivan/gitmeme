@@ -71,3 +71,6 @@ site/functions/src/service_account.ts
 ChromeGitmeme.zip
 FirefoxExtension.zip
 FirefoxSource.zip
+
+# the build dir
+extension/build
