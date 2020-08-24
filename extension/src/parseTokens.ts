@@ -6,12 +6,6 @@ export interface Token {
 // Find all words beginning with "/"
 const regex = /(?<!\w)\/\w+/g;
 
-const charPrefixes = {
-  "\n": true,
-  "\t": true,
-  " ": true
-};
-
 export default function parseTokens(str: string): Array<Token> {
   const ret = [];
 
@@ -22,9 +16,6 @@ export default function parseTokens(str: string): Array<Token> {
       // This is probably doable in regex, but screw it...
       // Filter it out so that only tokens that are
       // - at the start of a line
-      // -   or after a space or a tab
-      // - are at the end of a line
-      // -   or are followed by a space or a tab
       // - are not inside an <img> tag
       // are valid
 
@@ -33,14 +24,14 @@ export default function parseTokens(str: string): Array<Token> {
       let startIsValid = index === 0;
       if (!startIsValid) {
         const letterBefore = str.charAt(index - 1);
-        startIsValid = !!charPrefixes[letterBefore];
+        startIsValid = letterBefore == "\n";
       }
 
       let endIsValid = index + match[0].length === str.length;
       if (!endIsValid) {
         // If not at the end of the string, check the characters after it
         const letterAfter = str.charAt(index + match[0].length);
-        endIsValid = !!charPrefixes[letterAfter];
+        endIsValid = letterAfter == "\n";
       }
 
       let outsideImageValid = true;
