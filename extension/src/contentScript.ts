@@ -141,7 +141,8 @@ function listenToInput(
           knownToken.token.value
         )}"><img src="${
           knownToken.imageUrl
-        }" title="Created by gitme.me with /${knownToken.token.value}"/></a>`;
+        }" title="Created by gitme.me with /${knownToken.token.value}"
+        alt="${knownToken.token.value}"/></a>`;
         value =
           value.substring(0, knownToken.token.index) +
           tagInsert +
