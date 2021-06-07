@@ -15,7 +15,8 @@
       "matches": [
         "https://*.github.com/*",
         "https://github.com/*",
-        "https://git.musta.ch/*"
+        "https://git.musta.ch/*",
+        "https://git.autodesk.com/*"
       ],
       "css": ["build/style.css"],
       "js": ["build/contentScript.js"]
