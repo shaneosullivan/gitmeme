@@ -4,19 +4,21 @@
   "description": "Easily add memes to your Github comments by simply typing a word after a forward slash, like /shipit",
   "manifest_version": 2,
   "permissions": [
+    "contextMenus",
     "activeTab",
     "identity",
     "storage",
     "https://us-central1-git-meme-prod.cloudfunctions.net/",
     "https://api.giphy.com/"
   ],
+  "optional_permissions": [
+      "*://*/*"
+  ],
   "content_scripts": [
     {
       "matches": [
         "https://*.github.com/*",
-        "https://github.com/*",
-        "https://git.musta.ch/*",
-        "https://git.autodesk.com/*"
+        "https://github.com/*"
       ],
       "css": ["build/style.css"],
       "js": ["build/contentScript.js"]
@@ -33,7 +35,9 @@
     "popup/index.html"
   ],
   "background": {
-    "scripts": ["build/background.js"],
+    "scripts": [
+        "build/background.js"
+    ],
     "persistent": false
   },
   "icons": {
