@@ -103,7 +103,7 @@ export default function TokenModal(props: Props) {
             />
           );
         })}
-        {props.images.length % 2 !== 0 ? <div className="__image" /> : null}) }
+        {props.images.length % 2 !== 0 ? <div className="__image" /> : null}
         {!canAddNewImage ? (
           <div className="loginMessage">
             <button
