@@ -626,4 +626,8 @@ pre tt:after {
   html {
     font-size: 100%;
   }
+
+  .non-mobile {
+    display: none;
+  }
 }

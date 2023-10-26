@@ -74,3 +74,5 @@ FirefoxSource.zip
 
 # the build dir
 extension/build
+setupenv.sh
+.last_modified_timestamp

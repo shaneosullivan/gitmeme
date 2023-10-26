@@ -31,3 +31,39 @@
   margin-top: -16px;
   margin-right: 12px;
 }
+
+.Header .headerLink {
+  color: white;
+  position: absolute;
+  text-decoration: none;
+  top: -4px;
+}
+
+.Header .headerLinkFeedback {
+  right: 140px;
+}
+
+.Header .headerLinkSource {
+  right: 216px;
+}
+
+.Header .headerLinkTwitter {
+  right: 10px;
+}
+
+@media only screen and (max-width: 480px) {
+  .Header .Header-item {
+    margin-right: 0px;
+  }
+
+  .Header .headerLink {
+    top: 0px;
+  }
+  .Header .headerLinkFeedback {
+    right: 120px;
+  }
+
+  .Header .headerLinkTwitter {
+    right: 0px;
+  }
+}

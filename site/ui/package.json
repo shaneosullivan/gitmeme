@@ -36,6 +36,7 @@
   "scripts": {
     "build": "../../scripts/copy_shared_files.sh && gatsby build",
     "develop": "../../scripts/copy_shared_files.sh && gatsby develop",
+    "deploy": "yarn build && firebase deploy --only hosting",
     "format": "prettier --write src/**/*.{js,jsx}",
     "start": "../../scripts/copy_shared_files.sh && gatsby develop",
     "serve": "gatsby serve",

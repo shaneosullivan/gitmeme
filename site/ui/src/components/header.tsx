@@ -28,7 +28,7 @@ const Header = ({ siteTitle }: Props) => {
             to="/"
             style={{
               color: `white`,
-              textDecoration: `none`
+              textDecoration: `none`,
             }}
           >
             {siteTitle || ""}
@@ -38,17 +38,31 @@ const Header = ({ siteTitle }: Props) => {
         <a
           href="https://github.com/shaneosullivan/gitmeme/discussions"
           target="_blank"
+          className="headerLink headerLinkSource non-mobile"
           style={{
             color: "white",
             textDecoration: "none",
             position: "absolute",
             top: "-4px",
-            right: "140px"
+            right: "216px",
           }}
+        >
+          Source
+        </a>
+        <a
+          href="https://github.com/shaneosullivan/gitmeme/discussions"
+          target="_blank"
+          className="headerLink headerLinkFeedback"
         >
           Feedback
         </a>
-        <TwitterButton />
+        <a
+          href="https://twitter.com/Gitmeme_rocks"
+          target="_blank"
+          className="headerLink headerLinkTwitter"
+        >
+          @Gitmeme_rocks
+        </a>
       </div>
     </header>
   );
