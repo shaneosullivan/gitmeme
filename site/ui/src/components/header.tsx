@@ -36,7 +36,7 @@ const Header = ({ siteTitle }: Props) => {
           </Link>
         </h1>
         <a
-          href="https://spectrum.chat/gitmeme"
+          href="https://github.com/shaneosullivan/gitmeme/discussions"
           target="_blank"
           style={{
             color: "white",
