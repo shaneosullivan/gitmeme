@@ -13,8 +13,6 @@ export function getTokenHeadless(
   callback: Function,
   githubInfo: GithubInfo
 ) {
-  console.log("getToken");
-
   const localRedirectUri = (chrome as any).identity.getRedirectURL(
     "provider_cb"
   );
@@ -33,8 +31,6 @@ export function getTokenHeadless(
       "&redirect_uri=" +
       encodeURIComponent(redirectUri),
   };
-
-  console.log("got github info ", githubInfo);
 
   if (!githubInfo.token || !githubInfo.id || !githubInfo.avatar) {
     console.log("calling launchWebAuthFlow with options", options);

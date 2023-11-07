@@ -32,8 +32,6 @@ export function getTokenHeadless(
       encodeURIComponent(redirectUri),
   };
 
-  console.log("got github info ", githubInfo);
-
   if (!githubInfo.token || !githubInfo.id || !githubInfo.avatar) {
     console.log("calling launchWebAuthFlow with options", options);
     chrome.identity.launchWebAuthFlow(options, function (redirectUri2: string) {

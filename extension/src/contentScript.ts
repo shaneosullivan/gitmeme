@@ -261,6 +261,9 @@ function listenToInput(input: HTMLInputElement): {
       toolbarButtonItem.style.backgroundImage = `url(${chrome.runtime.getURL(
         "assets/icon-48x48.png"
       )})`;
+      toolbarButtonItem.style.border = "0px none";
+      toolbarButtonItem.style.marginTop = "8px";
+
       // toolbarButtonItem.textContent = TOOLBAR_BUTTON_LABEL;
 
       toolbarButton.appendChild(toolbarButtonItem);

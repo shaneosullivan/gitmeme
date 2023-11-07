@@ -16,7 +16,6 @@ export async function getGithubInfo(): Promise<GithubInfo> {
       ["github_token", "github_id", "github_avatar"],
       function (results: any) {
         if (results.github_token) {
-          console.log("getGithubInfo github token:", results);
           resolve({
             token: results.github_token || null,
             id: results.github_id || null,
@@ -25,7 +24,6 @@ export async function getGithubInfo(): Promise<GithubInfo> {
           });
         } else {
           const loggedInUser = getLoggedInUser();
-          console.log("getGithubInfo loggedInUser:", loggedInUser);
           resolve({
             token: null,
             id: loggedInUser ? loggedInUser.id : null,
