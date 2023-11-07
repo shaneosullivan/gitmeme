@@ -5,8 +5,8 @@
   "main": "build/contentScript.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "../scripts/copy_shared_files.sh && webpack --config webpack/webpack.dev.js --watch",
-    "build": "../scripts/copy_shared_files.sh && webpack --config webpack/webpack.prod.js && cp src/style.css build",
+    "watch": "npm run clean && ../scripts/copy_shared_files.sh && bun build src/contentScript.ts src/service_worker.ts --outdir build --watch",
+    "build": "npm run clean && ../scripts/copy_shared_files.sh && bun build src/contentScript.ts src/service_worker.ts --outdir build && cp src/style.css build",
     "clean": "rimraf build"
   },
   "repository": {
@@ -30,6 +30,7 @@
   "devDependencies": {
     "@types/chrome": "~0.0.83",
     "@types/jquery": "~3.3.29",
+    "bun": "^1.0.10",
     "copy-webpack-plugin": "^5.0.3",
     "rimraf": "^2.6.3",
     "ts-loader": "~5.4.3",

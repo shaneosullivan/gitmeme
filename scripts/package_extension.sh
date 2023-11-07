@@ -9,14 +9,14 @@ cd "$DIR/.."
 
 rm -rf ~/gitmeme
 mkdir ~/gitmeme
-rsync -av --exclude="node_modules" --exclude="webpack" --exclude="yarn.lock" --exclude="tsconfig.json" "$DIR/../extension" ~/gitmeme/
+rsync -av --exclude="node_modules" --exclude="yarn.lock" --exclude="tsconfig.json" "$DIR/../extension" ~/gitmeme/
 
 cd ~/gitmeme/
 
 mv extension Gitmeme
 
 cd Gitmeme/build
-ls  | grep -v contentScript.js | grep -v style.css | grep -v background.js | xargs rm
+ls  | grep -v contentScript.js | grep -v style.css | grep -v service_worker.js | xargs rm
 rm -rf util
 rmdir util
 

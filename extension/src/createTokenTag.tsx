@@ -1,10 +1,10 @@
 import * as React from "./lib/react";
 import { Token } from "./parseTokens";
-import * as getCaretCoordinates from "textarea-caret";
+import getCaretCoordinates from "textarea-caret";
 import * as ReactDOM from "./lib/react-dom";
 import searcher from "./searcher";
 import TokenTag from "./components/TokenTag";
-import * as uuid from "uuid";
+import uuid from "uuid";
 // import getToken from "./shared/auth/getToken";
 // import { GithubInfo } from "./shared/auth/githubInfo";
 import { sendEvent } from "./shared/analytics";

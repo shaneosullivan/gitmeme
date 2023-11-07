@@ -1,4 +1,4 @@
-import * as fetch from "node-fetch";
+// import fetch from "node-fetch";
 import { API_ROOT_URL } from "./shared/consts";
 import createAuthHeader from "./shared/auth/createAuthHeader";
 import { getGithubInfo } from "./shared/auth/githubInfo";
@@ -71,17 +71,17 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
 
     fetch(gitmemeUrl, {
       headers: {
-        ...createAuthHeader(userInfo.id, userInfo.token)
-      }
+        ...createAuthHeader(userInfo.id, userInfo.token),
+      },
     })
-      .then(function(response) {
+      .then(function (response) {
         if (!response.ok) {
           throw Error(response.statusText);
         }
         // Read the response as json.
         return response.json();
       })
-      .then(function(data) {
+      .then(function (data) {
         // Do stuff with the JSON
         gitmemeComplete = true;
         if (data && data.results && data.results.length > 0) {
@@ -96,7 +96,7 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
           doResolve();
         }
       })
-      .catch(function(error) {
+      .catch(function (error) {
         console.log("Looks like there was a problem: \n", error);
       });
 
@@ -105,7 +105,7 @@ export default async function searcher(tokenValue): Promise<Array<string>> {
 
       if (giphyResult.data && giphyResult.data.length > 0) {
         giphyResult.data
-          .map(imageData => imageData.images.downsized_medium.url)
+          .map((imageData) => imageData.images.downsized_medium.url)
           .forEach((url: string) => {
             // "https://media1.giphy.com/media/pHXfAOUcHlNo6oKjZv/giphy.gif?cid=2972a2b15d1d90c568723336731fb8e4&rid=giphy.gif"
             // Remove unnecessary parts of the Giphy url, as above, since these

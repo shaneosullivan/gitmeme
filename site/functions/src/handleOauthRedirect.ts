@@ -1,5 +1,5 @@
 import * as express from "express";
-import fetch from "node-fetch";
+// import fetch from "node-fetch";
 import { firestore as firestoreType } from "firebase-admin";
 
 const GITHUB_CLIENT_ID = "9b9e17e168e82438cfb6";
@@ -75,9 +75,9 @@ async function createOrUpdateUser(
 
   const result = await fetch("https://api.github.com/user", {
     headers: {
-      Authorization: `token ${token}`
-    }
-  }).then(resp => {
+      Authorization: `token ${token}`,
+    },
+  }).then((resp) => {
     return resp.json();
   });
 
@@ -90,7 +90,7 @@ async function createOrUpdateUser(
   if (existingDoc.exists) {
     const updateData = {
       avatar,
-      auth_tokens: (existingDoc.get("auth_tokens") || []).concat([token])
+      auth_tokens: (existingDoc.get("auth_tokens") || []).concat([token]),
     };
     console.log("updating a user with ", updateData);
 
@@ -99,7 +99,7 @@ async function createOrUpdateUser(
     const data = {
       uid: userId,
       avatar,
-      auth_tokens: [token]
+      auth_tokens: [token],
     };
     console.log("creating a user with ", data);
     await docRef.set(data);
@@ -149,8 +149,8 @@ async function exchangeCodeForToken(code: string): Promise<string> {
         method: "GET",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-          Accept: "application/json"
-        }
+          Accept: "application/json",
+        },
       }).then((data: any) => data.json());
     } catch (err) {
       console.log("fetch got error", err);
