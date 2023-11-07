@@ -1,12 +1,10 @@
 {
   "name": "GitMeme",
-  "version": "1.8",
+  "version": "1.9",
   "description": "Easily add memes to your Github comments by simply typing a word after a forward slash, like /shipit",
-  "manifest_version": 2,
-  "permissions": [
-    "activeTab",
-    "identity",
-    "storage",
+  "manifest_version": 3,
+  "permissions": ["activeTab", "identity", "storage"],
+  "host_permissions": [
     "https://us-central1-git-meme-prod.cloudfunctions.net/",
     "https://api.giphy.com/"
   ],
@@ -21,20 +19,26 @@
       "js": ["build/contentScript.js"]
     }
   ],
-  "browser_action": {
+  "action": {
     "default_popup": "popup/index.html"
   },
   "web_accessible_resources": [
-    "assets/selectedButton.png",
-    "assets/collapseButton.png",
-    "assets/expandButton.png",
-    "assets/icon-48x48.png",
-    "popup/index.html"
+    {
+      "resources": [
+        "assets/selectedButton.png",
+        "assets/collapseButton.png",
+        "assets/expandButton.png",
+        "assets/icon-48x48.png",
+        "popup/index.html"
+      ],
+      "matches": ["*://*/*"]
+    }
   ],
+  "minimum_chrome_version": "93",
   "background": {
-    "scripts": ["build/background.js"],
-    "persistent": false
+    "service_worker": "build/service_worker.js"
   },
+
   "icons": {
     "16": "assets/icon-16x16.png",
     "48": "assets/icon-48x48.png",

@@ -1,11 +1,18 @@
 import { GITHUB_CLIENT_ID } from "../consts";
-import { getGithubInfo, setGithubUserId, setGithubToken } from "./githubInfo";
+import {
+  getGithubInfo,
+  setGithubUserId,
+  setGithubToken,
+  GithubInfo,
+} from "./githubInfo";
 
 declare const chrome: any;
 
-export default function getToken(interactive: boolean, callback: Function) {
-  console.log("getToken");
-
+export function getTokenHeadless(
+  interactive: boolean,
+  callback: Function,
+  githubInfo: GithubInfo
+) {
   const localRedirectUri = (chrome as any).identity.getRedirectURL(
     "provider_cb"
   );
@@ -22,44 +29,39 @@ export default function getToken(interactive: boolean, callback: Function) {
       "?client_id=" +
       GITHUB_CLIENT_ID +
       "&redirect_uri=" +
-      encodeURIComponent(redirectUri)
+      encodeURIComponent(redirectUri),
   };
 
-  getGithubInfo().then(async info => {
-    console.log("got github info ", info);
-    if (!info.token || !info.id || !info.avatar) {
-      console.log("calling launchWebAuthFlow with options", options);
-      chrome.identity.launchWebAuthFlow(options, function(
-        redirectUri2: string
-      ) {
-        console.log("launchWebAuthFlow callback with redirect ", redirectUri2);
-        if (chrome.runtime.lastError) {
-          console.error("launchWebAuthFlow error", chrome.runtime.lastError);
-          callback(new Error(chrome.runtime.lastError));
-          return;
-        }
+  if (!githubInfo.token || !githubInfo.id || !githubInfo.avatar) {
+    console.log("calling launchWebAuthFlow with options", options);
+    chrome.identity.launchWebAuthFlow(options, function (redirectUri2: string) {
+      console.log("launchWebAuthFlow callback with redirect ", redirectUri2);
+      if (chrome.runtime.lastError) {
+        console.error("launchWebAuthFlow error", chrome.runtime.lastError);
+        callback(new Error(chrome.runtime.lastError));
+        return;
+      }
 
-        // Upon success the response is appended to redirectUri, e.g.
-        // https://{app_id}.chromiumapp.org/provider_cb#access_token={value}
-        //     &refresh_token={value}
-        const matches = redirectUri2.match(redirectRe);
+      // Upon success the response is appended to redirectUri, e.g.
+      // https://{app_id}.chromiumapp.org/provider_cb#access_token={value}
+      //     &refresh_token={value}
+      const matches = redirectUri2.match(redirectRe);
 
-        console.log("matches = ", matches);
-        if (matches && matches.length > 1) {
-          console.log("calling handleProviderResponse");
-          handleProviderResponse(parseRedirectFragment(matches[1]));
-        } else {
-          callback("Invalid redirect URI");
-        }
-      });
-    }
-  });
+      console.log("matches = ", matches);
+      if (matches && matches.length > 1) {
+        console.log("calling handleProviderResponse");
+        handleProviderResponse(parseRedirectFragment(matches[1]));
+      } else {
+        callback("Invalid redirect URI");
+      }
+    });
+  }
 
   function parseRedirectFragment(fragment: string) {
     const pairs = fragment.split(/&/);
     const values: { [key: string]: string } = {};
 
-    pairs.forEach(function(pair) {
+    pairs.forEach(function (pair) {
       const nameVal = pair.split(/=/);
       values[nameVal[0]] = nameVal[1];
     });
@@ -86,4 +88,10 @@ export default function getToken(interactive: boolean, callback: Function) {
     await setGithubUserId(userId, avatar);
     callback(null, { token, id: userId, avatar });
   }
+}
+
+export default function getToken(interactive: boolean, callback: Function) {
+  getGithubInfo().then(async (githubInfo) => {
+    getTokenHeadless(interactive, callback, githubInfo);
+  });
 }

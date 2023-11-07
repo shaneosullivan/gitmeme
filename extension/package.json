@@ -1,6 +1,6 @@
 {
   "name": "gitmeme",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Meme tool for Github",
   "main": "build/contentScript.js",
   "scripts": {

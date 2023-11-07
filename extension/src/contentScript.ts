@@ -15,9 +15,7 @@ let githubContext = null;
 // Get the logged in user from the DOM
 const loggedInUser = getLoggedInUser();
 
-function listenToInput(
-  input: HTMLInputElement
-): {
+function listenToInput(input: HTMLInputElement): {
   input: HTMLElement;
   remove: Function;
 } {
@@ -39,15 +37,15 @@ function listenToInput(
 
       if (tokens.length > 0) {
         // Filter the tokens that we already know about
-        const unknownTokens = tokens.filter(token => {
-          return !knownTokens.some(knownToken => {
+        const unknownTokens = tokens.filter((token) => {
+          return !knownTokens.some((knownToken) => {
             return (
               knownToken.token.index === token.index &&
               knownToken.token.value === token.value
             );
           });
         });
-        unknownTokens.forEach(token => {
+        unknownTokens.forEach((token) => {
           try {
             const tokenTag = createTokenTag(
               input,
@@ -62,8 +60,8 @@ function listenToInput(
         });
       }
       // Remove any tokens that are no longer valid
-      knownTokens = knownTokens.filter(knownToken => {
-        const stillExists = tokens.some(newToken => {
+      knownTokens = knownTokens.filter((knownToken) => {
+        const stillExists = tokens.some((newToken) => {
           return (
             knownToken.token.index === newToken.index &&
             knownToken.token.value === newToken.value
@@ -99,7 +97,7 @@ function listenToInput(
   }
 
   function cleanUp() {
-    knownTokens.forEach(knownToken => {
+    knownTokens.forEach((knownToken) => {
       knownToken.remove();
     });
     knownTokens = [];
@@ -131,7 +129,7 @@ function listenToInput(
     });
 
     let value = input.value;
-    knownTokens.forEach(knownToken => {
+    knownTokens.forEach((knownToken) => {
       if (knownToken.isValid && !knownToken.disabled) {
         const tagInsert = `<a href="https://gitme.me/image?url=${encodeURIComponent(
           knownToken.imageUrl
@@ -154,14 +152,14 @@ function listenToInput(
           method: "POST",
           headers: isLoggedIn
             ? {
-                ...createAuthHeader(userInfo.id, userInfo.token)
+                ...createAuthHeader(userInfo.id, userInfo.token),
               }
             : {},
           body: JSON.stringify({
             image_url: knownToken.imageUrl,
             token: knownToken.token.value,
-            context: githubContext
-          })
+            context: githubContext,
+          }),
         });
 
         if (loggedInUser) {
@@ -169,7 +167,7 @@ function listenToInput(
           // not authorized with the extension.
           const tokenStorageKey = `image:${loggedInUser.id}_${knownToken.token.value}`;
           chrome.storage.local.set({
-            [tokenStorageKey]: knownToken.imageUrl
+            [tokenStorageKey]: knownToken.imageUrl,
           });
         }
       }
@@ -231,18 +229,18 @@ function listenToInput(
       const result = await fetch(`${API_ROOT_URL}/add_token_by_url`, {
         method: "POST",
         headers: {
-          ...createAuthHeader(userInfo.id, userInfo.token)
+          ...createAuthHeader(userInfo.id, userInfo.token),
         },
         body: JSON.stringify({
           image_url: url,
           token: tokenValue,
-          context: githubContext
-        })
+          context: githubContext,
+        }),
       });
 
       resolve({
         status: result.status === 200,
-        image_url: result["image_url"] || ""
+        image_url: result["image_url"] || "",
       });
     });
   }
@@ -260,7 +258,7 @@ function listenToInput(
 
       toolbarButtonItem = document.createElement("button");
       toolbarButtonItem.className = "toolbar-item __toolbarButtonItem";
-      toolbarButtonItem.style.backgroundImage = `url(${chrome.extension.getURL(
+      toolbarButtonItem.style.backgroundImage = `url(${chrome.runtime.getURL(
         "assets/icon-48x48.png"
       )})`;
       // toolbarButtonItem.textContent = TOOLBAR_BUTTON_LABEL;
@@ -308,7 +306,7 @@ function listenToInput(
     // Handle the Esc key
     if (keyCode === 27) {
       closePopupIframe();
-      knownTokens.forEach(token => token.closeModal());
+      knownTokens.forEach((token) => token.closeModal());
     }
   }
 
@@ -335,7 +333,7 @@ function listenToInput(
   }
 
   const updatePosition = throttle(() => {
-    knownTokens.forEach(token => {
+    knownTokens.forEach((token) => {
       token.reposition();
     });
   }, 100);
@@ -395,7 +393,7 @@ function listenToInput(
 
   // In case the input is simply removed from the DOM without
   // being submitted, clean up too
-  var mutationObserver = new MutationObserver(function(evt) {
+  var mutationObserver = new MutationObserver(function (evt) {
     if (
       evt[0].removedNodes &&
       Array.from(evt[0].removedNodes).indexOf(input) > -1
@@ -413,12 +411,13 @@ function listenToInput(
 
   const ret = {
     input,
-    remove: cleanUp
+    remove: cleanUp,
   };
   return ret;
 }
 
 const metaTag = document.head.querySelector('meta[property="og:site_name"]');
+
 // Need to support Github Enterprise too, so check that the page is in fact Github
 if (
   metaTag &&

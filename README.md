@@ -16,16 +16,27 @@ The browser extension is written in TypeScript, but is otherwise vanilla code, n
 React used. This is because it mostly involves modifying the existing
 website contents of Github.com.
 
-First install the extension into Chrome by going to `chrome://extensions` and
+First, build the extension in a terminal/shell with
+
+```
+cd extension
+npm run build
+```
+
+Next, install the extension into Chrome by going to `chrome://extensions` and
 clicking the `Load unpacked extension button`, then choosing the `/extension` folder.
 
 The main file that is loaded is `/extension/src/contentScript.ts`: this is the entry point for the
 extension. To modify the CSS, change the `/extension/src/style.css` file.
 
 Because the extension is built with Typescript, you need to run a build script to
-see the effects in the browser. Do this by running `yarn build` in the `/extension`
+see the effects in the browser. Do this by running `npm run build` in the `/extension`
 folder. Then, go to `chrome://extensions` in your browser and click the refresh button
 in the Gitmeme extension. Next, refresh the Github page you were testing on.
+
+While developing the extension, you can run `npm run watch` so that the build is executed
+every time you change a file. You will still need to click the refresh button in
+`chrome://extensions` however.
 
 ## Browser Extension Popup
 

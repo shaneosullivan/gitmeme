@@ -9,6 +9,7 @@ import * as uuid from "uuid";
 // import { GithubInfo } from "./shared/auth/githubInfo";
 import { sendEvent } from "./shared/analytics";
 import throttle from "./util/throttle";
+import { getGithubInfo } from "./shared/auth/githubInfo";
 
 const TAG_CONTAINER_ID = "__tagContainer";
 const TEXT_HEIGHT = 18;
@@ -108,17 +109,23 @@ export default function createTokenTag(
         trimBottom={record.trimBottom}
         onLogIn={() => {
           sendEvent("action", "login", "begin", "inline");
-          chrome.runtime.sendMessage({ data: "login" }, success => {
-            if (success) {
-              function reload() {
-                window.location.reload();
+
+          getGithubInfo().then((githubInfo) => {
+            chrome.runtime.sendMessage(
+              { data: "login", githubInfo },
+              (success) => {
+                if (success) {
+                  function reload() {
+                    window.location.reload();
+                  }
+                  sendEvent("action", "login", "success", "inline")
+                    .then(reload)
+                    .catch(reload);
+                } else {
+                  sendEvent("action", "login", "fail", "inline");
+                }
               }
-              sendEvent("action", "login", "success", "inline")
-                .then(reload)
-                .catch(reload);
-            } else {
-              sendEvent("action", "login", "fail", "inline");
-            }
+            );
           });
         }}
         onSelectImage={(url: string) => {
@@ -246,7 +253,7 @@ export default function createTokenTag(
     record.position = {
       top,
       left,
-      width: endCoords.left - startCoords.left
+      width: endCoords.left - startCoords.left,
     };
 
     renderTag();
@@ -311,7 +318,7 @@ export default function createTokenTag(
     position: { top: 0, left: 0, width: 0 },
     trimTop: 0,
     trimBottom: 0,
-    formIsAbsolutelyPositioned
+    formIsAbsolutelyPositioned,
   };
 
   reposition();
