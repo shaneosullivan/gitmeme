@@ -110,7 +110,8 @@ function listenToInput(input: HTMLInputElement): {
     window.removeEventListener("resize", updatePosition);
     formNode.removeEventListener("submit", processPreSubmit, true);
     document.body.removeEventListener("keyup", handleBodyKeys);
-    previewTabButton.removeEventListener("click", processPreSubmit, true);
+    previewTabButton &&
+      previewTabButton.removeEventListener("click", processPreSubmit, true);
     document.body.removeEventListener("click", handleBodyClick);
   }
 
@@ -389,7 +390,8 @@ function listenToInput(input: HTMLInputElement): {
   window.addEventListener("resize", updatePosition);
   formNode.addEventListener("submit", processPreSubmit, true);
   document.body.addEventListener("keyup", handleBodyKeys);
-  previewTabButton.addEventListener("click", processPreSubmit, true);
+  previewTabButton &&
+    previewTabButton.addEventListener("click", processPreSubmit, true);
   document.body.addEventListener("click", handleBodyClick);
 
   addToolbarButton(formNode);

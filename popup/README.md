@@ -1,3 +1,11 @@
+# Gitmeme Popup React App
+
+This mini-app is shown as a popup when the user clicks the Gitmeme button in the toolbar of a textarea input
+on Github. It shows some stats for the memes that are used, and if the user logs in, it shows them
+their stats too.
+
+When the project is built using `npm run build`, it's build output is copied into the `/extension` folder.
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

@@ -2,9 +2,23 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Build the popup React app and the extension code
 cd "$DIR/../popup"
-yarn build
+source ~/.nvm/nvm.sh
+
+echo "=== Building Popup ==="
+
+nvm use 16
+npm run build
+
+echo "=== Building Popup Complete ==="
+
 cd "$DIR/../extension"
-yarn build
+
+echo "=== Building Extension ==="
+
+nvm use 18
+npm run build
+
+echo "=== Building Extension Complete ==="
 
 cd "$DIR/.."
 

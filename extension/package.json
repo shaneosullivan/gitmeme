@@ -5,7 +5,7 @@
   "main": "build/contentScript.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "npm run clean && ../scripts/copy_shared_files.sh && bun build src/contentScript.ts src/service_worker.ts --outdir build --watch",
+    "watch": "../scripts/copy_shared_files.sh && bun build src/contentScript.ts src/service_worker.ts --outdir build --watch",
     "build": "npm run clean && ../scripts/copy_shared_files.sh && bun build src/contentScript.ts src/service_worker.ts --outdir build && cp src/style.css build",
     "clean": "rimraf build"
   },

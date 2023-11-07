@@ -10,19 +10,28 @@ export default function getLoggedInUser() {
   if (!userName) {
     // The user name is hidden in a side panel, it's not in the alt of the profile
     // picture any more, which is just bad accessibility. Boo Github devs!
-    const userNameNode = document.querySelector(
-      "[data-target='deferred-side-panel.panel'] .AppHeader-logo + div span.Truncate-text"
-    ) as HTMLSpanElement;
-    if (userNameNode) {
-      userName = userNameNode.textContent
-        ? userNameNode.textContent.trim()
-        : null;
+
+    const userNameMetaNode = document.head.querySelector(
+      'meta[name="user-login"]'
+    );
+
+    if (userNameMetaNode) {
+      userName = userNameMetaNode.getAttribute("content");
+    } else {
+      const userNameNode = document.querySelector(
+        "[data-target='deferred-side-panel.panel'] .AppHeader-logo + div span.Truncate-text"
+      ) as HTMLSpanElement;
+      if (userNameNode) {
+        userName = userNameNode.textContent
+          ? userNameNode.textContent.trim()
+          : null;
+      }
     }
   }
 
   if (userName) {
     return {
-      id: userName,
+      id: userName.trim(),
       avatar: avatarUrl,
     };
   }
