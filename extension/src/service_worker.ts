@@ -7,8 +7,6 @@ chrome.runtime.onMessage.addListener(
     _sender,
     callback: Function
   ) => {
-    console.log("Chrome message:", message);
-
     if (message.data === "login") {
       if (!message.githubInfo) {
         console.error(
