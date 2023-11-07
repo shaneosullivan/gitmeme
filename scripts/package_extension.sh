@@ -1,5 +1,6 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+# Build the popup React app and the extension code
 cd "$DIR/../popup"
 yarn build
 cd "$DIR/../extension"
@@ -7,13 +8,18 @@ yarn build
 
 cd "$DIR/.."
 
+# Create a temp folder to hold the files
 rm -rf ~/gitmeme
 mkdir ~/gitmeme
+
+# Copy the extension code to the temp folder
 rsync -av --exclude="node_modules" --exclude="yarn.lock" --exclude="tsconfig.json" "$DIR/../extension" ~/gitmeme/
 
 cd ~/gitmeme/
 
+# Rename the temp extension folder to Gitmeme
 mv extension Gitmeme
+
 
 cd Gitmeme/build
 ls  | grep -v contentScript.js | grep -v style.css | grep -v service_worker.js | xargs rm
