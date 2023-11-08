@@ -2,12 +2,43 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "./Header";
+import { Icon, Icons } from "next/dist/lib/metadata/types/metadata-types";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Gitmeme",
   description: "Bring the joy of endless memes to Github",
+  authors: [
+    {
+      name: "Shane O'Sullivan",
+      url: "https://chofter.com",
+    },
+    {
+      name: "Karolis Kosas",
+      url: "https://karoliskosas.com",
+    },
+  ],
+  creator: "@chofter",
+  keywords: ["Github", "Gif", "Meme", "Gifs", "Memes"],
+  icons: {
+    icon: "/icons/icon-48x48.png",
+    shortcut: ["/icons/icon-48x48.png"],
+    apple: [],
+    other: [],
+  } as Icons,
+  twitter: {
+    card: "summary",
+    creator: "@chofter",
+    description: "Bring the joy of endless memes to Github",
+    title: "GitMeme",
+  },
+  openGraph: {
+    title: "GitMeme",
+    url: "https://gitme.me",
+    description: "Bring the joy of endless memes to Github",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -33,6 +64,18 @@ export default function RootLayout({
             </a>
           </footer>
         </main>
+        <script
+          async
+          defer
+          src="https://scripts.simpleanalyticscdn.com/latest.js"
+        ></script>
+        <noscript>
+          <img
+            src="https://queue.simpleanalyticscdn.com/noscript.gif"
+            alt=""
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </noscript>
       </body>
     </html>
   );

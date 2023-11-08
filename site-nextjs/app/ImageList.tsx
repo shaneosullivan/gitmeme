@@ -29,7 +29,6 @@ export default function ImageList() {
         }
       })
       .then((res: ApiTokenResult) => {
-        console.log("got api result", res);
         setTopTokens(res.global);
       })
       .catch((err) => {
@@ -40,14 +39,20 @@ export default function ImageList() {
 
   return (
     <div className={styles.root}>
-      {topTokens.map((token, idx) => {
-        return (
-          <span key={idx} className={styles.imageContainer}>
-            <h3>/{token.token}</h3>
-            <img src={token.image_url} style={{ maxHeight: "150px" }} />
-          </span>
-        );
-      })}
+      {loadError ? (
+        <div style={{ color: "red" }}>
+          Failed to load Trending Memes. Please refresh the page to try again
+        </div>
+      ) : (
+        topTokens.map((token, idx) => {
+          return (
+            <span key={idx} className={styles.imageContainer}>
+              <h3>/{token.token}</h3>
+              <img src={token.image_url} style={{ maxHeight: "150px" }} />
+            </span>
+          );
+        })
+      )}
     </div>
   );
 }
