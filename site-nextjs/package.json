@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "PORT=3005 next dev",
-    "build": "next build",
+    "build": "../scripts/copy_shared_files.sh && next build",
     "start": "next start",
     "lint": "next lint"
   },

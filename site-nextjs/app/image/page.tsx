@@ -1,4 +1,4 @@
-import { getStringValue } from "@/lib/shared/util/getStringValue";
+import { getStringValue } from "../../lib/util/getStringValue";
 import InstallButton from "../InstallButton";
 import styles from "../page.module.css";
 import { useParams } from "next/navigation";

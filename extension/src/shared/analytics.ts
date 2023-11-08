@@ -32,11 +32,13 @@ class Serializable {
   }
 
   toQueryString() {
-    const str = [];
+    const str: Array<string> = [];
     const obj = this.toObject() as { [key: string]: any };
     for (const p in obj) {
       if (obj.hasOwnProperty(p) && obj[p]) {
-        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+        str.push(
+          encodeURIComponent(p) + "=" + encodeURIComponent(obj[p] as string)
+        );
       }
     }
     return str.join("&");
@@ -98,7 +100,7 @@ class Analytics {
     this.userAgent = window.navigator.userAgent;
 
     this.parameters = {
-      ...additionalParameters
+      ...additionalParameters,
     };
 
     const storageKey = "analytics_id";
@@ -118,7 +120,7 @@ class Analytics {
 
             chrome.storage.local.set(obj);
           }
-          resolve();
+          resolve(true);
         }
       );
     });
@@ -181,8 +183,8 @@ class Analytics {
       let options = {
         method: "get",
         headers: {
-          "User-Agent": this.userAgent
-        }
+          "User-Agent": this.userAgent,
+        },
       };
 
       return fetch(url, options);
