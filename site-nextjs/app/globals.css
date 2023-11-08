@@ -102,6 +102,10 @@ main {
   padding-top: 0;
 }
 
+footer {
+  margin-top: 48px;
+}
+
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;

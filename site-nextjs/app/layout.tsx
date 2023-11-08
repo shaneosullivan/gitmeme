@@ -19,18 +19,20 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Header siteTitle={metadata.title as string} />
-        <main>{children}</main>
-        <footer>
-          © {new Date().getFullYear()}, Built by
-          {` `}
-          <a href="https://www.chofter.com" target="_blank">
-            Shane O'Sullivan
-          </a>{" "}
-          and{" "}
-          <a href="//karoliskosas.com" target="_blank">
-            Karolis Kosas
-          </a>
-        </footer>
+        <main>
+          {children}
+          <footer>
+            © {new Date().getFullYear()}, Built by
+            {` `}
+            <a href="https://www.chofter.com" target="_blank">
+              Shane O'Sullivan
+            </a>{" "}
+            and{" "}
+            <a href="//karoliskosas.com" target="_blank">
+              Karolis Kosas
+            </a>
+          </footer>
+        </main>
       </body>
     </html>
   );
