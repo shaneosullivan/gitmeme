@@ -1,0 +1,21 @@
+.root {
+  padding: 36px;
+  padding-left: 0px;
+}
+
+.imageContainer {
+  display: inline-block;
+  margin-bottom: 48px;
+  margin-right: 32px;
+  vertical-align: top;
+  width: 200px;
+}
+
+.imageContainer h3 {
+  width: 200px;
+}
+
+.imageContainer img {
+  max-width: 100%;
+  max-height: 200px;
+}

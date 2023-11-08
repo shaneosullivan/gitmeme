@@ -1,7 +1,7 @@
-import { Link } from "gatsby";
 import * as React from "react";
 
-import "./header.css";
+import styles from "./Header.module.css";
+import Link from "next/link";
 
 interface Props {
   siteTitle: string;
@@ -13,18 +13,18 @@ const Header = ({ siteTitle }: Props) => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = decodeURIComponent(urlParams.get("token") || "") || null;
     if (token) {
-      extraTitle = <span className="tokenTitle">for /{token}</span>;
+      extraTitle = <span className={styles.tokenTitle}>for /{token}</span>;
     }
   }
   return (
-    <header className="Header">
-      <a href="/" className="header-icon">
+    <header className={styles.Header}>
+      <a href="/" className={styles.headerIcon}>
         <img src="/icons/icon-48x48.png" />
       </a>
-      <div className="Header-item">
+      <div className={styles.Item}>
         <h1 style={{ margin: 0 }}>
           <Link
-            to="/"
+            href="/"
             style={{
               color: `white`,
               textDecoration: `none`,
@@ -35,9 +35,9 @@ const Header = ({ siteTitle }: Props) => {
           </Link>
         </h1>
         <a
-          href="https://github.com/shaneosullivan/gitmeme/discussions"
+          href="https://github.com/shaneosullivan/gitmeme"
           target="_blank"
-          className="headerLink headerLinkSource non-mobile"
+          className={`${styles.headerLink} ${styles.headerLinkSource} non-mobile`}
           style={{
             color: "white",
             textDecoration: "none",
@@ -51,14 +51,14 @@ const Header = ({ siteTitle }: Props) => {
         <a
           href="https://github.com/shaneosullivan/gitmeme/discussions"
           target="_blank"
-          className="headerLink headerLinkFeedback"
+          className={`${styles.headerLink} ${styles.headerLinkFeedback}`}
         >
           Feedback
         </a>
         <a
           href="https://twitter.com/Gitmeme_rocks"
           target="_blank"
-          className="headerLink headerLinkTwitter"
+          className={`${styles.headerLink} ${styles.headerLinkTwitter}`}
         >
           @Gitmeme_rocks
         </a>
