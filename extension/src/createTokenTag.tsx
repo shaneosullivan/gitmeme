@@ -52,14 +52,15 @@ export default function createTokenTag(
 
   let caretIsAtToken = false;
 
-  // Check if a parent of the form is absolutely positions, such as
-  // when reviewing a PR.  If so, but the tag into that DIV, so the
+  // Check if a parent of the form is absolutely positioned, such as
+  // when reviewing a PR.  If so, put the tag into that DIV, so the
   // scrolling of the page will not make the tag fly off the top
   // of the screen.
   let customContainerNode = textInput.parentElement;
   while (
     customContainerNode &&
-    !customContainerNode.classList.contains("position-absolute")
+    !customContainerNode.classList.contains("position-absolute") &&
+    customContainerNode["tagName"] !== "ANCHORED-POSITION"
   ) {
     customContainerNode = customContainerNode.parentElement;
   }
