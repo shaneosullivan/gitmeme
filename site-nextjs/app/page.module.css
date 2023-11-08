@@ -1,0 +1,25 @@
+.token {
+  background-color: #fff5b1;
+  border: 1px solid #ddd69b;
+  border-radius: 3px;
+  color: #576069;
+  font-size: 14px;
+  height: 20px;
+  line-height: 18px;
+  padding-left: 4px;
+  padding-right: 6px;
+  text-align: left;
+}
+
+.page p {
+  color: #24292e;
+  font-size: 16px;
+  padding-bottom: 32px;
+}
+
+.videoFrame {
+  width: 473px;
+  max-width: 90%;
+  height: 315px;
+  margin-bottom: 36px;
+}

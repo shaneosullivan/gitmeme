@@ -1,0 +1,69 @@
+.Header {
+  background-color: #24292e;
+  color: hsla(0, 0%, 100%, 0.7);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 1.45rem;
+  padding: 16px;
+  z-index: 32;
+}
+
+.Header .Item {
+  align-self: stretch;
+  margin-right: 16px;
+  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;
+  font-size: 14px;
+  position: relative;
+}
+
+.Header .Item h1 {
+  font-size: 14px;
+}
+
+.Header .tokenTitle {
+  padding-left: 16px;
+}
+
+.Header .headerIcon {
+  float: left;
+  margin-top: -16px;
+  margin-right: 12px;
+}
+
+.Header .headerLink {
+  color: white;
+  position: absolute;
+  text-decoration: none;
+  top: -4px;
+}
+
+.Header .headerLinkFeedback {
+  right: 140px;
+}
+
+.Header .headerLinkSource {
+  right: 216px;
+}
+
+.Header .headerLinkTwitter {
+  right: 10px;
+}
+
+@media only screen and (max-width: 480px) {
+  .Header .Header-item {
+    margin-right: 0px;
+  }
+
+  .Header .headerLink {
+    top: 0px;
+  }
+  .Header .headerLinkFeedback {
+    right: 120px;
+  }
+
+  .Header .headerLinkTwitter {
+    right: 0px;
+  }
+}
