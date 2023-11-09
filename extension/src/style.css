@@ -178,7 +178,7 @@
 .__tokenTagModal .__image img.__memeImage {
   float: left;
   transition: opacity 0.3s linear, transform 1s linear;
-  opacity: 0;
+  opacity: 0.6;
   position: absolute;
 }
 

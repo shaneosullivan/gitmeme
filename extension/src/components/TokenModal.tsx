@@ -22,7 +22,7 @@ enum NewUrlSubmitState {
   NOT_SUBMITTING,
   SUBMITTING,
   FAILED,
-  SUCCEEDED
+  SUCCEEDED,
 }
 
 interface ExternalLink {
@@ -33,20 +33,20 @@ interface ExternalLink {
 const AddNewLinks: Array<ExternalLink> = [
   {
     url: "https://images.google.com",
-    label: "Google Images"
+    label: "Google Images",
   },
   {
     url: "https://imgflip.com/memegenerator",
-    label: "Imgflip"
+    label: "Imgflip",
   },
   {
     url: "https://makeameme.org/memegenerator",
-    label: "Make A Meme"
+    label: "Make A Meme",
   },
   {
     url: "https://imgur.com/memegen",
-    label: "Imgur"
-  }
+    label: "Imgur",
+  },
 ];
 
 export default function TokenModal(props: Props) {
@@ -90,6 +90,7 @@ export default function TokenModal(props: Props) {
               isExpanded={expandedImageUrl && url === expandedImageUrl}
               isSelected={isSelected}
               src={url}
+              index={idx}
               onSelectImage={props.onSelectImage}
               onToggleExpanded={(imgUrl: string, imageHeight: number) => {
                 if (expandedImageUrl === imgUrl) {
@@ -103,7 +104,7 @@ export default function TokenModal(props: Props) {
             />
           );
         })}
-        {props.images.length % 2 !== 0 ? <div className="__image" /> : null}) }
+        {props.images.length % 2 !== 0 ? <div className="__image" /> : null}
         {!canAddNewImage ? (
           <div className="loginMessage">
             <button
@@ -150,7 +151,7 @@ export default function TokenModal(props: Props) {
                 a meme, you can use one of these sites
               </div>
               <div className="thirdPartySiteLinks">
-                {AddNewLinks.map(linkInfo => {
+                {AddNewLinks.map((linkInfo) => {
                   return (
                     <a href={linkInfo.url} target="_blank">
                       {linkInfo.label}
@@ -163,7 +164,7 @@ export default function TokenModal(props: Props) {
                 placeholder="Enter image URL"
                 value={newUrl}
                 style={{ marginTop: "6px", width: "100%" }}
-                onChange={evt => {
+                onChange={(evt) => {
                   setNewUrl(evt.target.value);
                 }}
               />
@@ -263,7 +264,7 @@ export default function TokenModal(props: Props) {
           </>
         ) : (
           <>
-            {props.images.some(url => url.indexOf("giphy.com") > -1) ? (
+            {props.images.some((url) => url.indexOf("giphy.com") > -1) ? (
               <span className="_attribution">Powered by Giphy</span>
             ) : null}
             {props.images.length > 0 ? (
