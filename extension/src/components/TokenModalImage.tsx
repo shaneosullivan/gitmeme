@@ -199,8 +199,6 @@ export default function TokenModalImage(props: Props) {
         }
         onClick={() => {
           // Calculate the height of the image
-          const parentWidth = getParentSize().width;
-
           const height =
             imageSize.height * (getParentSize().width / imageSize.width);
 
