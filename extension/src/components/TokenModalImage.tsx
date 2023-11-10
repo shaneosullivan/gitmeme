@@ -71,9 +71,8 @@ export default function TokenModalImage(props: Props) {
   useEffect(() => {
     if (!sizeTimerRef.current && !isLoaded) {
       sizeTimerRef.current = setInterval(() => {
-        console.log("interval running");
         const img = imgRef.current as HTMLImageElement;
-        if (!isLoaded) {
+        if (img && !isLoaded) {
           if (img.width > 0 && img.height > 0) {
             updateImgSize();
           }

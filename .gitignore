@@ -76,3 +76,4 @@ FirefoxSource.zip
 extension/build
 setupenv.sh
 .last_modified_timestamp
+site-nextjs/firebase.env

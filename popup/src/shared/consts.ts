@@ -5,6 +5,6 @@ export const API_ROOT_URL =
 // DO NOT CHECK IN
 // function getFakeUrl() {
 //   console.error("Do not check this in");
-//   return "http://localhost:5000/git-meme-prod/us-central1/api";
+//   return "http://localhost:3005/api";
 // }
 // export const API_ROOT_URL = getFakeUrl();
