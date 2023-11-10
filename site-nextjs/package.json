@@ -3,9 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "PORT=3005 source ./firebase.env &&  next dev",
+    "dev": "PORT=3005 source ./firebase.env && ./scripts/dev.sh",
+    "nextdev": "next dev",
     "build": "../scripts/copy_shared_files.sh && next build",
     "start": "next start",
+    "cleanupDev": "bun ./scripts/cleanupDev.ts",
+    "startDev": "bun ./scripts/setupDev.ts",
     "lint": "next lint"
   },
   "dependencies": {
@@ -18,6 +21,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "bun": "^1.0.11",
     "typescript": "^5"
   }
 }
