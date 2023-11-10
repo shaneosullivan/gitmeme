@@ -15,3 +15,16 @@ import fs from "fs";
     fs.writeFileSync(filePath, contents);
   }
 }
+
+// Modify the contents of the /shared/consts.ts file to make the extension
+// read from localhost
+{
+  const filePath = `${__dirname}/../../shared/consts.ts`;
+  let contents = fs.readFileSync(filePath).toString();
+  const needle = "const IS_RUNNING_LOCAL =";
+
+  if (contents.indexOf(`${needle} false`) > -1) {
+    contents = contents.replace(`${needle} false`, `${needle} true`);
+    fs.writeFileSync(filePath, contents);
+  }
+}

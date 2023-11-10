@@ -10,4 +10,3 @@ on_termination() {
 trap on_termination SIGINT
 
 npm run nextdev
-sleep infinity
