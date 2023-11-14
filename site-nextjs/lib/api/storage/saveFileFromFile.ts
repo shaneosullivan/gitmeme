@@ -40,7 +40,7 @@ export async function saveFileFromFile(
     }
 
     console.log(
-      "Downloading with mimeType",
+      "Saving with mimeType",
       mimeType,
       " fileExtension",
       fileExtension
