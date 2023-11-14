@@ -69,6 +69,7 @@ export default async function searchApi(
     return true;
   });
 
+  // Must do this for every request
   setCorsHeaders(res);
 
   res.status(200);
@@ -144,8 +145,12 @@ function serializeDate(date: any): string {
   if (date instanceof String) {
     return date as string;
   }
+  if (Number.isInteger(date)) {
+    date = new Date(date as number);
+  }
   if (typeof date.toDate === "function") {
     return date.toDate().toISOString();
   }
+
   return date.toISOString();
 }

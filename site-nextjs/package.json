@@ -12,12 +12,18 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "arr-flatten": "^1.1.0",
+    "cors": "^2.8.5",
     "firebase-admin": "^11.11.0",
+    "formidable-serverless": "^1.1.1",
+    "image-url-validator": "^1.0.4",
     "next": "14.0.1",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "request-image-size": "^2.2.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.16",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

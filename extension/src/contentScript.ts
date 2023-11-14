@@ -4,10 +4,11 @@ import throttle from "./util/throttle";
 import getParentByTagName from "./getParentByTagName";
 import findTextInputs from "./util/findTextInputs";
 import { getGithubInfo, GithubInfo } from "./shared/auth/githubInfo";
-import { API_ROOT_URL } from "./shared/consts";
+import { API_ROOT_URL, FILE_SIZE_LIMIT_MB } from "./shared/consts";
 import createAuthHeader from "./shared/auth/createAuthHeader";
 import getLoggedInUser from "./shared/auth/getLoggedInUser";
 import { sendEvent, sendPageHit } from "./shared/analytics";
+import fetchApi from "./lib/fetchApi";
 
 let userInfo = null;
 let githubContext = null;
@@ -213,35 +214,34 @@ function listenToInput(input: HTMLInputElement): {
 
   async function onAddNewImage(
     tokenValue: string,
-    url: string
-  ): Promise<{ status: boolean; image_url: string }> {
+    file: File
+  ): Promise<{ status: boolean; image_url: string; error?: string }> {
     if (!isLoggedIn) {
       throw new Error("Cannot add a new image unless logged in");
     }
 
-    url = url.trim();
-
-    if (url.indexOf("http://") === 0) {
-      url = url.replace("http://", "https://");
-      console.log("url is now", url);
+    if (file.size / (1024 * 1024) > FILE_SIZE_LIMIT_MB) {
+      return Promise.reject({
+        status: false,
+        error: `File is too large. Max size is ${FILE_SIZE_LIMIT_MB}MB`,
+      });
     }
 
     return new Promise(async (resolve, _reject) => {
-      const result = await fetch(`${API_ROOT_URL}/add_token_by_url`, {
-        method: "POST",
-        headers: {
-          ...createAuthHeader(userInfo.id, userInfo.token),
-        },
-        body: JSON.stringify({
-          image_url: url,
-          token: tokenValue,
-          context: githubContext,
-        }),
-      });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("token", tokenValue);
+      formData.append("context", githubContext);
+
+      const result = await fetchApi(
+        `${API_ROOT_URL}/add_token_by_file`,
+        formData,
+        createAuthHeader(userInfo.id, userInfo.token)
+      ).then((res) => res.json());
 
       resolve({
-        status: result.status === 200,
-        image_url: result["image_url"] || "",
+        status: result ? result.status === "success" : false,
+        image_url: result ? result["image_url"] || "" : "",
       });
     });
   }
