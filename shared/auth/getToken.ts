@@ -8,8 +8,6 @@ import {
 
 declare const chrome: any;
 
-console.log("getToken file loaded");
-
 // The Gitmeme Github app for auth is at https://github.com/settings/applications/1090737
 
 export function getTokenHeadless(
