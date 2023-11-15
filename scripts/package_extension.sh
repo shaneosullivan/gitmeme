@@ -1,5 +1,9 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+$DIR/../site-nextjs/scripts/shutdownDev.sh
+# Give the dev environment time to shutdown and revert any dev related changes
+sleep 2
+
 # Build the popup React app and the extension code
 cd "$DIR/../popup"
 source ~/.nvm/nvm.sh

@@ -1,13 +1,10 @@
 {
   "name": "GitMeme",
-  "version": "1.92",
+  "version": "2.0",
   "description": "Easily add memes to your Github comments by simply typing a word after a forward slash, like /shipit",
   "manifest_version": 3,
   "permissions": ["activeTab", "identity", "storage"],
-  "host_permissions": [
-    "https://us-central1-git-meme-prod.cloudfunctions.net/",
-    "https://api.giphy.com/"
-  ],
+  "host_permissions": ["https://gitme.me/*", "https://api.giphy.com/"],
   "content_scripts": [
     {
       "matches": [

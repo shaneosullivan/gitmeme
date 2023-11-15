@@ -1,7 +1,7 @@
 import * as React from "../lib/react";
 import TokenModalImage from "./TokenModalImage";
-import isValidUrl from "../util/isValidUrl";
 import getGithubContext from "../shared/auth/getGithubContext";
+import { FILE_SIZE_LIMIT_MB } from "../shared/consts";
 const { useState, useRef, useEffect } = React;
 
 interface Props {
@@ -11,8 +11,8 @@ interface Props {
   selectedIndex: number;
   tokenValue: string;
   onAddNewImage?: (
-    url: string
-  ) => Promise<{ status: boolean; image_url: string }>;
+    file: File
+  ) => Promise<{ status: boolean; image_url: string; error?: string }>;
   onLogIn: Function;
   onToggleDisabled: Function;
   onSelectImage: (url: string) => void;
@@ -51,7 +51,8 @@ const AddNewLinks: Array<ExternalLink> = [
 
 export default function TokenModal(props: Props) {
   const [isAddingNew, setIsAddingNew] = useState(false);
-  const [newUrl, setNewUrl] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null as File);
+  const [fileIsTooLarge, setFileIsTooLarge] = useState(false);
   const [newUrlSubmitState, setNewUrlSubmitState] = useState(
     NewUrlSubmitState.NOT_SUBMITTING
   );
@@ -147,8 +148,8 @@ export default function TokenModal(props: Props) {
             <div>
               <div>
                 To add a new meme for <strong>/{props.tokenValue}</strong>,
-                enter the URL to the image below. If you'd like to find or make
-                a meme, you can use one of these sites
+                upload an image below. If you'd like to find or make a meme, you
+                can use one of these sites
               </div>
               <div className="thirdPartySiteLinks">
                 {AddNewLinks.map((linkInfo) => {
@@ -160,15 +161,29 @@ export default function TokenModal(props: Props) {
                 })}
               </div>
               <input
-                type="text"
-                placeholder="Enter image URL"
-                value={newUrl}
-                style={{ marginTop: "6px", width: "100%" }}
+                type="file"
+                accept="image/*"
+                placeholder="Choose an image"
+                style={{ marginTop: "6px", width: "75%" }}
                 onChange={(evt) => {
-                  setNewUrl(evt.target.value);
+                  const file = evt.target.files[0];
+                  console.log("new file ", file);
+
+                  if (file.size / (1024 * 1024) > FILE_SIZE_LIMIT_MB) {
+                    setFileIsTooLarge(true);
+                    setSelectedFile(null);
+                  } else {
+                    setFileIsTooLarge(false);
+                    setSelectedFile(file);
+                  }
                 }}
               />
 
+              {fileIsTooLarge ? (
+                <div style={{ color: "red" }}>
+                  The file is too large. Max size is {FILE_SIZE_LIMIT_MB}MB
+                </div>
+              ) : null}
               {newUrlSubmitState === NewUrlSubmitState.FAILED ? (
                 <div>
                   Failed to save image. Please check the URL and try again
@@ -198,12 +213,9 @@ export default function TokenModal(props: Props) {
       onClick={async () => {
         setNewUrlSubmitState(NewUrlSubmitState.SUBMITTING);
 
-        let urlToAdd = newUrl.toLowerCase();
-        if (urlToAdd.indexOf("http://") === 0) {
-          urlToAdd = urlToAdd.replace("http://", "https://");
-        }
-
-        const { status: success } = await props.onAddNewImage(urlToAdd);
+        const { status: success, error } = await props.onAddNewImage(
+          selectedFile
+        );
 
         setNewUrlSubmitState(
           success ? NewUrlSubmitState.NOT_SUBMITTING : NewUrlSubmitState.FAILED
@@ -212,18 +224,22 @@ export default function TokenModal(props: Props) {
           setIsAddingNew(false);
         } else {
           alert(
-            "Failed to add the new image. The hosting site may be preventing it from loading on Github.com." +
-              " Please try to find the image on another web host."
+            `Failed to add the new image. ${
+              error
+                ? error
+                : "The hosting site may be preventing it from loading on Github.com."
+            }` + " Please try to find the image on another web host."
           );
         }
       }}
       title={
-        isValidUrl(newUrl)
+        !!selectedFile
           ? "Click to submit your awesome new meme"
-          : "Cannot submit, the url you entered is not valid"
+          : "Please choose an image to upload"
       }
       disabled={
-        !isValidUrl(newUrl) ||
+        !selectedFile ||
+        fileIsTooLarge ||
         newUrlSubmitState === NewUrlSubmitState.SUBMITTING
       }
     >

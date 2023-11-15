@@ -16,8 +16,8 @@ interface Props {
   onLogIn: Function;
   onSelectImage: (url: string) => void;
   onAddNewImage?: (
-    url: string
-  ) => Promise<{ status: boolean; image_url: string }>;
+    file: File
+  ) => Promise<{ status: boolean; image_url: string; error?: string }>;
   onToggleDisabled: Function;
   onToggleModal: Function;
 }
@@ -47,7 +47,7 @@ export default function TokenTag(props: Props) {
   const style: { [key: string]: string } = {
     top: top + "px",
     left: props.position.left - 4 + "px",
-    width: props.position.width + 5 + "px"
+    width: props.position.width + 5 + "px",
   };
 
   if (props.trimTop) {
