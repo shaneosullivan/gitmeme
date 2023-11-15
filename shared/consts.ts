@@ -13,4 +13,4 @@ export const API_ROOT_URL = IS_RUNNING_LOCAL
   ? getFakeUrl()
   : "https://us-central1-git-meme-prod.cloudfunctions.net/api";
 
-export const FILE_SIZE_LIMIT_MB = 2;
+export const FILE_SIZE_LIMIT_MB = 1;

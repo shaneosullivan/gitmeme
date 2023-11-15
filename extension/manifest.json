@@ -1,6 +1,6 @@
 {
   "name": "GitMeme",
-  "version": "1.92",
+  "version": "2.0",
   "description": "Easily add memes to your Github comments by simply typing a word after a forward slash, like /shipit",
   "manifest_version": 3,
   "permissions": ["activeTab", "identity", "storage"],
