@@ -18,6 +18,7 @@ export default async function searchApi(
   res: NextApiResponse
 ) {
   console.log("search api called");
+  setCorsHeaders(res);
   await runCorsMiddleware(req, res);
 
   const { error: authError, user } = await checkUserIsUnauthorized(req);
