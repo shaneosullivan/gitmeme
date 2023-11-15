@@ -1,4 +1,4 @@
-import { GITHUB_CLIENT_ID } from "../consts";
+import { API_ROOT_URL, GITHUB_CLIENT_ID } from "../consts";
 import {
   getGithubInfo,
   setGithubUserId,
@@ -7,6 +7,8 @@ import {
 } from "./githubInfo";
 
 declare const chrome: any;
+
+console.log("getToken file loaded");
 
 export function getTokenHeadless(
   interactive: boolean,
@@ -17,10 +19,10 @@ export function getTokenHeadless(
     "provider_cb"
   );
 
-  const redirectUri =
-    "https://us-central1-git-meme-prod.cloudfunctions.net/oauth/" +
-    chrome.runtime.id;
+  const redirectUri = `${API_ROOT_URL}/oauth/` + chrome.runtime.id;
   const redirectRe = new RegExp(localRedirectUri + "[#?](.*)");
+
+  console.log("oauth redirecting to ", redirectUri);
 
   const options = {
     interactive: interactive,
@@ -34,6 +36,7 @@ export function getTokenHeadless(
 
   if (!githubInfo.token || !githubInfo.id || !githubInfo.avatar) {
     console.log("calling launchWebAuthFlow with options", options);
+
     chrome.identity.launchWebAuthFlow(options, function (redirectUri2: string) {
       console.log("launchWebAuthFlow callback with redirect ", redirectUri2);
       if (chrome.runtime.lastError) {

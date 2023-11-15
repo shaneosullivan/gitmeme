@@ -4,6 +4,8 @@ import getFirestore from "../../lib/api/getFirestore";
 import { getStringValue } from "../../lib/util/getStringValue";
 import { NextApiRequest, NextApiResponse } from "next";
 
+import { runCorsMiddleware } from "@/lib/api/runCorsMiddleware";
+
 type SearchResult = Array<{
   category: string;
   priority: number;
@@ -16,6 +18,7 @@ export default async function searchApi(
   res: NextApiResponse
 ) {
   console.log("search api called");
+  await runCorsMiddleware(req, res);
 
   const { error: authError, user } = await checkUserIsUnauthorized(req);
 
@@ -68,9 +71,6 @@ export default async function searchApi(
     seen[url] = true;
     return true;
   });
-
-  // Must do this for every request
-  setCorsHeaders(res);
 
   res.status(200);
   res.json({ results });

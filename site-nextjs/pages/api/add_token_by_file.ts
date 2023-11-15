@@ -7,17 +7,11 @@ import { saveFileFromFile } from "../../lib/api/storage/saveFileFromFile";
 // @ts-ignore
 import formidable from "formidable-serverless";
 
-import Cors from "cors";
 import { BagOfStuff } from "@/lib/api/types";
 import { getStringValue } from "@/lib/util/getStringValue";
 import getArray from "@/lib/util/getArray";
 import unlinkFiles from "@/lib/util/unlinkFiles";
-
-// Initializing the cors middleware
-// You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
-const cors = Cors({
-  methods: ["POST", "GET", "HEAD"],
-});
+import { runCorsMiddleware } from "@/lib/api/runCorsMiddleware";
 
 export const config = {
   api: {
@@ -25,29 +19,11 @@ export const config = {
   },
 };
 
-// Helper method to wait for a middleware to execute before continuing
-// And to throw an error when an error happens in a middleware
-function runMiddleware(
-  req: NextApiRequest,
-  res: NextApiResponse,
-  fn: Function
-) {
-  return new Promise((resolve, reject) => {
-    fn(req, res, (result: any) => {
-      if (result instanceof Error) {
-        return reject(result);
-      }
-
-      return resolve(result);
-    });
-  });
-}
-
 export default async function addTokenByFileApi(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  await runMiddleware(req, res, cors);
+  await runCorsMiddleware(req, res);
 
   if ((req.method || "").toUpperCase() !== "POST") {
     res.status(405); // Invalid method

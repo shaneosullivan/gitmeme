@@ -1,6 +1,5 @@
 export const GITHUB_CLIENT_ID = "9b9e17e168e82438cfb6";
 
-// DO NOT CHECK IN
 function getFakeUrl() {
   console.error("Do not check this in");
   return "http://localhost:3005/api";
@@ -11,6 +10,6 @@ const IS_RUNNING_LOCAL = false;
 
 export const API_ROOT_URL = IS_RUNNING_LOCAL
   ? getFakeUrl()
-  : "https://us-central1-git-meme-prod.cloudfunctions.net/api";
+  : "https://gitme.me/api";
 
 export const FILE_SIZE_LIMIT_MB = 1;
