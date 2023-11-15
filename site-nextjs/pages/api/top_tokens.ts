@@ -2,6 +2,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { getStringValue } from "../../lib/util/getStringValue";
 import checkUserIsUnauthorized from "../../lib/api/checkUserIsUnauthorized";
 import getFirestore from "@/lib/api/getFirestore";
+import { setCorsHeaders } from "@/lib/api/apiResponse";
+import { runCorsMiddleware } from "@/lib/api/runCorsMiddleware";
 
 interface TopTokenItem {
   count: number;
@@ -20,6 +22,8 @@ export default async function topTokensApi(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  setCorsHeaders(res);
+  await runCorsMiddleware(req, res);
   const { error: authError, user } = await checkUserIsUnauthorized(req);
   const userId = user ? user.uid : "";
 
