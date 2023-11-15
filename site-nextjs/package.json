@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "PORT=3005 source ./firebase.env && ./scripts/dev.sh",
     "nextdev": "next dev",
-    "build": "../scripts/copy_shared_files.sh && next build",
+    "localbuild": "source ../gitmeme.env && npm run build",
+    "build": "../scripts/copy_shared_files.sh && ./scripts/gen_secrets.sh && next build",
     "start": "next start",
     "cleanupDev": "bun ./scripts/cleanupDev.ts",
     "startDev": "bun ./scripts/setupDev.ts",

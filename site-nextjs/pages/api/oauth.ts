@@ -1,10 +1,10 @@
-import getFirestore, { getStorage } from "@/lib/api/getFirestore";
-import { getStringValue } from "@/lib/util/getStringValue";
+import { GITHUB_CLIENT_SECRET } from "../../lib/generated/secrets";
+import getFirestore from "../../lib/api/getFirestore";
+import { getStringValue } from "../../lib/util/getStringValue";
 import { Firestore } from "@google-cloud/firestore";
 import { NextApiRequest, NextApiResponse } from "next";
 
 const GITHUB_CLIENT_ID = "9b9e17e168e82438cfb6";
-const GITHUB_CLIENT_SECRET = "e8044d451e532da217fd3045bb5817bd8d40e5e1";
 
 const EXTENSION_ID = "bjpibkoafohcjghgpbiinhfoobmbijcc";
 
