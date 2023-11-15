@@ -78,5 +78,5 @@ setupenv.sh
 .last_modified_timestamp
 site-nextjs/firebase.env
 
-site-nextjs/lib/generated/*
+site-nextjs/lib/generated/*.ts
 gitmeme.env
