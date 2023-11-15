@@ -1,6 +1,6 @@
-import { GITHUB_CLIENT_SECRET } from "../../lib/generated/secrets";
-import getFirestore from "../../lib/api/getFirestore";
-import { getStringValue } from "../../lib/util/getStringValue";
+import { GITHUB_CLIENT_SECRET } from "../../../lib/generated/secrets";
+import getFirestore from "../../../lib/api/getFirestore";
+import { getStringValue } from "../../../lib/util/getStringValue";
 import { Firestore } from "@google-cloud/firestore";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -17,22 +17,15 @@ export default async function oauthApi(
   const firestore = getFirestore();
 
   console.log("Oauth called with query ", req.query);
-  console.log("Oauth called with url ", req.url);
+  console.log("oauth got req.query.slug", req.query.slug);
 
   let extensionId = EXTENSION_ID;
 
-  console.log("oauth got req.url", req.url);
-  if (req.url) {
+  if (req.query.slug) {
     // The getTokenHeadless function adds the extension ID to the path.
-    const path = new URL(req.url).pathname;
-    const parts = path.split("/").filter((s) => !!s.trim());
-    extensionId = parts[parts.length - 1];
+    extensionId = getStringValue(req.query.slug);
     console.log("changed extension id to ", extensionId);
   }
-
-  // if (req.path && req.path.length > 1) {
-  //   extensionId = req.path.substring(1);
-  // }
 
   const accessToken = getStringValue(req.query.access_token);
   const code = getStringValue(req.query.code);
