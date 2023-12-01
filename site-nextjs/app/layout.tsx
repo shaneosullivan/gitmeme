@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "./Header";
-import { Icon, Icons } from "next/dist/lib/metadata/types/metadata-types";
+import { Icons } from "next/dist/lib/metadata/types/metadata-types";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -39,6 +39,7 @@ export const metadata: Metadata = {
     description: "Bring the joy of endless memes to Github",
     type: "website",
   },
+  metadataBase: new URL("https://gitme.me"),
 };
 
 export default function RootLayout({
