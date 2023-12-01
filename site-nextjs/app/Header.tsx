@@ -34,32 +34,33 @@ const Header = ({ siteTitle }: Props) => {
             {extraTitle}
           </Link>
         </h1>
-        <a
-          href="https://github.com/shaneosullivan/gitmeme"
-          target="_blank"
-          className={`${styles.headerLink} ${styles.headerLinkSource} non-mobile`}
-          style={{
-            color: "white",
-            textDecoration: "none",
-            position: "absolute",
-          }}
-        >
-          Source
-        </a>
-        <a
-          href="https://github.com/shaneosullivan/gitmeme/discussions"
-          target="_blank"
-          className={`${styles.headerLink} ${styles.headerLinkFeedback}`}
-        >
-          Feedback
-        </a>
-        <a
-          href="https://twitter.com/Gitmeme_rocks"
-          target="_blank"
-          className={`${styles.headerLink} ${styles.headerLinkTwitter}`}
-        >
-          @Gitmeme_rocks
-        </a>
+        <div className={styles.links}>
+          <a
+            href="https://twitter.com/Gitmeme_rocks"
+            target="_blank"
+            className={`${styles.headerLink} ${styles.headerLinkTwitter}`}
+          >
+            @Gitmeme_rocks
+          </a>
+          <a
+            href="https://github.com/shaneosullivan/gitmeme/discussions"
+            target="_blank"
+            className={`${styles.headerLink} ${styles.headerLinkFeedback}`}
+          >
+            Feedback
+          </a>
+          <a
+            href="https://github.com/shaneosullivan/gitmeme"
+            target="_blank"
+            className={`${styles.headerLink} ${styles.headerLinkSource} non-mobile`}
+            style={{
+              color: "white",
+              textDecoration: "none",
+            }}
+          >
+            Source
+          </a>
+        </div>
       </div>
     </header>
   );

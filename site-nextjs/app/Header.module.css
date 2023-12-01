@@ -33,7 +33,6 @@
 
 .Header .headerLink {
   color: white;
-  position: absolute;
   text-decoration: none;
   top: -4px;
 }
@@ -49,6 +48,15 @@
 
 .Header .headerLinkTwitter {
   right: 10px;
+}
+
+.Header .links {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  flex-flow: row-reverse;
+  gap: 8px;
+  text-align: right;
 }
 
 @media only screen and (max-width: 480px) {
