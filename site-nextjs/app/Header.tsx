@@ -42,8 +42,6 @@ const Header = ({ siteTitle }: Props) => {
             color: "white",
             textDecoration: "none",
             position: "absolute",
-            top: "-4px",
-            right: "216px",
           }}
         >
           Source

@@ -124,7 +124,18 @@ export default function TokenModal(props: Props) {
               </>
             ) : null}
           </div>
-        ) : null}
+        ) : (
+          <div className="donateMessage">
+            <a
+              href="https://donate.stripe.com/bIYdUs37ZcPa0fu5kk"
+              target="_blank"
+            >
+              {" "}
+              Support GitMeme development
+            </a>{" "}
+            to keep the memes flowing forever!
+          </div>
+        )}
       </div>
     );
   }

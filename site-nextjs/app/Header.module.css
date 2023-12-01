@@ -1,7 +1,7 @@
 .Header {
   background-color: #24292e;
   color: hsla(0, 0%, 100%, 0.7);
-  font-size: 14px;
+  font-size: 24px;
   line-height: 1.5;
   margin-bottom: 1.45rem;
   padding: 16px;
@@ -14,12 +14,11 @@
   align-items: center;
   display: flex;
   flex-wrap: nowrap;
-  font-size: 14px;
   position: relative;
 }
 
 .Header .Item h1 {
-  font-size: 14px;
+  font-size: 24px;
 }
 
 .Header .tokenTitle {
@@ -28,7 +27,7 @@
 
 .Header .headerIcon {
   float: left;
-  margin-top: -16px;
+  margin-top: -6px;
   margin-right: 12px;
 }
 
@@ -40,11 +39,12 @@
 }
 
 .Header .headerLinkFeedback {
-  right: 140px;
+  right: 194px;
 }
 
 .Header .headerLinkSource {
-  right: 216px;
+  top: -4px;
+  right: 300px;
 }
 
 .Header .headerLinkTwitter {
@@ -52,12 +52,13 @@
 }
 
 @media only screen and (max-width: 480px) {
-  .Header .Header-item {
+  .Header .Item {
+    font-size: 14px;
     margin-right: 0px;
   }
 
   .Header .headerLink {
-    top: 0px;
+    top: 8px;
   }
   .Header .headerLinkFeedback {
     right: 120px;

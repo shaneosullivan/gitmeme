@@ -12,4 +12,4 @@ export const API_ROOT_URL = IS_RUNNING_LOCAL
   ? getFakeUrl()
   : "https://gitme.me/api";
 
-export const FILE_SIZE_LIMIT_MB = 1;
+export const FILE_SIZE_LIMIT_MB = 5;

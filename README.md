@@ -71,8 +71,13 @@ also should not be checked in
 
 ## Public Website
 
-The public facing website, which you can see at https://gitme.me, is built using
-Gatsby.js, a static site generator around React. The code is at `/site/ui`, with
+The public facing webiste which you can see at https://gitme.me is built using NextJS, and the
+code is in the `site-nextjs` folder. It requires Node v18 or later.
+
+## --Deprecated--Public Website
+
+The deprecated public facing website, which you can no longer see at https://gitme.me,
+was built using Gatsby.js, a static site generator around React. The code is at `/site/ui`, with
 most of the content being in `/site/ui/src`.
 
 It's very simple right now, just two pages, `index.tsx` and `image.tsx`. To work on it,

@@ -1,7 +1,7 @@
 .InstallButton {
-  font-size: 14px;
+  font-size: 24px;
   line-height: 20px;
-  padding: 3px 10px;
+  padding: 6px 10px;
   background-color: #28a745;
   background-image: linear-gradient(-180deg, #34d058, #28a745 90%);
   color: #fff;
