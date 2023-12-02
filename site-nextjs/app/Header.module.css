@@ -60,9 +60,17 @@
 }
 
 @media only screen and (max-width: 480px) {
+  .Header .Item h1 {
+    font-size: 16px;
+  }
+
   .Header .Item {
     font-size: 14px;
     margin-right: 0px;
+  }
+
+  .Header .headerIcon {
+    margin-top: -12px;
   }
 
   .Header .headerLink {
