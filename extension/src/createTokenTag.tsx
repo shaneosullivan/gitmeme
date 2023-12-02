@@ -266,6 +266,10 @@ export default function createTokenTag(
   }
 
   function remove() {
+    if (interval) {
+      clearInterval(interval);
+      interval = null;
+    }
     ReactDOM.unmountComponentAtNode(tagUi);
     tagUi.parentNode.removeChild(tagUi);
     textInput.removeEventListener("keyup", checkCaretPosition);
@@ -306,6 +310,8 @@ export default function createTokenTag(
   const handleScroll = throttle(() => {
     reposition();
   }, 25);
+
+  let interval = setInterval(reposition, 1000);
 
   const existingPreferredImageUrl = preferredTagUrls[token.value] || null;
 

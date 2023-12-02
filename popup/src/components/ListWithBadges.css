@@ -38,7 +38,7 @@
 
 .ListWithBadges .listHeader .timesUsed {
   display: inline-block;
-  opacity: 0.5;
+  opacity: 0.7;
   padding-right: 6px;
   text-align: right;
   width: 50%;
@@ -65,10 +65,11 @@
 }
 
 .ListWithBadges .emptyMsg {
+  color: #24292d;
   font-size: 13px;
-  line-height: 1.43;
   letter-spacing: -0.15px;
-  color: #919496;
+  line-height: 1.43;
+  opacity: 0.7;
 }
 
 @keyframes fade_out_with_delay {

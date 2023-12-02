@@ -4,6 +4,8 @@ This mini-app is shown as a popup when the user clicks the Gitmeme button in the
 on Github. It shows some stats for the memes that are used, and if the user logs in, it shows them
 their stats too.
 
+Requires npm v16, so before developing or building it execute `nvm use 16`
+
 When the project is built using `npm run build`, it's build output is copied into the `/extension` folder.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

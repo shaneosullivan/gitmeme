@@ -27,7 +27,7 @@ export default function parseTokens(str: string): Array<Token> {
         startIsValid = letterBefore == "\n";
       }
 
-      let endIsValid = index + match[0].length === str.length;
+      let endIsValid = index + match[0].length === str.trim().length;
       if (!endIsValid) {
         // If not at the end of the string, check the characters after it
         const letterAfter = str.charAt(index + match[0].length);
@@ -49,7 +49,7 @@ export default function parseTokens(str: string): Array<Token> {
       if (startIsValid && endIsValid && outsideImageValid) {
         ret.push({
           index: match.index,
-          value: match[0].substring(1).trim()
+          value: match[0].substring(1).trim(),
         });
       }
     }

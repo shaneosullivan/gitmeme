@@ -60,6 +60,7 @@ function listenToInput(input: HTMLInputElement): {
           }
         });
       }
+
       // Remove any tokens that are no longer valid
       knownTokens = knownTokens.filter((knownToken) => {
         const stillExists = tokens.some((newToken) => {
