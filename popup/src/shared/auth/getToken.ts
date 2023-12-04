@@ -8,7 +8,8 @@ import {
 
 declare const chrome: any;
 
-// The Gitmeme Github app for auth is at https://github.com/settings/applications/1090737
+// The Gitmeme Github app for auth is at
+// https://github.com/settings/applications/1090737
 
 export function getTokenHeadless(
   interactive: boolean,

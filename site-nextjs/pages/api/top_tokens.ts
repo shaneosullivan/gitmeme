@@ -22,7 +22,6 @@ export default async function topTokensApi(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  setCorsHeaders(res);
   await runCorsMiddleware(req, res);
   const { error: authError, user } = await checkUserIsUnauthorized(req);
   const userId = user ? user.uid : "";

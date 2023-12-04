@@ -17,6 +17,8 @@ const checkUserIsUnauthorized = async (
 
   const authHeader = req.headers["authorization"];
 
+  console.log("authHeader", authHeader);
+
   if (!authHeader) {
     return {
       error: {
@@ -34,9 +36,9 @@ const checkUserIsUnauthorized = async (
     const parts = authHeaderContents.split("___");
 
     const userId = parts[0].trim().toLowerCase();
-    const authToken = parts[1].trim();
+    const authToken = (parts[1] || "").trim();
 
-    if (userId && authToken) {
+    if (userId && authToken && authToken !== "null") {
       const userDoc = await getFirestore()
         .collection("users")
         .doc(userId)

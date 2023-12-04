@@ -151,6 +151,7 @@ function listenToInput(input: HTMLInputElement): {
             knownToken.token.index + knownToken.token.value.length + 1
           );
 
+        // Record the fact that each token has been used
         fetch(`${API_ROOT_URL}/add_token_by_url`, {
           method: "POST",
           headers: isLoggedIn

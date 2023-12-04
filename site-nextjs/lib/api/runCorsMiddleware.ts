@@ -1,8 +1,10 @@
 import Cors from "cors";
 import { NextApiRequest, NextApiResponse } from "next";
+import { setCorsHeaders } from "./apiResponse";
 
 // Initializing the cors middleware
-// You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
+// You can read more about the available options here:
+// https://github.com/expressjs/cors#configuration-options
 const cors = Cors({
   methods: ["POST", "GET", "HEAD"],
 });
@@ -26,5 +28,6 @@ function runMiddleware(
 }
 
 export function runCorsMiddleware(req: NextApiRequest, res: NextApiResponse) {
+  setCorsHeaders(res);
   return runMiddleware(req, res, cors);
 }

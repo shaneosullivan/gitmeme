@@ -5,8 +5,6 @@ import * as ReactDOM from "./lib/react-dom";
 import searcher from "./searcher";
 import TokenTag from "./components/TokenTag";
 import uuid from "uuid";
-// import getToken from "./shared/auth/getToken";
-// import { GithubInfo } from "./shared/auth/githubInfo";
 import { sendEvent } from "./shared/analytics";
 import throttle from "./util/throttle";
 import { getGithubInfo } from "./shared/auth/githubInfo";
@@ -31,8 +29,6 @@ export interface TokenTagType {
     width: number;
   };
 }
-
-// let removeOpenImage = null;
 
 const preferredTagUrls = {};
 
@@ -112,6 +108,7 @@ export default function createTokenTag(
           sendEvent("action", "login", "begin", "inline");
 
           getGithubInfo().then((githubInfo) => {
+            // This only works in the published extension it seems. Yolo.
             chrome.runtime.sendMessage(
               { data: "login", githubInfo },
               (success) => {
@@ -123,6 +120,7 @@ export default function createTokenTag(
                     .then(reload)
                     .catch(reload);
                 } else {
+                  alert("Failed to login. You may need to reinstall Gitmeme.");
                   sendEvent("action", "login", "fail", "inline");
                 }
               }

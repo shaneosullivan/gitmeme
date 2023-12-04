@@ -19,6 +19,7 @@ export const config = {
   },
 };
 
+// This API accepts a file as an upload, stores it and associates it with a token string.
 export default async function addTokenByFileApi(
   req: NextApiRequest,
   res: NextApiResponse
@@ -49,6 +50,13 @@ export default async function addTokenByFileApi(
   */
 
   const { error: authError, user } = await checkUserIsUnauthorized(req);
+
+  if (authError) {
+    // No permission, must be logged in
+    res.status(403);
+    res.end();
+    return;
+  }
 
   const form = new formidable.IncomingForm();
   form.uploadDir = "/tmp/";
