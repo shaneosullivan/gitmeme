@@ -24,6 +24,7 @@ function listenToInput(input: HTMLInputElement): {
   let toolbarButtonItem;
   let activeTag: TokenTagType = null;
   let popupIframe = null;
+  let isCleanedUp = false;
 
   const isLoggedIn =
     userInfo &&
@@ -80,9 +81,33 @@ function listenToInput(input: HTMLInputElement): {
   );
 
   let formNode = getParentByTagName(input, "form") as HTMLFormElement;
-  let previewTabButton = formNode.querySelector("button.preview-tab");
+  let previewTabButton = formNode
+    ? formNode.querySelector("button.preview-tab")
+    : null;
 
-  function handleInputKeyup() {
+  function handleInputKeydown(evt: KeyboardEvent) {
+    const isSubmitCommand =
+      (navigator.platform.match("Mac") ? evt.metaKey : evt.ctrlKey) &&
+      evt.key.toLowerCase() === "enter";
+    if (isSubmitCommand) {
+      evt.preventDefault();
+      evt.stopPropagation();
+
+      processPreSubmit();
+      const submitButton = findSubmitButtons(input).filter((btn) => {
+        return !btn.disabled && btn.getAttribute("data-variant") === "primary";
+      })[0];
+
+      if (submitButton) {
+        setTimeout(() => {
+          submitButton.click();
+        }, 500);
+      }
+      return;
+    }
+  }
+
+  function handleInputKeyup(evt: KeyboardEvent) {
     closePopupIframe();
     updateTokensForInput();
   }
@@ -92,10 +117,66 @@ function listenToInput(input: HTMLInputElement): {
     updateTokensForInput();
   }
 
-  function handleBodyClick() {
+  function handleBodyClick(evt) {
     if (popupIframe) {
       closePopupIframe();
     }
+
+    const target = evt.target as HTMLElement;
+
+    let isButtonClick = false;
+    let isPrimaryButtonClick = false;
+    let isFooterClick = false;
+
+    let currentNode: HTMLElement = target;
+    while (currentNode) {
+      if (!isButtonClick && currentNode.tagName === "BUTTON") {
+        isButtonClick = true;
+
+        isPrimaryButtonClick =
+          currentNode.getAttribute("data-variant") === "primary";
+      }
+      if (
+        !isFooterClick &&
+        currentNode.getAttribute("data-testid") === "markdown-editor-footer"
+      ) {
+        isFooterClick = true;
+        break;
+      }
+      currentNode = currentNode.parentElement;
+    }
+
+    if (isFooterClick && isPrimaryButtonClick) {
+      processPreSubmit(evt);
+    }
+  }
+
+  function guardEvt(listener: EventListener) {
+    return function (evt: Event) {
+      if (isCleanedUp) {
+        console.log("Event on cleaned up listener, ignoring");
+        return;
+      }
+      listener(evt);
+    };
+  }
+
+  const listeners = [];
+  function addGuardedEvt(
+    node: HTMLElement | Window,
+    eventName: string,
+    listener: EventListener,
+    options?: boolean | AddEventListenerOptions
+  ) {
+    const guardedListener = guardEvt(listener);
+    listeners.push({ node, eventName, guardedListener, options });
+    node.addEventListener(eventName, guardedListener, options);
+  }
+
+  function removeGuardedEvts() {
+    listeners.forEach(({ node, eventName, guardedListener, options }) => {
+      node.removeEventListener(eventName, guardedListener, options);
+    });
   }
 
   function cleanUp() {
@@ -104,21 +185,21 @@ function listenToInput(input: HTMLInputElement): {
     });
     knownTokens = [];
 
-    input.removeEventListener("keyup", handleInputKeyup);
-    input.removeEventListener("change", updateTokensForInput);
-    input.removeEventListener("focus", handleInputFocus);
-    input.removeEventListener("mouseenter", handleMouseEnter);
-    input.removeEventListener("mouseout", handleMouseOut);
-    window.removeEventListener("resize", updatePosition);
-    formNode.removeEventListener("submit", processPreSubmit, true);
-    document.body.removeEventListener("keyup", handleBodyKeys);
-    previewTabButton &&
-      previewTabButton.removeEventListener("click", processPreSubmit, true);
-    document.body.removeEventListener("click", handleBodyClick);
+    isCleanedUp = true;
+    removeGuardedEvts();
+
+    document.body
+      .querySelectorAll(".__submitButtonOverlay")
+      .forEach((overlay) => {
+        const parent = overlay.parentNode;
+        if (parent) {
+          parent.removeChild(overlay);
+        }
+      });
   }
 
   // Replace all the tokens with image tags
-  function processPreSubmit(_evt: Event) {
+  function processPreSubmit(_evt?: Event) {
     // Process the tokens from the last to the first, so that
     // we can modify the text contents without changing the
     // index positions of tokens before we process them
@@ -184,7 +265,11 @@ function listenToInput(input: HTMLInputElement): {
         input.classList.remove("__textareaHiddenText");
       }, 5000);
     }
-    input.value = value;
+
+    // Need to use the paste function to ensure that any
+    // bound listeners get triggered
+    // Simply setting input.value = value; won't do that
+    pasteValueIntoInput(input, value);
 
     // Log to Google Analytics
     if (knownTokens.length > 0) {
@@ -338,6 +423,72 @@ function listenToInput(input: HTMLInputElement): {
     }
   }
 
+  function findSubmitButtons(
+    input: HTMLInputElement
+  ): Array<HTMLButtonElement> {
+    const buttons: Array<HTMLButtonElement> = [];
+
+    let currentNode: HTMLElement = input;
+    while (currentNode) {
+      const footerNode = currentNode.querySelector(
+        "[data-testid='markdown-editor-footer']"
+      );
+      if (footerNode) {
+        const submitButtons = Array.from(
+          footerNode.querySelectorAll("button[data-variant='primary']")
+        );
+        submitButtons.forEach((btn) => buttons.push(btn as HTMLButtonElement));
+        break;
+      }
+      currentNode = currentNode.parentElement;
+    }
+    return buttons;
+  }
+
+  function selectAllTextInInput(input: HTMLInputElement) {
+    input.focus();
+    input.setSelectionRange(0, input.value.length);
+  }
+
+  // Pastes a string into an input, overriding it's test completely
+  function pasteValueIntoInput(input: HTMLInputElement, value: string) {
+    selectAllTextInInput(input);
+    document.execCommand("insertText", false, value);
+  }
+
+  function addSubmitButtonOverlays(input: HTMLInputElement) {
+    const submitButtons = findSubmitButtons(input);
+
+    // Add an overlay div on top of each submit button
+    // that will process the tokens before allowing the
+    // click to go through
+    submitButtons.forEach((btn) => {
+      const overlay = document.createElement("div");
+      overlay.className = "__submitButtonOverlay";
+      btn.style.position = "relative";
+      overlay.style.position = "absolute";
+      overlay.style.top = "0";
+      overlay.style.left = "0";
+      overlay.style.width = "100%";
+      overlay.style.opacity = "0";
+      overlay.style.height = "100%";
+      overlay.style.backgroundColor = "rgba(255, 255, 255, 0.6)";
+      overlay.style.zIndex = "10";
+      btn.appendChild(overlay);
+
+      overlay.addEventListener("click", (evt) => {
+        evt.preventDefault();
+        evt.stopPropagation();
+        console.log("Prevented click");
+        processPreSubmit();
+
+        setTimeout(() => {
+          btn.click();
+        }, 1000);
+      });
+    });
+  }
+
   const updatePosition = throttle(() => {
     knownTokens.forEach((token) => {
       token.reposition();
@@ -384,19 +535,40 @@ function listenToInput(input: HTMLInputElement): {
     }
   }
 
-  input.addEventListener("keyup", handleInputKeyup);
-  input.addEventListener("change", updateTokensForInput);
-  input.addEventListener("focus", handleInputFocus);
-  input.addEventListener("mouseenter", handleMouseEnter);
-  input.addEventListener("mouseout", handleMouseOut);
-  window.addEventListener("resize", updatePosition);
-  formNode.addEventListener("submit", processPreSubmit, true);
-  document.body.addEventListener("keyup", handleBodyKeys);
-  previewTabButton &&
-    previewTabButton.addEventListener("click", processPreSubmit, true);
-  document.body.addEventListener("click", handleBodyClick);
+  addGuardedEvt(input, "keydown", handleInputKeydown, true);
+  addGuardedEvt(input, "keyup", handleInputKeyup);
+  addGuardedEvt(input, "change", updateTokensForInput);
+  addGuardedEvt(input, "focus", handleInputFocus);
+  addGuardedEvt(input, "mouseenter", handleMouseEnter);
+  addGuardedEvt(input, "mouseout", handleMouseOut);
+  addGuardedEvt(window, "resize", updatePosition);
 
-  addToolbarButton(formNode);
+  addGuardedEvt(document.body, "keyup", handleBodyKeys);
+  if (previewTabButton) {
+    addGuardedEvt(
+      previewTabButton as HTMLElement,
+      "click",
+      processPreSubmit,
+      true /* useCapture */
+    );
+  }
+  addGuardedEvt(document.body, "click", handleBodyClick, true /* useCapture */);
+
+  if (formNode) {
+    addToolbarButton(formNode);
+    addGuardedEvt(formNode, "submit", processPreSubmit, true /* useCapture */);
+  } else {
+    // If there's no form, let's add listeners directly to the
+    addSubmitButtonOverlays(input);
+  }
+
+  if (formNode) {
+    addToolbarButton(formNode);
+    formNode.addEventListener("submit", processPreSubmit, true);
+  } else {
+    // If there's no form, let's add listeners directly to the
+    addSubmitButtonOverlays(input);
+  }
 
   // In case the input is simply removed from the DOM without
   // being submitted, clean up too
@@ -407,11 +579,12 @@ function listenToInput(input: HTMLInputElement): {
     ) {
       cleanUp();
     } else if (input.offsetHeight === 0) {
+      console.log("Input hidden from DOM, cleaning up");
       cleanUp();
     }
   });
 
-  mutationObserver.observe(formNode, { childList: true });
+  mutationObserver.observe(input, { childList: true });
 
   revertTagToToken();
   updateTokensForInput();
