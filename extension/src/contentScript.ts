@@ -94,6 +94,12 @@ function listenToInput(input: HTMLInputElement): {
       evt.stopPropagation();
 
       processPreSubmit();
+
+      if (formNode) {
+        formNode.submit();
+        return;
+      }
+
       const submitButton = findSubmitButtons(input).filter((btn) => {
         return !btn.disabled && btn.getAttribute("data-variant") === "primary";
       })[0];
@@ -196,6 +202,14 @@ function listenToInput(input: HTMLInputElement): {
           parent.removeChild(overlay);
         }
       });
+
+    let toolbarNode: HTMLElement = getToolbarForInput(input);
+    if (toolbarNode) {
+      const toolbarButton = toolbarNode.querySelector(".__toolbarButton");
+      if (toolbarButton) {
+        toolbarNode.removeChild(toolbarButton);
+      }
+    }
   }
 
   // Replace all the tokens with image tags
@@ -333,9 +347,27 @@ function listenToInput(input: HTMLInputElement): {
     });
   }
 
-  function addToolbarButton(form: HTMLFormElement) {
-    const toolbarNode = form.querySelector("markdown-toolbar");
+  function getToolbarForInput(input: HTMLInputElement) {
+    let currentNode: HTMLElement = input;
+
+    // Search upwards until we find a node that has a child with role="toolbar"
+    let toolbarNode: HTMLElement = null;
+    while (currentNode) {
+      toolbarNode = currentNode.querySelector("[role='toolbar']");
+      if (toolbarNode) {
+        break;
+      }
+      currentNode = currentNode.parentElement;
+    }
+    return toolbarNode;
+  }
+
+  function addToolbarButton(input: HTMLInputElement) {
+    // Search upwards until we find a node that has a child with role="toolbar"
+    let toolbarNode: HTMLElement = getToolbarForInput(input);
+
     if (toolbarNode) {
+      // we've already added it.
       if (toolbarNode.querySelector(".__toolbarButton")) {
         return;
       }
@@ -366,7 +398,7 @@ function listenToInput(input: HTMLInputElement): {
 
       toolbarNode.appendChild(toolbarButton);
     } else {
-      console.log("no toolbar button on form ", form);
+      console.log("no toolbar button for input ", input);
     }
   }
 
@@ -554,8 +586,9 @@ function listenToInput(input: HTMLInputElement): {
   }
   addGuardedEvt(document.body, "click", handleBodyClick, true /* useCapture */);
 
+  addToolbarButton(input);
+
   if (formNode) {
-    addToolbarButton(formNode);
     addGuardedEvt(formNode, "submit", processPreSubmit, true /* useCapture */);
   } else {
     // If there's no form, let's add listeners directly to the
