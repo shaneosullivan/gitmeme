@@ -33,7 +33,8 @@
   ],
   "minimum_chrome_version": "93",
   "background": {
-    "service_worker": "build/service_worker.js"
+    "service_worker": "build/service_worker.js",
+    "scripts": ["build/service_worker.js"]
   },
 
   "icons": {
@@ -41,7 +42,7 @@
     "48": "assets/icon-48x48.png",
     "128": "assets/icon-128x128.png"
   },
-  "applications": {
+  "browser_specific_settings": {
     "gecko": {
       "id": "gitmeme@gitme.me"
     }
