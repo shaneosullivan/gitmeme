@@ -35,31 +35,34 @@ export function getTokenHeadless(
       encodeURIComponent(redirectUri),
   };
 
-  if (!githubInfo.token || !githubInfo.id || !githubInfo.avatar) {
-    console.log("calling launchWebAuthFlow with options", options);
-
-    chrome.identity.launchWebAuthFlow(options, function (redirectUri2: string) {
-      console.log("launchWebAuthFlow callback with redirect ", redirectUri2);
-      if (chrome.runtime.lastError) {
-        console.error("launchWebAuthFlow error", chrome.runtime.lastError);
-        callback(new Error(chrome.runtime.lastError));
-        return;
-      }
-
-      // Upon success the response is appended to redirectUri, e.g.
-      // https://{app_id}.chromiumapp.org/provider_cb#access_token={value}
-      //     &refresh_token={value}
-      const matches = redirectUri2.match(redirectRe);
-
-      console.log("matches = ", matches);
-      if (matches && matches.length > 1) {
-        console.log("calling handleProviderResponse");
-        handleProviderResponse(parseRedirectFragment(matches[1]));
-      } else {
-        callback("Invalid redirect URI");
-      }
-    });
+  if (githubInfo.token && githubInfo.id && githubInfo.avatar) {
+    callback(null, githubInfo);
+    return;
   }
+
+  console.log("calling launchWebAuthFlow with options", options);
+
+  chrome.identity.launchWebAuthFlow(options, function (redirectUri2: string) {
+    console.log("launchWebAuthFlow callback with redirect ", redirectUri2);
+    if (chrome.runtime.lastError) {
+      console.error("launchWebAuthFlow error", chrome.runtime.lastError);
+      callback(new Error(chrome.runtime.lastError));
+      return;
+    }
+
+    // Upon success the response is appended to redirectUri, e.g.
+    // https://{app_id}.chromiumapp.org/provider_cb#access_token={value}
+    //     &refresh_token={value}
+    const matches = redirectUri2.match(redirectRe);
+
+    console.log("matches = ", matches);
+    if (matches && matches.length > 1) {
+      console.log("calling handleProviderResponse");
+      handleProviderResponse(parseRedirectFragment(matches[1]));
+    } else {
+      callback("Invalid redirect URI");
+    }
+  });
 
   function parseRedirectFragment(fragment: string) {
     const pairs = fragment.split(/&/);

@@ -29,9 +29,7 @@ function listenToInput(input: HTMLInputElement): {
   const isLoggedIn =
     userInfo &&
     userInfo.id &&
-    userInfo.token &&
-    loggedInUser &&
-    loggedInUser.id === userInfo.id;
+    userInfo.token;
 
   const updateTokensForInput = throttle(
     () => {

@@ -16,10 +16,13 @@ export async function getGithubInfo(): Promise<GithubInfo> {
       ["github_token", "github_id", "github_avatar"],
       function (results: any) {
         if (results.github_token) {
+          // Fall back to DOM for id/avatar if they weren't stored (e.g. from
+          // a prior broken OAuth flow that stored the token but not the user info).
+          const loggedInUser = getLoggedInUser();
           resolve({
             token: results.github_token || null,
-            id: results.github_id || null,
-            avatar: results.github_avatar || null,
+            id: results.github_id || (loggedInUser ? loggedInUser.id : null),
+            avatar: results.github_avatar || (loggedInUser ? loggedInUser.avatar : null),
             context: getGithubContext(),
           });
         } else {

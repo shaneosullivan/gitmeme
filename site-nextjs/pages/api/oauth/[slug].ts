@@ -45,13 +45,14 @@ export default async function oauthApi(
       userInfo.avatar,
       extensionId
     );
+    return;
   } else if (code) {
     console.log(
       "Oauth got an access code ",
       code,
       " exchanging code for token"
     );
-    const token = await exchangeCodeForToken(code);
+    const token = await exchangeCodeForToken(code, extensionId);
     console.log("Exchanged code for the token: ", token);
 
     if (token) {
@@ -68,7 +69,7 @@ export default async function oauthApi(
   const idx = (req.url || "").indexOf("?");
   const queryString = (req.url || "").substring(idx + 1);
   res.redirect(
-    `https://${EXTENSION_ID}.chromiumapp.org/provider_cb?` + queryString
+    `https://${extensionId}.chromiumapp.org/provider_cb?` + queryString
   );
 }
 
@@ -132,8 +133,9 @@ function redirectWithToken(
   res.redirect(nextRedirectUrl);
 }
 
-async function exchangeCodeForToken(code: string): Promise<string> {
+async function exchangeCodeForToken(code: string, extensionId: string): Promise<string> {
   return new Promise(async (resolve, reject) => {
+    const redirectUri = `${thisRedirectUri}/${extensionId}`;
     const url =
       "https://github.com/login/oauth/access_token?" +
       "client_id=" +
@@ -141,7 +143,7 @@ async function exchangeCodeForToken(code: string): Promise<string> {
       "&client_secret=" +
       GITHUB_CLIENT_SECRET +
       "&redirect_uri=" +
-      encodeURIComponent(thisRedirectUri) +
+      encodeURIComponent(redirectUri) +
       "&code=" +
       code;
 

@@ -112,6 +112,12 @@ export default function createTokenTag(
             chrome.runtime.sendMessage(
               { data: "login", githubInfo },
               (success) => {
+                if (chrome.runtime.lastError) {
+                  console.error("Login message error:", chrome.runtime.lastError.message);
+                  alert("Failed to login. The extension may need to be reloaded.");
+                  sendEvent("action", "login", "fail", "inline");
+                  return;
+                }
                 if (success) {
                   function reload() {
                     window.location.reload();
