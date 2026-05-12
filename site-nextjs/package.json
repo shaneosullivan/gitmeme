@@ -15,7 +15,7 @@
   "dependencies": {
     "arr-flatten": "^1.1.0",
     "cors": "^2.8.5",
-    "firebase-admin": "^11.11.0",
+    "firebase-admin": "^13.9.0",
     "formidable-serverless": "^1.1.1",
     "image-url-validator": "^1.0.4",
     "next": "14.0.1",
