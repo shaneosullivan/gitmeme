@@ -18,7 +18,7 @@
     "firebase-admin": "^11.11.0",
     "formidable-serverless": "^1.1.1",
     "image-url-validator": "^1.0.4",
-    "next": "14.0.1",
+    "next": "15.5.18",
     "react": "^18",
     "react-dom": "^18",
     "request-image-size": "^2.2.0"
