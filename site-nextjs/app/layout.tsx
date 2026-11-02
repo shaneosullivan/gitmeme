@@ -66,17 +66,11 @@ export default function RootLayout({
           </footer>
         </main>
         <script
-          async
           defer
-          src="https://scripts.simpleanalyticscdn.com/latest.js"
+          src="https://chofterstats.com/cs.js"
+          data-website-id="0727881e-2cc3-4d2b-85cf-e74be7a1ac85"
+          data-domains="gitme.me"
         ></script>
-        <noscript>
-          <img
-            src="https://queue.simpleanalyticscdn.com/noscript.gif"
-            alt=""
-            referrerPolicy="no-referrer-when-downgrade"
-          />
-        </noscript>
       </body>
     </html>
   );
